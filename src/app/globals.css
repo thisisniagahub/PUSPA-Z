@@ -41,75 +41,101 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* PUSPA brand colors */
+  --color-puspa-primary: #6A0DAD;
+  --color-puspa-dark: #4B0082;
+  --color-puspa-light: #9370DB;
+  --color-puspa-pale: #E6E6FA;
 }
+
+/* ─── PUSPA V4 Light Theme (Purple Brand) ──────────────────────── */
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* Core - PUSPA Purple as primary */
+  --background: oklch(0.985 0.002 295);
+  --foreground: oklch(0.145 0.015 295);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.145 0.015 295);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.145 0.015 295);
+  /* Primary = PUSPA Medium Purple #6A0DAD */
+  --primary: oklch(0.368 0.212 295);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* Secondary = Pale Lavender */
+  --secondary: oklch(0.918 0.034 291);
+  --secondary-foreground: oklch(0.368 0.212 295);
+  /* Muted */
+  --muted: oklch(0.952 0.015 295);
+  --muted-foreground: oklch(0.5 0.02 295);
+  /* Accent = Light Lavender */
+  --accent: oklch(0.918 0.034 291);
+  --accent-foreground: oklch(0.368 0.212 295);
+  /* Destructive */
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Borders & Inputs */
+  --border: oklch(0.908 0.025 295);
+  --input: oklch(0.908 0.025 295);
+  --ring: oklch(0.368 0.212 295);
+  /* Charts - Purple-dominant palette matching PUSPA brand */
+  --chart-1: oklch(0.368 0.212 295);  /* PUSPA Purple */
+  --chart-2: oklch(0.581 0.154 291);  /* Lavender */
+  --chart-3: oklch(0.646 0.222 41.116); /* Amber accent */
+  --chart-4: oklch(0.6 0.118 184.704);  /* Teal accent */
+  --chart-5: oklch(0.769 0.188 70.08);  /* Gold accent */
+  /* Sidebar - Purple branded */
+  --sidebar: oklch(0.247 0.208 295);
+  --sidebar-foreground: oklch(0.965 0.01 295);
+  --sidebar-primary: oklch(0.918 0.034 291);
+  --sidebar-primary-foreground: oklch(0.247 0.208 295);
+  --sidebar-accent: oklch(0.32 0.18 295);
+  --sidebar-accent-foreground: oklch(0.965 0.01 295);
+  --sidebar-border: oklch(0.35 0.16 295);
+  --sidebar-ring: oklch(0.581 0.154 291);
 }
 
+/* ─── PUSPA V4 Dark Theme ──────────────────────────────────────── */
+
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(0.13 0.02 295);
+  --foreground: oklch(0.965 0.01 295);
+  --card: oklch(0.17 0.025 295);
+  --card-foreground: oklch(0.965 0.01 295);
+  --popover: oklch(0.17 0.025 295);
+  --popover-foreground: oklch(0.965 0.01 295);
+  /* Primary = Lighter Purple for dark mode */
+  --primary: oklch(0.581 0.154 291);
+  --primary-foreground: oklch(0.247 0.208 295);
+  /* Secondary */
+  --secondary: oklch(0.22 0.04 295);
+  --secondary-foreground: oklch(0.918 0.034 291);
+  /* Muted */
+  --muted: oklch(0.22 0.04 295);
+  --muted-foreground: oklch(0.65 0.04 295);
+  /* Accent */
+  --accent: oklch(0.22 0.04 295);
+  --accent-foreground: oklch(0.918 0.034 291);
+  /* Destructive */
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
+  /* Borders */
+  --border: oklch(0.28 0.04 295);
+  --input: oklch(0.28 0.04 295);
+  --ring: oklch(0.581 0.154 291);
+  /* Charts */
+  --chart-1: oklch(0.581 0.154 291);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Sidebar - Deep Purple */
+  --sidebar: oklch(0.17 0.06 295);
+  --sidebar-foreground: oklch(0.965 0.01 295);
+  --sidebar-primary: oklch(0.581 0.154 291);
+  --sidebar-primary-foreground: oklch(0.965 0.01 295);
+  --sidebar-accent: oklch(0.24 0.06 295);
+  --sidebar-accent-foreground: oklch(0.965 0.01 295);
+  --sidebar-border: oklch(0.30 0.05 295);
+  --sidebar-ring: oklch(0.581 0.154 291);
 }
 
 @layer base {
@@ -119,4 +145,32 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ─── PUSPA Custom Scrollbar ───────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.581 0.154 291 / 30%);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.368 0.212 295 / 50%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: oklch(0.581 0.154 291 / 20%);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.581 0.154 291 / 40%);
 }

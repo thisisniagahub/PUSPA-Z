@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "PUSPA V4 — Pertubuhan Urus Peduli Asnaf",
-  description: "Platform Pengurusan NGO PUSPA — Mengurus asnaf, kes, derma, dan program dengan cekap",
+  description: "Platform Pengurusan NGO PUSPA — Cerdas. Mesra. Sentiasa di sisi anda.",
   icons: {
-    icon: "/logo.svg",
+    icon: "/puspa-logo-transparent.png",
   },
 };
 

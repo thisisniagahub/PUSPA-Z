@@ -3,6 +3,7 @@
 import { useAppStore, type ViewId } from '@/lib/store'
 import { canAccessView } from '@/lib/access-control'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import {
   LayoutDashboard,
   Users,
@@ -91,19 +92,26 @@ export function AppSidebar() {
       "flex flex-col",
       !sidebarOpen && "-translate-x-full"
     )}>
-      {/* Logo Area */}
-      <div className="flex items-center gap-3 p-4 border-b">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-          P
+      {/* Logo Area - PUSPA Branded */}
+      <div className="flex items-center gap-3 p-4 border-b border-sidebar-border">
+        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white/10 shrink-0">
+          <Image
+            src="/puspa-logo-transparent.png"
+            alt="PUSPA Logo"
+            width={36}
+            height={36}
+            className="object-contain"
+            priority
+          />
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-bold tracking-tight truncate">PUSPA V4</h1>
-          <p className="text-[10px] text-muted-foreground truncate">Peduli Asnaf</p>
+          <h1 className="text-sm font-bold tracking-tight truncate text-sidebar-primary">PUSPA V4</h1>
+          <p className="text-[10px] text-sidebar-foreground/60 truncate">Peduli Asnaf</p>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 md:hidden"
+          className="h-7 w-7 md:hidden hover:bg-sidebar-accent"
           onClick={() => setSidebarOpen(false)}
         >
           <ChevronRight className="h-4 w-4" />
@@ -120,7 +128,7 @@ export function AppSidebar() {
             <div key={group} className="mb-2">
               <button
                 onClick={() => toggleGroup(group)}
-                className="flex items-center w-full px-2 py-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
+                className="flex items-center w-full px-2 py-1.5 text-[11px] font-semibold text-sidebar-foreground/50 uppercase tracking-wider hover:text-sidebar-foreground/80 transition-colors"
               >
                 <ChevronDown className={cn(
                   "h-3 w-3 mr-1 transition-transform",
@@ -138,12 +146,12 @@ export function AppSidebar() {
                         key={item.id}
                         onClick={() => setView(item.id)}
                         className={cn(
-                          "flex items-center gap-3 w-full rounded-md px-2 py-1.5 text-sm transition-colors",
+                          "flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-all duration-150",
                           "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                          isActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
+                          isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm",
                         )}
                       >
-                        <Icon className={cn("h-4 w-4 shrink-0", isActive && "text-primary")} />
+                        <Icon className={cn("h-4 w-4 shrink-0")} />
                         <span className="truncate">{item.label}</span>
                         {item.badge && (
                           <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0">
@@ -155,21 +163,21 @@ export function AppSidebar() {
                   })}
                 </div>
               )}
-              <Separator className="my-2" />
+              <Separator className="my-2 bg-sidebar-border/50" />
             </div>
           )
         })}
       </ScrollArea>
 
       {/* User Area */}
-      <div className="border-t p-3">
-        <div className="flex items-center gap-3 rounded-md px-2 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+      <div className="border-t border-sidebar-border p-3">
+        <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary/20 text-sidebar-primary text-xs font-semibold">
             {currentUser?.name?.charAt(0) || 'U'}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium truncate">{currentUser?.name || 'User'}</p>
-            <p className="text-[10px] text-muted-foreground capitalize">{userRole}</p>
+            <p className="text-[10px] text-sidebar-foreground/50 capitalize">{userRole}</p>
           </div>
         </div>
       </div>

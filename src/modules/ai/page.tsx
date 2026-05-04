@@ -10,6 +10,7 @@ import {
   Send, Bot, User, Loader2, Sparkles, Cpu, MessageSquare,
   Zap, History, ArrowRight, RotateCcw, Terminal,
 } from 'lucide-react'
+import Image from 'next/image'
 
 /* ─── Types ────────────────────────────────────────────── */
 interface ChatMessage {
@@ -43,7 +44,7 @@ export default function AiPage() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: 'Salam! 🦞 Saya PUSPA AI (Hermes Runtime). Saya boleh bantu anda dengan pengurusan asnaf, kes, derma, agihan, program, pematuhan, dan operasi NGO. Apa yang boleh saya bantu hari ini?',
+      content: 'Hai! 🦞 Saya PUSPA, AI Assistant anda. Cerdas. Mesra. Sentiasa di sisi anda. Saya boleh bantu anda dengan pengurusan asnaf, kes, derma, agihan, program, pematuhan, dan operasi NGO. Apa yang boleh saya bantu hari ini?',
       timestamp: new Date(),
       model: 'hermes',
     },
@@ -128,7 +129,7 @@ export default function AiPage() {
       {
         id: 'welcome',
         role: 'assistant',
-        content: 'Salam! 🦞 Saya PUSPA AI (Hermes Runtime). Apa yang boleh saya bantu hari ini?',
+        content: 'Hai! 🦞 Saya PUSPA, AI Assistant anda. Apa yang boleh saya bantu hari ini?',
         timestamp: new Date(),
         model: 'hermes',
       },
@@ -142,19 +143,25 @@ export default function AiPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] gap-4">
-      {/* Header */}
+      {/* Header - PUSPA AI Branded */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-            <Sparkles className="h-5 w-5 text-primary" />
+          <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 overflow-hidden">
+            <Image
+              src="/puspa-logo-transparent.png"
+              alt="PUSPA AI"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">PUSPA AI — Hermes Runtime</h1>
-            <p className="text-sm text-muted-foreground">AI assistant untuk pengurusan NGO</p>
+            <h1 className="text-2xl font-bold tracking-tight text-primary">PUSPA AI</h1>
+            <p className="text-sm text-muted-foreground">Cerdas. Mesra. Sentiasa di sisi anda. 🦞</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="gap-1">
+          <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary">
             <Cpu className="h-3 w-3" />
             {modelName}
           </Badge>
@@ -182,16 +189,26 @@ export default function AiPage() {
                   className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                 >
                   {/* Avatar */}
-                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full overflow-hidden ${
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
+                      : 'bg-primary/10'
                   }`}>
-                    {msg.role === 'user' ? <User className="h-4 w-4" /> : <span className="text-sm">🦞</span>}
+                    {msg.role === 'user' ? (
+                      <User className="h-4 w-4" />
+                    ) : (
+                      <Image
+                        src="/puspa-logo-transparent.png"
+                        alt="PUSPA"
+                        width={24}
+                        height={24}
+                        className="object-contain"
+                      />
+                    )}
                   </div>
                   {/* Bubble */}
                   <div className={`max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}>
-                    <div className={`inline-block rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                    <div className={`inline-block rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap leading-relaxed ${
                       msg.role === 'user'
                         ? 'bg-primary text-primary-foreground rounded-tr-sm'
                         : 'bg-muted rounded-tl-sm'
@@ -213,13 +230,19 @@ export default function AiPage() {
               {/* Loading indicator */}
               {isLoading && (
                 <div className="flex gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">
-                    <span className="text-sm">🦞</span>
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
+                    <Image
+                      src="/puspa-logo-transparent.png"
+                      alt="PUSPA"
+                      width={24}
+                      height={24}
+                      className="object-contain animate-pulse"
+                    />
                   </div>
                   <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Hermes sedang berfikir...</span>
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <span className="text-sm text-muted-foreground">PUSPA sedang berfikir...</span>
                     </div>
                   </div>
                 </div>
@@ -237,7 +260,7 @@ export default function AiPage() {
                     key={prompt.label}
                     variant="outline"
                     size="sm"
-                    className="gap-1.5 text-xs"
+                    className="gap-1.5 text-xs hover:bg-primary/5 hover:border-primary/30 hover:text-primary"
                     onClick={() => handleSend(prompt.label)}
                   >
                     <prompt.icon className="h-3 w-3" />
@@ -256,15 +279,15 @@ export default function AiPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Tanya Hermes sesuatu..."
-                className="flex-1"
+                placeholder="Tanya PUSPA sesuatu..."
+                className="flex-1 focus-visible:ring-primary"
                 disabled={isLoading}
               />
               <Button
                 onClick={() => handleSend()}
                 disabled={isLoading || !input.trim()}
                 size="icon"
-                className="shrink-0"
+                className="shrink-0 bg-primary hover:bg-primary/90"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -274,11 +297,48 @@ export default function AiPage() {
 
         {/* Context Panel (30%) */}
         <div className="lg:flex-[3] space-y-4">
+          {/* PUSPA Character Card */}
+          <Card className="overflow-hidden">
+            <div className="bg-primary p-3 flex items-center gap-3">
+              <div className="relative h-10 w-10 rounded-full overflow-hidden bg-white/20 shrink-0">
+                <Image
+                  src="/puspa-logo-transparent.png"
+                  alt="PUSPA"
+                  width={36}
+                  height={36}
+                  className="object-contain p-0.5"
+                />
+              </div>
+              <div className="text-primary-foreground">
+                <p className="text-sm font-bold">PUSPA AI Assistant</p>
+                <p className="text-[10px] opacity-80">Cerdas. Mesra. Sentiasa di sisi anda.</p>
+              </div>
+            </div>
+            <CardContent className="p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Peranan</span>
+                <span className="text-xs font-medium">AI Assistant Pelanggan</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Personaliti</span>
+                <span className="text-xs">Cerdas, Mesra, Profesional</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Bahasa</span>
+                <span className="text-xs">BM & English</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Ketersediaan</span>
+                <Badge variant="secondary" className="text-[10px] bg-emerald-100 text-emerald-700">24/7 Online</Badge>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Current Context */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Zap className="h-4 w-4 text-amber-500" />
+                <Zap className="h-4 w-4 text-primary" />
                 Konteks Semasa
               </CardTitle>
             </CardHeader>
@@ -293,7 +353,7 @@ export default function AiPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Status</span>
-                <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
                   {isLoading ? 'Memproses...' : 'Sedia'}
                 </Badge>
               </div>
@@ -304,7 +364,7 @@ export default function AiPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-blue-500" />
+                <MessageSquare className="h-4 w-4 text-primary" />
                 Statistik Perbualan
               </CardTitle>
             </CardHeader>
@@ -335,7 +395,7 @@ export default function AiPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Cpu className="h-4 w-4 text-violet-500" />
+                <Cpu className="h-4 w-4 text-primary" />
                 Log Tool Calls
               </CardTitle>
             </CardHeader>
@@ -350,7 +410,7 @@ export default function AiPage() {
                     <div key={tc.id} className="flex items-center justify-between text-xs">
                       <span className="font-mono">{tc.tool}</span>
                       <Badge variant="outline" className={`text-[9px] px-1 py-0 h-4 ${
-                        tc.status === 'success' ? 'text-green-600' : tc.status === 'error' ? 'text-red-600' : 'text-amber-600'
+                        tc.status === 'success' ? 'text-emerald-600' : tc.status === 'error' ? 'text-red-600' : 'text-amber-600'
                       }`}>
                         {tc.status}
                       </Badge>
@@ -365,20 +425,20 @@ export default function AiPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <ArrowRight className="h-4 w-4 text-emerald-500" />
+                <ArrowRight className="h-4 w-4 text-primary" />
                 Tindakan Pantas
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full justify-start text-xs gap-2" onClick={() => handleSend('Ringkasan operasi bulan ini')}>
+              <Button variant="outline" size="sm" className="w-full justify-start text-xs gap-2 hover:bg-primary/5 hover:border-primary/30 hover:text-primary" onClick={() => handleSend('Ringkasan operasi bulan ini')}>
                 <History className="h-3 w-3" />
                 Ringkasan Bulanan
               </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start text-xs gap-2" onClick={() => handleSend('Senarai kes menunggu kelulusan')}>
+              <Button variant="outline" size="sm" className="w-full justify-start text-xs gap-2 hover:bg-primary/5 hover:border-primary/30 hover:text-primary" onClick={() => handleSend('Senarai kes menunggu kelulusan')}>
                 <MessageSquare className="h-3 w-3" />
                 Kes Menunggu
               </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start text-xs gap-2" onClick={() => handleSend('Bantu saya daftar ahli baru')}>
+              <Button variant="outline" size="sm" className="w-full justify-start text-xs gap-2 hover:bg-primary/5 hover:border-primary/30 hover:text-primary" onClick={() => handleSend('Bantu saya daftar ahli baru')}>
                 <Zap className="h-3 w-3" />
                 Daftar Ahli
               </Button>

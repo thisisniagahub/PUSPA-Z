@@ -28,7 +28,7 @@ const viewTitles: Record<ViewId, { en: string; ms: string }> = {
 }
 
 export function AppHeader() {
-  const { currentView, toggleSidebar, toggleAiChat, sidebarOpen } = useAppStore()
+  const { currentView, toggleSidebar, toggleAiChat } = useAppStore()
   const { theme, setTheme } = useTheme()
   
   const title = viewTitles[currentView] || { en: currentView, ms: currentView }
@@ -63,7 +63,7 @@ export function AppHeader() {
       <div className="flex items-center gap-1">
         <Button variant="ghost" size="icon" className="h-8 w-8 relative">
           <Bell className="h-4 w-4" />
-          <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 p-0 text-[9px] flex items-center justify-center">
+          <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 p-0 text-[9px] flex items-center justify-center bg-primary text-primary-foreground">
             3
           </Badge>
         </Button>
@@ -82,7 +82,7 @@ export function AppHeader() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
           onClick={toggleAiChat}
         >
           <MessageSquare className="h-4 w-4" />
