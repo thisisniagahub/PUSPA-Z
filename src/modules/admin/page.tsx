@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
-  Button, Badge, Select, Separator,
+  Button, Badge, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Separator,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui'
 import {
@@ -283,16 +283,16 @@ export default function AdminPage() {
                         value={user.role}
                         onValueChange={(val) => handleRoleChange(user.id, val as 'staff' | 'admin' | 'developer')}
                       >
-                        <Select.Trigger className="h-7 w-[130px] text-xs">
+                        <SelectTrigger className="h-7 w-[130px] text-xs">
                           <Badge variant="secondary" className={`text-[10px] ${roleColors[user.role]}`}>
                             {roleLabels[user.role]}
                           </Badge>
-                        </Select.Trigger>
-                        <Select.Content>
-                          <Select.Item value="staff">Kakitangan</Select.Item>
-                          <Select.Item value="admin">Pentadbir</Select.Item>
-                          <Select.Item value="developer">Pembangun</Select.Item>
-                        </Select.Content>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="staff">Kakitangan</SelectItem>
+                          <SelectItem value="admin">Pentadbir</SelectItem>
+                          <SelectItem value="developer">Pembangun</SelectItem>
+                        </SelectContent>
                       </Select>
                     </TableCell>
                     <TableCell>

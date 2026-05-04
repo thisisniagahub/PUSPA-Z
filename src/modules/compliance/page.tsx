@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle,
-  Button, Badge, Input, Select, Textarea,
+  Button, Badge, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Textarea,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
   Label, Tabs, TabsList, TabsTrigger, TabsContent, Progress,
@@ -272,27 +272,27 @@ export default function CompliancePage() {
                 <div className="grid gap-2">
                   <Label>Kategori</Label>
                   <Select value={formCategory} onValueChange={setFormCategory}>
-                    <Select.Trigger><Select.Value /></Select.Trigger>
-                    <Select.Content>
-                      <Select.Item value="rosm">ROSM</Select.Item>
-                      <Select.Item value="lhdn">LHDN</Select.Item>
-                      <Select.Item value="pdpa">PDPA</Select.Item>
-                      <Select.Item value="internal">Dalaman</Select.Item>
-                      <Select.Item value="audit">Audit</Select.Item>
-                    </Select.Content>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="rosm">ROSM</SelectItem>
+                      <SelectItem value="lhdn">LHDN</SelectItem>
+                      <SelectItem value="pdpa">PDPA</SelectItem>
+                      <SelectItem value="internal">Dalaman</SelectItem>
+                      <SelectItem value="audit">Audit</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label>Status</Label>
                   <Select value={formStatus} onValueChange={setFormStatus}>
-                    <Select.Trigger><Select.Value /></Select.Trigger>
-                    <Select.Content>
-                      <Select.Item value="pending">Menunggu</Select.Item>
-                      <Select.Item value="compliant">Patuh</Select.Item>
-                      <Select.Item value="non_compliant">Tidak Patuh</Select.Item>
-                      <Select.Item value="expired">Tamat Tempoh</Select.Item>
-                      <Select.Item value="under_review">Sedang Semakan</Select.Item>
-                    </Select.Content>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Menunggu</SelectItem>
+                      <SelectItem value="compliant">Patuh</SelectItem>
+                      <SelectItem value="non_compliant">Tidak Patuh</SelectItem>
+                      <SelectItem value="expired">Tamat Tempoh</SelectItem>
+                      <SelectItem value="under_review">Sedang Semakan</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
               </div>
@@ -378,18 +378,18 @@ export default function CompliancePage() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <Select.Trigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <Select.Value placeholder="Status" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item value="all">Semua Status</Select.Item>
-                <Select.Item value="pending">Menunggu</Select.Item>
-                <Select.Item value="compliant">Patuh</Select.Item>
-                <Select.Item value="non_compliant">Tidak Patuh</Select.Item>
-                <Select.Item value="expired">Tamat Tempoh</Select.Item>
-                <Select.Item value="under_review">Sedang Semakan</Select.Item>
-              </Select.Content>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="pending">Menunggu</SelectItem>
+                <SelectItem value="compliant">Patuh</SelectItem>
+                <SelectItem value="non_compliant">Tidak Patuh</SelectItem>
+                <SelectItem value="expired">Tamat Tempoh</SelectItem>
+                <SelectItem value="under_review">Sedang Semakan</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </CardContent>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle,
-  Button, Badge, Input, Select, Textarea,
+  Button, Badge, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Textarea,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
   Label,
@@ -290,15 +290,15 @@ export default function DisbursementsPage() {
                 <div className="grid gap-2">
                   <Label>Kategori *</Label>
                   <Select value={formCategory} onValueChange={setFormCategory}>
-                    <Select.Trigger><Select.Value /></Select.Trigger>
-                    <Select.Content>
-                      <Select.Item value="welfare">Kebajikan</Select.Item>
-                      <Select.Item value="medical">Perubatan</Select.Item>
-                      <Select.Item value="education">Pendidikan</Select.Item>
-                      <Select.Item value="housing">Perumahan</Select.Item>
-                      <Select.Item value="emergency">Kecemasan</Select.Item>
-                      <Select.Item value="monthly_aid">Bantuan Bulanan</Select.Item>
-                    </Select.Content>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="welfare">Kebajikan</SelectItem>
+                      <SelectItem value="medical">Perubatan</SelectItem>
+                      <SelectItem value="education">Pendidikan</SelectItem>
+                      <SelectItem value="housing">Perumahan</SelectItem>
+                      <SelectItem value="emergency">Kecemasan</SelectItem>
+                      <SelectItem value="monthly_aid">Bantuan Bulanan</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
               </div>
@@ -306,12 +306,12 @@ export default function DisbursementsPage() {
                 <div className="grid gap-2">
                   <Label>Kaedah Bayaran</Label>
                   <Select value={formPaymentMethod} onValueChange={setFormPaymentMethod}>
-                    <Select.Trigger><Select.Value /></Select.Trigger>
-                    <Select.Content>
-                      <Select.Item value="cash">Tunai</Select.Item>
-                      <Select.Item value="bank_transfer">Pindahan Bank</Select.Item>
-                      <Select.Item value="cheque">Cek</Select.Item>
-                    </Select.Content>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Tunai</SelectItem>
+                      <SelectItem value="bank_transfer">Pindahan Bank</SelectItem>
+                      <SelectItem value="cheque">Cek</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
@@ -404,32 +404,32 @@ export default function DisbursementsPage() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <Select.Trigger className="w-full sm:w-[170px]">
+              <SelectTrigger className="w-full sm:w-[170px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <Select.Value placeholder="Status" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item value="all">Semua Status</Select.Item>
-                <Select.Item value="pending">Menunggu</Select.Item>
-                <Select.Item value="approved">Diluluskan</Select.Item>
-                <Select.Item value="disbursed">Diagihkan</Select.Item>
-                <Select.Item value="verified">Disahkan</Select.Item>
-                <Select.Item value="cancelled">Dibatalkan</Select.Item>
-              </Select.Content>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="pending">Menunggu</SelectItem>
+                <SelectItem value="approved">Diluluskan</SelectItem>
+                <SelectItem value="disbursed">Diagihkan</SelectItem>
+                <SelectItem value="verified">Disahkan</SelectItem>
+                <SelectItem value="cancelled">Dibatalkan</SelectItem>
+              </SelectContent>
             </Select>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <Select.Trigger className="w-full sm:w-[170px]">
-                <Select.Value placeholder="Kategori" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item value="all">Semua Kategori</Select.Item>
-                <Select.Item value="welfare">Kebajikan</Select.Item>
-                <Select.Item value="medical">Perubatan</Select.Item>
-                <Select.Item value="education">Pendidikan</Select.Item>
-                <Select.Item value="housing">Perumahan</Select.Item>
-                <Select.Item value="emergency">Kecemasan</Select.Item>
-                <Select.Item value="monthly_aid">Bantuan Bulanan</Select.Item>
-              </Select.Content>
+              <SelectTrigger className="w-full sm:w-[170px]">
+                <SelectValue placeholder="Kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kategori</SelectItem>
+                <SelectItem value="welfare">Kebajikan</SelectItem>
+                <SelectItem value="medical">Perubatan</SelectItem>
+                <SelectItem value="education">Pendidikan</SelectItem>
+                <SelectItem value="housing">Perumahan</SelectItem>
+                <SelectItem value="emergency">Kecemasan</SelectItem>
+                <SelectItem value="monthly_aid">Bantuan Bulanan</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </CardContent>

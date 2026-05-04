@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle,
-  Button, Badge, Select, Progress,
+  Button, Badge, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Progress,
   Tabs, TabsList, TabsTrigger, TabsContent,
 } from '@/components/ui'
 import {
@@ -260,16 +260,16 @@ export default function ReportsPage() {
         </div>
         <div className="flex items-center gap-2">
           <Select value={dateRange} onValueChange={setDateRange}>
-            <Select.Trigger className="w-[160px]">
+            <SelectTrigger className="w-[160px]">
               <Calendar className="h-4 w-4 mr-2" />
-              <Select.Value />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="this_month">Bulan Ini</Select.Item>
-              <Select.Item value="last_3_months">3 Bulan Lepas</Select.Item>
-              <Select.Item value="this_year">Tahun Ini</Select.Item>
-              <Select.Item value="all_time">Semua Masa</Select.Item>
-            </Select.Content>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="this_month">Bulan Ini</SelectItem>
+              <SelectItem value="last_3_months">3 Bulan Lepas</SelectItem>
+              <SelectItem value="this_year">Tahun Ini</SelectItem>
+              <SelectItem value="all_time">Semua Masa</SelectItem>
+            </SelectContent>
           </Select>
           <Button variant="outline" className="gap-2">
             <Download className="h-4 w-4" />

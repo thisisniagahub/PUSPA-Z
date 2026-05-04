@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle,
-  Button, Badge, Input, Select, Textarea,
+  Button, Badge, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Textarea,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
   Dialog, DialogContent, DialogHeader, DialogTitle,
   Label, Progress, Separator,
@@ -274,31 +274,31 @@ export default function EKYCPage() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <Select.Trigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <Select.Value placeholder="Status" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item value="all">Semua Status</Select.Item>
-                <Select.Item value="pending">Menunggu</Select.Item>
-                <Select.Item value="submitted">Dihantar</Select.Item>
-                <Select.Item value="under_review">Sedang Semakan</Select.Item>
-                <Select.Item value="verified">Disahkan</Select.Item>
-                <Select.Item value="rejected">Ditolak</Select.Item>
-              </Select.Content>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="pending">Menunggu</SelectItem>
+                <SelectItem value="submitted">Dihantar</SelectItem>
+                <SelectItem value="under_review">Sedang Semakan</SelectItem>
+                <SelectItem value="verified">Disahkan</SelectItem>
+                <SelectItem value="rejected">Ditolak</SelectItem>
+              </SelectContent>
             </Select>
             <Select value={riskFilter} onValueChange={setRiskFilter}>
-              <Select.Trigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <Shield className="h-4 w-4 mr-2" />
-                <Select.Value placeholder="Risiko" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item value="all">Semua Risiko</Select.Item>
-                <Select.Item value="low">Rendah</Select.Item>
-                <Select.Item value="medium">Sederhana</Select.Item>
-                <Select.Item value="high">Tinggi</Select.Item>
-                <Select.Item value="pending">Menunggu</Select.Item>
-              </Select.Content>
+                <SelectValue placeholder="Risiko" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Risiko</SelectItem>
+                <SelectItem value="low">Rendah</SelectItem>
+                <SelectItem value="medium">Sederhana</SelectItem>
+                <SelectItem value="high">Tinggi</SelectItem>
+                <SelectItem value="pending">Menunggu</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </CardContent>

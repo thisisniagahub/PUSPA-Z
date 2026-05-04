@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle,
-  Button, Badge, Input, Select, Textarea,
+  Button, Badge, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Textarea,
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
   Label,
 } from '@/components/ui'
@@ -205,14 +205,14 @@ export default function DocumentsPage() {
                 <div className="grid gap-2">
                   <Label>Kategori</Label>
                   <Select value={formCategory} onValueChange={setFormCategory}>
-                    <Select.Trigger><Select.Value /></Select.Trigger>
-                    <Select.Content>
-                      <Select.Item value="member">Ahli</Select.Item>
-                      <Select.Item value="case">Kes</Select.Item>
-                      <Select.Item value="programme">Program</Select.Item>
-                      <Select.Item value="compliance">Pematuhan</Select.Item>
-                      <Select.Item value="general">Umum</Select.Item>
-                    </Select.Content>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="member">Ahli</SelectItem>
+                      <SelectItem value="case">Kes</SelectItem>
+                      <SelectItem value="programme">Program</SelectItem>
+                      <SelectItem value="compliance">Pematuhan</SelectItem>
+                      <SelectItem value="general">Umum</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
@@ -271,18 +271,18 @@ export default function DocumentsPage() {
               />
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <Select.Trigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <Select.Value placeholder="Kategori" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item value="all">Semua Kategori</Select.Item>
-                <Select.Item value="member">Ahli</Select.Item>
-                <Select.Item value="case">Kes</Select.Item>
-                <Select.Item value="programme">Program</Select.Item>
-                <Select.Item value="compliance">Pematuhan</Select.Item>
-                <Select.Item value="general">Umum</Select.Item>
-              </Select.Content>
+                <SelectValue placeholder="Kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kategori</SelectItem>
+                <SelectItem value="member">Ahli</SelectItem>
+                <SelectItem value="case">Kes</SelectItem>
+                <SelectItem value="programme">Program</SelectItem>
+                <SelectItem value="compliance">Pematuhan</SelectItem>
+                <SelectItem value="general">Umum</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </CardContent>

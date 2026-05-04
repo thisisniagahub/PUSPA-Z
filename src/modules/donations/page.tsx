@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle,
-  Button, Badge, Input, Select, Textarea, Checkbox,
+  Button, Badge, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Textarea, Checkbox,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
   Label,
@@ -207,14 +207,14 @@ export default function DonationsPage() {
                 <div className="grid gap-2">
                   <Label>Kategori</Label>
                   <Select value={formCategory} onValueChange={setFormCategory}>
-                    <Select.Trigger><Select.Value /></Select.Trigger>
-                    <Select.Content>
-                      <Select.Item value="zakat">Zakat</Select.Item>
-                      <Select.Item value="sadaqah">Sadaqah</Select.Item>
-                      <Select.Item value="waqf">Waqf</Select.Item>
-                      <Select.Item value="infaq">Infaq</Select.Item>
-                      <Select.Item value="general">Umum</Select.Item>
-                    </Select.Content>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="zakat">Zakat</SelectItem>
+                      <SelectItem value="sadaqah">Sadaqah</SelectItem>
+                      <SelectItem value="waqf">Waqf</SelectItem>
+                      <SelectItem value="infaq">Infaq</SelectItem>
+                      <SelectItem value="general">Umum</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
@@ -226,13 +226,13 @@ export default function DonationsPage() {
                 <div className="grid gap-2">
                   <Label>Kaedah Pembayaran</Label>
                   <Select value={formMethod} onValueChange={setFormMethod}>
-                    <Select.Trigger><Select.Value /></Select.Trigger>
-                    <Select.Content>
-                      <Select.Item value="cash">Tunai</Select.Item>
-                      <Select.Item value="bank_transfer">Pindahan Bank</Select.Item>
-                      <Select.Item value="online">Atas Talian</Select.Item>
-                      <Select.Item value="cheque">Cek</Select.Item>
-                    </Select.Content>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Tunai</SelectItem>
+                      <SelectItem value="bank_transfer">Pindahan Bank</SelectItem>
+                      <SelectItem value="online">Atas Talian</SelectItem>
+                      <SelectItem value="cheque">Cek</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
@@ -329,30 +329,30 @@ export default function DonationsPage() {
               />
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <Select.Trigger className="w-full sm:w-[160px]">
+              <SelectTrigger className="w-full sm:w-[160px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <Select.Value placeholder="Kategori" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item value="all">Semua Kategori</Select.Item>
-                <Select.Item value="zakat">Zakat</Select.Item>
-                <Select.Item value="sadaqah">Sadaqah</Select.Item>
-                <Select.Item value="waqf">Waqf</Select.Item>
-                <Select.Item value="infaq">Infaq</Select.Item>
-                <Select.Item value="general">Umum</Select.Item>
-              </Select.Content>
+                <SelectValue placeholder="Kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kategori</SelectItem>
+                <SelectItem value="zakat">Zakat</SelectItem>
+                <SelectItem value="sadaqah">Sadaqah</SelectItem>
+                <SelectItem value="waqf">Waqf</SelectItem>
+                <SelectItem value="infaq">Infaq</SelectItem>
+                <SelectItem value="general">Umum</SelectItem>
+              </SelectContent>
             </Select>
             <Select value={methodFilter} onValueChange={setMethodFilter}>
-              <Select.Trigger className="w-full sm:w-[160px]">
-                <Select.Value placeholder="Kaedah" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item value="all">Semua Kaedah</Select.Item>
-                <Select.Item value="cash">Tunai</Select.Item>
-                <Select.Item value="bank_transfer">Pindahan Bank</Select.Item>
-                <Select.Item value="online">Atas Talian</Select.Item>
-                <Select.Item value="cheque">Cek</Select.Item>
-              </Select.Content>
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue placeholder="Kaedah" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kaedah</SelectItem>
+                <SelectItem value="cash">Tunai</SelectItem>
+                <SelectItem value="bank_transfer">Pindahan Bank</SelectItem>
+                <SelectItem value="online">Atas Talian</SelectItem>
+                <SelectItem value="cheque">Cek</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </CardContent>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle,
-  Button, Badge, Input, Select, Textarea,
+  Button, Badge, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Textarea,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
   Sheet, SheetContent, SheetHeader, SheetTitle,
@@ -266,23 +266,23 @@ export default function DonorsPage() {
                 <div className="grid gap-2">
                   <Label>Jenis Penderma</Label>
                   <Select value={formType} onValueChange={setFormType}>
-                    <Select.Trigger><Select.Value /></Select.Trigger>
-                    <Select.Content>
-                      <Select.Item value="individual">Individu</Select.Item>
-                      <Select.Item value="corporate">Korporat</Select.Item>
-                      <Select.Item value="government">Kerajaan</Select.Item>
-                    </Select.Content>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="individual">Individu</SelectItem>
+                      <SelectItem value="corporate">Korporat</SelectItem>
+                      <SelectItem value="government">Kerajaan</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label>Kategori</Label>
                   <Select value={formCategory} onValueChange={setFormCategory}>
-                    <Select.Trigger><Select.Value /></Select.Trigger>
-                    <Select.Content>
-                      <Select.Item value="regular">Tetap</Select.Item>
-                      <Select.Item value="occasional">Kadang-kadang</Select.Item>
-                      <Select.Item value="one_time">Sekali</Select.Item>
-                    </Select.Content>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="regular">Tetap</SelectItem>
+                      <SelectItem value="occasional">Kadang-kadang</SelectItem>
+                      <SelectItem value="one_time">Sekali</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
               </div>
@@ -358,16 +358,16 @@ export default function DonorsPage() {
               />
             </div>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <Select.Trigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <Select.Value placeholder="Jenis Penderma" />
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Item value="all">Semua Jenis</Select.Item>
-                <Select.Item value="individual">Individu</Select.Item>
-                <Select.Item value="corporate">Korporat</Select.Item>
-                <Select.Item value="government">Kerajaan</Select.Item>
-              </Select.Content>
+                <SelectValue placeholder="Jenis Penderma" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Jenis</SelectItem>
+                <SelectItem value="individual">Individu</SelectItem>
+                <SelectItem value="corporate">Korporat</SelectItem>
+                <SelectItem value="government">Kerajaan</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </CardContent>
