@@ -1,10 +1,21 @@
 // PUSPA V4 — Maria Puspa Telegram Bot
 // Bridges Telegram messages to the Maria Puspa AI backend
 // Uses long polling (no webhook needed)
+// Allowlist-based access control
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
 const PUSPA_API_URL = process.env.PUSPA_API_URL || 'http://localhost:3000'
 const PUSPA_AI_ENDPOINT = `${PUSPA_API_URL}/api/v1/ai/telegram`
+
+// ─── Allowlist Configuration ──────────────────────────────
+// Comma-separated chat IDs that are allowed to interact with the bot
+const ALLOWED_CHAT_IDS = (process.env.ALLOWED_CHAT_IDS || '')
+  .split(',')
+  .map(id => Number(id.trim()))
+  .filter(id => !isNaN(id))
+
+// If no allowlist configured, allow all (open mode)
+const ALLOWLIST_ENABLED = ALLOWED_CHAT_IDS.length > 0
 
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
 
@@ -17,6 +28,7 @@ interface UserSession {
   username?: string
   role: string
   lastActivity: Date
+  messageCount: number
 }
 
 const sessions = new Map<number, UserSession>()
@@ -32,17 +44,24 @@ function createSession(msg: any): UserSession {
     firstName: msg.from.first_name,
     lastName: msg.from.last_name,
     username: msg.from.username,
-    role: 'staff', // Default role — can be upgraded
+    role: 'staff',
     lastActivity: new Date(),
+    messageCount: 0,
   }
   sessions.set(chatId, session)
   return session
 }
 
+// ─── Access Control ───────────────────────────────────────
+
+function isChatAllowed(chatId: number): boolean {
+  if (!ALLOWLIST_ENABLED) return true
+  return ALLOWED_CHAT_IDS.includes(chatId)
+}
+
 // ─── Telegram API helpers ─────────────────────────────────
 
 async function sendMessage(chatId: number, text: string, parseMode: string = 'Markdown') {
-  // Split long messages (Telegram limit: 4096 chars)
   const chunks = splitMessage(text, 4000)
   
   for (const chunk of chunks) {
@@ -59,9 +78,9 @@ async function sendMessage(chatId: number, text: string, parseMode: string = 'Ma
       })
       
       if (!res.ok) {
-        // Fallback: send without markdown if parsing fails
         const errorData = await res.json().catch(() => ({}))
         if (errorData.description?.includes('can\'t parse')) {
+          // Fallback: send without markdown
           await fetch(`${TELEGRAM_API}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -72,11 +91,10 @@ async function sendMessage(chatId: number, text: string, parseMode: string = 'Ma
             }),
           })
         } else {
-          console.error('[Telegram] Send error:', errorData)
+          console.error('[Telegram] Send error:', JSON.stringify(errorData))
         }
       }
       
-      // Rate limiting: wait between messages
       if (chunks.length > 1) {
         await new Promise(r => setTimeout(r, 500))
       }
@@ -111,7 +129,6 @@ function splitMessage(text: string, maxLength: number): string[] {
       break
     }
     
-    // Find a natural break point
     let breakPoint = remaining.lastIndexOf('\n', maxLength)
     if (breakPoint < maxLength / 2) {
       breakPoint = remaining.lastIndexOf('. ', maxLength)
@@ -131,6 +148,8 @@ function splitMessage(text: string, maxLength: number): string[] {
 
 async function callMariaPuspa(text: string, userId: string, userRole: string, currentView: string = 'dashboard'): Promise<string> {
   try {
+    console.log(`[Maria Puspa] Calling API for ${userId} (role: ${userRole}): "${text.substring(0, 80)}..."`)
+    
     const res = await fetch(PUSPA_AI_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -155,8 +174,9 @@ async function callMariaPuspa(text: string, userId: string, userRole: string, cu
       return await parseSSEStream(res)
     }
 
-    // JSON fallback
+    // JSON response
     const data = await res.json()
+    console.log(`[Maria Puspa] Got response, length: ${(data.content || '').length}`)
     return data.content || 'Maaf, tiada respons diterima.'
   } catch (err) {
     console.error('[Maria Puspa API] Connection failed:', err)
@@ -207,26 +227,38 @@ async function handleMessage(msg: any) {
 
   if (!text) return
 
+  // ─── Allowlist Check ─────────────────────────────
+  if (!isChatAllowed(chatId)) {
+    console.log(`[Telegram] Blocked chat ID: ${chatId} (not in allowlist)`)
+    // Silently ignore or send a brief message
+    await sendMessage(chatId, 
+      'Maaf, anda tidak mempunyai akses kepada Maria Puspa. Hubungi pentadbir untuk kebenaran.',
+      undefined // no parse mode to avoid errors
+    )
+    return
+  }
+
   // Get or create session
   let session = getSession(chatId)
   if (!session) {
     session = createSession(msg)
-    console.log(`[Telegram] New session: ${session.userId} (${session.firstName})`)
+    console.log(`[Telegram] New session: ${session.userId} (${session.firstName}) chatId=${chatId}`)
   }
   session.lastActivity = new Date()
+  session.messageCount++
 
   // ─── Command handlers ────────────────────────────
   if (text === '/start') {
     await sendMessage(chatId,
-      `🪷 *Selamat Datang ke Maria Puspa!*\n\n` +
-      `Saya Maria Puspa, AI Assistant PUSPA — Pertubuhan Urus Peduli Asnaf.\n\n` +
+      `🪷 *Selamat Datang ke Maria Puspa\\!*\n\n` +
+      `Saya Maria Puspa, AI Assistant PUSPA — Pertubuhan Urus Peduli Asnaf\\.\n\n` +
       `Saya boleh bantu anda:\n` +
       `• Semak data ahli asnaf & kes\n` +
       `• Ringkasan derma & agihan\n` +
       `• Status program & sukarelawan\n` +
       `• Carian web untuk maklumat terkini\n` +
       `• Laporan pematuhan & kesihatan sistem\n\n` +
-      `Taip apa-apa soalan untuk mula!`
+      `Taip apa\\-apa soalan untuk mula\\!`
     )
     return
   }
@@ -237,9 +269,9 @@ async function handleMessage(msg: any) {
       `/start — Mesej aluan\n` +
       `/help — Senarai arahan\n` +
       `/reset — Reset perbualan\n` +
-      `/role [staff|admin] — Tukar peranan akses\n` +
+      `/role \\[staff\\|admin\\|developer\\] — Tukar peranan akses\n` +
       `/status — Status sistem\n\n` +
-      `Atau taip soalan dalam BM/English.`
+      `Atau taip soalan dalam BM/English\\.`
     )
     return
   }
@@ -247,7 +279,7 @@ async function handleMessage(msg: any) {
   if (text === '/reset') {
     sessions.delete(chatId)
     session = createSession(msg)
-    await sendMessage(chatId, 'Perbualan telah direset. Saya sedia membantu!')
+    await sendMessage(chatId, 'Perbualan telah direset. Sedia membantu!')
     return
   }
 
@@ -266,29 +298,45 @@ async function handleMessage(msg: any) {
     await sendTypingAction(chatId)
     const statusText = `*Status Maria Puspa*\n\n` +
       `👤 Pengguna: ${session.firstName || 'Unknown'}\n` +
-      `🆔 ID: ${session.userId}\n` +
+      `🆔 Chat ID: ${chatId}\n` +
       `🔑 Peranan: ${session.role}\n` +
+      `💬 Mesej: ${session.messageCount}\n` +
       `⏰ Aktif: ${session.lastActivity.toLocaleString('ms-MY')}\n` +
-      `📊 Sesi aktif: ${sessions.size}`
+      `📊 Sesi aktif: ${sessions.size}\n` +
+      `🔒 Allowlist: ${ALLOWLIST_ENABLED ? 'Aktif' : 'Terbuka'}`
     await sendMessage(chatId, statusText)
     return
   }
 
   // ─── AI Query ────────────────────────────────────
+  console.log(`[Telegram] Processing message from ${session.firstName} (${chatId}): "${text.substring(0, 60)}..."`)
+  
   // Show typing indicator
   await sendTypingAction(chatId)
 
-  // Call Maria Puspa AI
-  const response = await callMariaPuspa(text, session.userId, session.role)
+  // Keep sending typing action while waiting for AI response
+  const typingInterval = setInterval(() => sendTypingAction(chatId), 4000)
 
-  // Send response
-  await sendMessage(chatId, response)
+  try {
+    // Call Maria Puspa AI
+    const response = await callMariaPuspa(text, session.userId, session.role)
+
+    // Send response
+    await sendMessage(chatId, response)
+  } catch (err) {
+    console.error('[Telegram] Error processing message:', err)
+    await sendMessage(chatId, 'Maaf, ralat berlaku semasa memproses mesej anda. Sila cuba lagi.')
+  } finally {
+    clearInterval(typingInterval)
+  }
 }
 
 // ─── Long Polling ─────────────────────────────────────────
 
 let lastUpdateId = 0
 let isPolling = false
+let pollErrors = 0
+const MAX_POLL_ERRORS = 10
 
 async function poll() {
   if (isPolling) return
@@ -307,8 +355,16 @@ async function poll() {
 
     if (!res.ok) {
       console.error('[Telegram] Poll error:', res.status)
+      pollErrors++
+      if (pollErrors >= MAX_POLL_ERRORS) {
+        console.error('[Telegram] Too many poll errors, restarting...')
+        pollErrors = 0
+      }
       return
     }
+
+    // Reset error counter on success
+    pollErrors = 0
 
     const data = await res.json()
 
@@ -317,7 +373,7 @@ async function poll() {
         lastUpdateId = update.update_id
 
         if (update.message) {
-          // Process in background
+          // Process in background — don't block next poll
           handleMessage(update.message).catch(err => {
             console.error('[Telegram] Message handler error:', err)
           })
@@ -326,26 +382,33 @@ async function poll() {
     }
   } catch (err) {
     console.error('[Telegram] Poll failed:', err)
+    pollErrors++
   } finally {
     isPolling = false
   }
+}
+
+// ─── Health Check ─────────────────────────────────────────
+
+function logHealthStatus() {
+  const uptime = process.uptime()
+  const hours = Math.floor(uptime / 3600)
+  const minutes = Math.floor((uptime % 3600) / 60)
+  console.log(
+    `[Health] Uptime: ${hours}h ${minutes}m | Sessions: ${sessions.size} | ` +
+    `Allowlist: ${ALLOWLIST_ENABLED ? `${ALLOWED_CHAT_IDS.length} IDs` : 'Open'} | ` +
+    `Poll errors: ${pollErrors}`
+  )
 }
 
 // ─── Main Loop ────────────────────────────────────────────
 
 async function main() {
   console.log('🪷 Maria Puspa Telegram Bot starting...')
+  console.log(`📅 ${new Date().toISOString()}`)
 
   if (!TELEGRAM_BOT_TOKEN) {
     console.error('❌ TELEGRAM_BOT_TOKEN not set!')
-    console.log('📋 Setup instructions:')
-    console.log('1. Open Telegram, search @BotFather')
-    console.log('2. Send /newbot')
-    console.log('3. Choose a name: "Maria Puspa AI"')
-    console.log('4. Choose username: "MariaPuspaAI_bot"')
-    console.log('5. Copy the bot token')
-    console.log('6. Add to .env: TELEGRAM_BOT_TOKEN=your-token-here')
-    console.log('7. Restart this service')
     process.exit(1)
   }
 
@@ -368,13 +431,38 @@ async function main() {
   // Delete webhook if any (we use polling)
   await fetch(`${TELEGRAM_API}/deleteWebhook`)
 
+  // Log allowlist status
+  if (ALLOWLIST_ENABLED) {
+    console.log(`🔒 Allowlist ENABLED: ${ALLOWED_CHAT_IDS.length} chat IDs authorized`)
+    ALLOWED_CHAT_IDS.forEach(id => console.log(`   ✅ Chat ID: ${id}`))
+  } else {
+    console.log('⚠️  Allowlist DISABLED — all chats allowed')
+  }
+
+  // Get pending updates and skip them (to avoid processing old messages)
+  try {
+    const pendingRes = await fetch(`${TELEGRAM_API}/getUpdates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ offset: -1, timeout: 0 }),
+    })
+    const pendingData = await pendingRes.json()
+    if (pendingData.ok && pendingData.result?.length > 0) {
+      const maxUpdateId = Math.max(...pendingData.result.map((u: any) => u.update_id))
+      lastUpdateId = maxUpdateId
+      console.log(`⏭️  Skipped ${pendingData.result.length} pending updates (lastUpdateId: ${lastUpdateId})`)
+    }
+  } catch {}
+
   console.log('🔄 Starting long poll...')
-  console.log('📱 Send /start to your bot on Telegram to begin!')
+  console.log('📱 Send /start to @MariaPuspaBot on Telegram to begin!')
+
+  // Health check every 5 minutes
+  setInterval(logHealthStatus, 5 * 60 * 1000)
 
   // Poll loop
   while (true) {
     await poll()
-    // Small delay to prevent tight loop on errors
     await new Promise(r => setTimeout(r, 100))
   }
 }

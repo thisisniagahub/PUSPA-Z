@@ -89,8 +89,8 @@ export function AppSidebar() {
               className="hover:bg-sidebar-accent"
               tooltip="PUSPA V4 — PPM-024-10-05012022"
             >
-              <div className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden bg-sidebar-primary/10 shrink-0">
-                <PuspaLogo size={28} variant="colorful" />
+              <div className="relative flex h-8 w-8 items-center justify-center shrink-0">
+                <PuspaLogo size={26} variant="auto" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none min-w-0">
                 <span className="font-bold text-sm truncate text-sidebar-primary">PUSPA V4</span>
