@@ -16,6 +16,7 @@ import {
   AlertCircle, Wrench, ChevronDown, ArrowDown, Mic,
 } from 'lucide-react'
 import { PuspaLogo } from '@/components/puspa-logo'
+import { MARIA_PUSPA_AVATAR_URI } from '@/lib/maria-avatar'
 
 /* ─── Suggested Prompts ────────────────────────────────── */
 const suggestedPrompts = [
@@ -94,7 +95,7 @@ export default function AiPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
         <div className="flex items-center gap-3">
           <div className="relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-primary/10 overflow-hidden">
-            <PuspaLogo size={32} variant="colorful" />
+            <img src={MARIA_PUSPA_AVATAR_URI} alt="Maria Puspa" className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-cover" />
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-primary">Maria Puspa</h1>
@@ -158,7 +159,7 @@ export default function AiPage() {
                     {msg.role === 'user' ? (
                       <User className="h-4 w-4 sm:h-4 sm:w-4" />
                     ) : (
-                      <PuspaLogo size={20} variant="colorful" />
+                      <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
                     )}
                   </div>
                   <div className={`max-w-[85%] sm:max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}>
@@ -197,7 +198,7 @@ export default function AiPage() {
               {isStreaming && messages[messages.length - 1]?.content === '' && (
                 <div className="flex gap-2 sm:gap-3">
                   <div className="flex h-9 w-9 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
-                    <PuspaLogo size={20} variant="colorful" animate />
+                    <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover animate-pulse" />
                   </div>
                   <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -290,7 +291,7 @@ export default function AiPage() {
                 <AccordionTrigger className="px-3 py-2.5 text-sm font-medium hover:no-underline">
                   <div className="flex items-center gap-2">
                     <div className="relative h-6 w-6 rounded-full overflow-hidden bg-primary/10 shrink-0">
-                      <PuspaLogo size={20} variant="colorful" />
+                      <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
                     </div>
                     <span>Maria Puspa</span>
                     <Badge variant="secondary" className="text-[9px] bg-emerald-100 text-emerald-700 ml-1">Online</Badge>
@@ -391,7 +392,7 @@ export default function AiPage() {
             <Card className="overflow-hidden">
               <div className="bg-primary p-3 flex items-center gap-3">
                 <div className="relative h-10 w-10 rounded-full overflow-hidden bg-white/20 shrink-0">
-                  <PuspaLogo size={32} variant="colorful" animate />
+                  <img src={MARIA_PUSPA_AVATAR_URI} alt="Maria Puspa" className="h-10 w-10 rounded-full object-cover" />
                 </div>
                 <div className="text-primary-foreground">
                   <p className="text-sm font-bold">Maria Puspa</p>

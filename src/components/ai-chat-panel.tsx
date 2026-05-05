@@ -5,6 +5,7 @@ import { useHermesStore } from '@/stores/hermes-store'
 import { cn } from '@/lib/utils'
 import { X, Send, User, Loader2, Sparkles, Wrench, Mic, ChevronDown, ArrowDown, Menu } from 'lucide-react'
 import { PuspaLogo } from '@/components/puspa-logo'
+import { MARIA_PUSPA_AVATAR_URI } from '@/lib/maria-avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -129,8 +130,8 @@ export function AiChatPanel() {
         {/* Header — compact on mobile */}
         <div className="flex items-center justify-between px-3 py-2 sm:p-3 border-b bg-primary text-primary-foreground rounded-t-2xl md:rounded-none">
           <div className="flex items-center gap-2.5">
-            <div className="relative h-8 w-8 sm:h-8 sm:w-8 rounded-full overflow-hidden bg-white/20 shrink-0 flex items-center justify-center">
-              <PuspaLogo size={24} variant="colorful" animate={isStreaming} />
+            <div className="relative h-8 w-8 sm:h-8 sm:w-8 rounded-full overflow-hidden shrink-0">
+              <img src={MARIA_PUSPA_AVATAR_URI} alt="Maria Puspa" className="h-full w-full object-cover" />
             </div>
             <div className="min-w-0">
               <h3 className="text-sm sm:text-xs font-bold leading-tight">Maria Puspa</h3>
@@ -231,7 +232,7 @@ export function AiChatPanel() {
                   {msg.role === 'user' ? (
                     <User className="h-3.5 w-3.5" />
                   ) : (
-                    <PuspaLogo size={16} variant="colorful" />
+                    <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
                   )}
                 </div>
                 <div className={cn(
@@ -255,7 +256,7 @@ export function AiChatPanel() {
             {isStreaming && messages[messages.length - 1]?.content === '' && (
               <div className="flex gap-2">
                 <div className="flex h-7 w-7 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
-                  <PuspaLogo size={16} variant="colorful" animate />
+                  <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover animate-pulse" />
                 </div>
                 <div className="rounded-2xl rounded-tl-sm px-3 py-2 bg-muted border border-border">
                   <div className="flex items-center gap-1.5">

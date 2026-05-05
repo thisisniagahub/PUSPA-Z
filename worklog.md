@@ -214,3 +214,31 @@ Stage Summary:
 - System prompt now includes PUSPA knowledge for grounded RAG responses
 - Settings page shows Telegram setup instructions
 - User needs to: 1) Create bot via @BotFather, 2) Add token to .env, 3) Start telegram-bot service
+
+---
+Task ID: 10
+Agent: Main
+Task: Add Maria Puspa profile photo from uploaded images + Start Telegram bot with user's token
+
+Work Log:
+- Analyzed 3 uploaded images with VLM:
+  - Image 1 (Apr 29): PUSPA brand guide with character avatar — CHOSEN as profile photo
+  - Image 2 (Apr 30, 01:37): Character reference sheet (multiple views/expressions)
+  - Image 3 (Apr 30, 01:50): PUSPA official logo
+- Copied images to public/: maria-puspa-avatar.png, maria-puspa-reference.png, maria-puspa-logo-official.png
+- Created 128x128 thumbnail (maria-puspa-thumb.png) using ffmpeg
+- Created base64 data URI module (`src/lib/maria-avatar.ts`) for inline avatar (avoids 403 on serverless)
+- Updated `ai-chat-panel.tsx` — replaced PuspaLogo AI avatars with Maria Puspa character photo
+- Updated `ai/page.tsx` — replaced all PuspaLogo AI avatars with Maria Puspa character photo
+- Set Telegram bot token in `.env`: 8616908398:AAFBzL-r_Y9ZiAhPSMrhi50PSdzBICGGqHE
+- Created `.env` for mini-services/telegram-bot/ with token
+- Verified bot connection: @MariaPuspaBot (MariaPuspaBot) — OK
+- Created 256x256 Telegram profile photo (maria-puspa-telegram-profile.png)
+- Started Telegram bot service — polling active
+
+Stage Summary:
+- Maria Puspa now uses her actual character photo (hijab, purple/navy business suit) as profile avatar
+- Avatar is inline base64 (works on serverless without 403)
+- Telegram bot connected as @MariaPuspaBot
+- Bot is running and polling for messages
+- Profile photo on Telegram needs to be set manually via @BotFather (API doesn't support bot profile photo upload)
