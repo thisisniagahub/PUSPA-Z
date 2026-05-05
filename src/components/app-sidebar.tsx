@@ -2,7 +2,7 @@
 
 import { useAppStore, type ViewId } from '@/lib/store'
 import { canAccessView } from '@/lib/access-control'
-import { PUSPA_LOGO_URI, PUSPA_BRAND_URI } from '@/lib/puspa-brand-assets'
+// Using puspa-logo-official.png for logo
 import {
   LayoutDashboard,
   Users,
@@ -87,12 +87,12 @@ export function AppSidebar() {
             <SidebarMenuButton
               size="lg"
               className="hover:bg-sidebar-accent"
-              tooltip="PUSPA V4 — PPM-024-10-05012022"
+              tooltip="PUSPA V5 — PPM-024-10-05012022"
             >
               {/* Collapsed: Show just the logo icon on white bg */}
               <div className="flex h-8 w-8 items-center justify-center shrink-0 rounded bg-white">
                 <img
-                  src={PUSPA_LOGO_URI}
+                  src="/puspa-logo-official.png"
                   alt="PUSPA"
                   className="h-7 w-7 object-contain"
                 />
@@ -100,7 +100,7 @@ export function AppSidebar() {
               {/* Expanded: Show brand identity image */}
               <div className="flex items-center min-w-0 overflow-hidden group-data-[collapsible=icon]:hidden">
                 <img
-                  src={PUSPA_BRAND_URI}
+                  src="/puspa-brand-identity.png"
                   alt="PUSPA — Pertubuhan Urus Peduli Asnaf"
                   className="h-7 w-auto max-w-[180px] object-contain"
                 />

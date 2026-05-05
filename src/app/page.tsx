@@ -9,7 +9,7 @@ import { AppHeader } from '@/components/app-header'
 import { ViewRenderer } from '@/components/view-renderer'
 import { AiChatPanel } from '@/components/ai-chat-panel'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import { PuspaLogo } from '@/components/puspa-logo'
+// Using puspa-logo-official.png image
 import { cn } from '@/lib/utils'
 
 // Check if Supabase is configured
@@ -49,7 +49,18 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <PuspaLogo size={48} variant="auto" animate />
+          <img
+            src="/puspa-logo-official.png"
+            alt="PUSPA Logo"
+            className="h-12 w-12 object-contain rounded-full bg-white p-0.5"
+            style={{ animation: 'puspa-spin 4s linear infinite' }}
+          />
+          <style>{`
+            @keyframes puspa-spin {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
           <div className="flex items-center gap-2 text-muted-foreground">
             <div className="h-2 w-2 rounded-full bg-purple-600 animate-bounce [animation-delay:-0.3s]" />
             <div className="h-2 w-2 rounded-full bg-purple-600 animate-bounce [animation-delay:-0.15s]" />

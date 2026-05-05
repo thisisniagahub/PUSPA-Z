@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { PUSPA_LOGO_URI } from '@/lib/puspa-brand-assets'
+// Using puspa-logo-official.png
 
 interface PuspaLoadingSpinnerProps {
   size?: number
@@ -13,7 +13,7 @@ export function PuspaLoadingSpinner({ size = 48, className, text }: PuspaLoading
   return (
     <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
       <img
-        src={PUSPA_LOGO_URI}
+        src="/puspa-logo-official.png"
         alt="Loading..."
         className="bg-white rounded-full object-contain p-1"
         style={{

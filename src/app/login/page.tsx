@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth-provider'
-import { PuspaLogo } from '@/components/puspa-logo'
+// Using puspa-logo-official.png image instead of SVG logo
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -69,7 +69,11 @@ export default function LoginPage() {
         {/* Brand header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white dark:bg-gray-900 shadow-lg shadow-purple-200/50 dark:shadow-purple-900/30 mb-4 border border-purple-100 dark:border-purple-900/50">
-            <PuspaLogo size={44} variant="light" />
+            <img
+              src="/puspa-logo-official.png"
+              alt="PUSPA Logo"
+              className="h-11 w-11 object-contain"
+            />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">
             <span className="text-purple-700 dark:text-purple-400">PUSPA</span>

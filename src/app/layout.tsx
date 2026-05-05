@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "PUSPA V5 — Pertubuhan Urus Peduli Asnaf (PPM-024-10-05012022)",
   description: "Platform Pengurusan PERTUBUHAN URUS PEDULI ASNAF (PPM-024-10-05012022) — Cerdas. Mesra. Sentiasa di sisi anda.",
   icons: {
-    icon: "/puspa-logo-transparent.png",
+    icon: "/puspa-logo-official.png",
   },
 };
 
