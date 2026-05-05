@@ -7,14 +7,6 @@ import {
   Tabs, TabsList, TabsTrigger, TabsContent,
 } from '@/components/ui'
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
-import {
   BarChart3, Download, Calendar, TrendingUp,
   PieChart as PieChartIcon, BarChart, LineChart,
 } from 'lucide-react'
@@ -64,6 +56,42 @@ const formatMonth = (m: string) => {
 }
 
 const PIE_COLORS = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316']
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: 'Draf', intake: 'Intak', verification: 'Pengesahan', assessment: 'Penilaian',
+  approval: 'Kelulusan', disbursement: 'Agihan', follow_up: 'Susulan', closed: 'Ditutup', rejected: 'Ditolak',
+  compliant: 'Patuh', pending: 'Menunggu', under_review: 'Dalam Semakan', non_compliant: 'Tidak Patuh',
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  zakat: 'Zakat', sadaqah: 'Sadaqah', waqf: 'Waqf', infaq: 'Infaq', general: 'Umum',
+  welfare: 'Kebajikan', medical: 'Perubatan', education: 'Pendidikan', housing: 'Perumahan',
+  emergency: 'Kecemasan', monthly_aid: 'Bantuan Bulanan',
+  rosm: 'ROSM', lhdn: 'LHDN', pdpa: 'PDPA', internal: 'Dalaman', audit: 'Audit',
+  member: 'Ahli', case: 'Kes', donation: 'Sumbangan', programme: 'Program', volunteer: 'Sukarelawan', compliance: 'Pematuhan',
+}
+
+/* ─── Custom Tooltip ──────────────────────────────────── */
+function ChartTooltip({ active, payload, label, valueFormatter }: {
+  active?: boolean
+  payload?: Array<{ name: string; value: number; color: string }>
+  label?: string
+  valueFormatter?: (v: number) => string
+}) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="rounded-lg border bg-background p-3 shadow-lg">
+      {label && <p className="text-sm font-semibold mb-1.5">{label}</p>}
+      {payload.map((entry, i) => (
+        <div key={i} className="flex items-center gap-2 text-xs">
+          <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+          <span className="text-muted-foreground">{CATEGORY_LABELS[entry.name] || STATUS_LABELS[entry.name] || entry.name}:</span>
+          <span className="font-medium">{valueFormatter ? valueFormatter(entry.value) : entry.value.toLocaleString()}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 /* ─── Demo Data ────────────────────────────────────────── */
 const demoOperational: OperationalData = {
@@ -138,56 +166,6 @@ const demoProgramme: ProgrammeReportData = {
   ],
 }
 
-/* ─── Chart Configs ────────────────────────────────────── */
-const caseStatusChartConfig: ChartConfig = {
-  draft: { label: 'Draf', color: '#94a3b8' },
-  intake: { label: 'Intak', color: '#f59e0b' },
-  verification: { label: 'Pengesahan', color: '#3b82f6' },
-  assessment: { label: 'Penilaian', color: '#8b5cf6' },
-  approval: { label: 'Kelulusan', color: '#06b6d4' },
-  disbursement: { label: 'Agihan', color: '#10b981' },
-  follow_up: { label: 'Susulan', color: '#ec4899' },
-  closed: { label: 'Ditutup', color: '#22c55e' },
-  rejected: { label: 'Ditolak', color: '#ef4444' },
-}
-
-const donationCategoryChartConfig: ChartConfig = {
-  zakat: { label: 'Zakat', color: '#10b981' },
-  sadaqah: { label: 'Sadaqah', color: '#14b8a6' },
-  waqf: { label: 'Waqf', color: '#f59e0b' },
-  infaq: { label: 'Infaq', color: '#8b5cf6' },
-  general: { label: 'Umum', color: '#6b7280' },
-}
-
-const complianceCategoryChartConfig: ChartConfig = {
-  rosm: { label: 'ROSM', color: '#8b5cf6' },
-  lhdn: { label: 'LHDN', color: '#14b8a6' },
-  pdpa: { label: 'PDPA', color: '#f59e0b' },
-  internal: { label: 'Dalaman', color: '#06b6d4' },
-  audit: { label: 'Audit', color: '#f43f5e' },
-}
-
-const memberGrowthChartConfig: ChartConfig = {
-  count: { label: 'Ahli Baharu', color: '#10b981' },
-}
-
-const donationTrendChartConfig: ChartConfig = {
-  amount: { label: 'Sumbangan', color: '#10b981' },
-}
-
-const disbursementTrendChartConfig: ChartConfig = {
-  amount: { label: 'Agihan', color: '#f59e0b' },
-}
-
-const activityCategoryChartConfig: ChartConfig = {
-  member: { label: 'Ahli', color: '#3b82f6' },
-  case: { label: 'Kes', color: '#f59e0b' },
-  donation: { label: 'Sumbangan', color: '#10b981' },
-  programme: { label: 'Program', color: '#8b5cf6' },
-  volunteer: { label: 'Sukarelawan', color: '#ec4899' },
-  compliance: { label: 'Pematuhan', color: '#ef4444' },
-}
-
 /* ─── Component ────────────────────────────────────────── */
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState('operational')
@@ -205,21 +183,12 @@ export default function ReportsPage() {
       if (res.ok) {
         const data = await res.json()
         switch (type) {
-          case 'operational':
-            setOperationalData(data.caseStats ? data : demoOperational)
-            break
-          case 'financial':
-            setFinancialData(data.donationTotals ? data : demoFinancial)
-            break
-          case 'compliance':
-            setComplianceData(data.overallScore !== undefined ? data : demoCompliance)
-            break
-          case 'programme':
-            setProgrammeData(data.programmeStats ? data : demoProgramme)
-            break
+          case 'operational': setOperationalData(data.caseStats ? data : demoOperational); break
+          case 'financial': setFinancialData(data.donationTotals ? data : demoFinancial); break
+          case 'compliance': setComplianceData(data.overallScore !== undefined ? data : demoCompliance); break
+          case 'programme': setProgrammeData(data.programmeStats ? data : demoProgramme); break
         }
       } else {
-        // Fallback to demo
         switch (type) {
           case 'operational': setOperationalData(demoOperational); break
           case 'financial': setFinancialData(demoFinancial); break
@@ -239,9 +208,7 @@ export default function ReportsPage() {
     }
   }, [])
 
-  useEffect(() => {
-    fetchReport(activeTab)
-  }, [activeTab, fetchReport])
+  useEffect(() => { fetchReport(activeTab) }, [activeTab, fetchReport])
 
   const isLoading = loading && !(
     (activeTab === 'operational' && operationalData) ||
@@ -260,7 +227,7 @@ export default function ReportsPage() {
         </div>
         <div className="flex items-center gap-2">
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full sm:w-[160px]">
               <Calendar className="h-4 w-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
@@ -273,18 +240,18 @@ export default function ReportsPage() {
           </Select>
           <Button variant="outline" className="gap-2">
             <Download className="h-4 w-4" />
-            Eksport
+            <span className="hidden sm:inline">Eksport</span>
           </Button>
         </div>
       </div>
 
       {/* Report Type Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="operational" className="gap-1"><BarChart3 className="h-4 w-4" />Operasi</TabsTrigger>
-          <TabsTrigger value="financial" className="gap-1"><TrendingUp className="h-4 w-4" />Kewangan</TabsTrigger>
-          <TabsTrigger value="compliance" className="gap-1"><PieChartIcon className="h-4 w-4" />Pematuhan</TabsTrigger>
-          <TabsTrigger value="programme" className="gap-1"><BarChart className="h-4 w-4" />Program</TabsTrigger>
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="operational" className="gap-1"><BarChart3 className="h-4 w-4" /><span className="hidden sm:inline">Operasi</span></TabsTrigger>
+          <TabsTrigger value="financial" className="gap-1"><TrendingUp className="h-4 w-4" /><span className="hidden sm:inline">Kewangan</span></TabsTrigger>
+          <TabsTrigger value="compliance" className="gap-1"><PieChartIcon className="h-4 w-4" /><span className="hidden sm:inline">Pematuhan</span></TabsTrigger>
+          <TabsTrigger value="programme" className="gap-1"><BarChart className="h-4 w-4" /><span className="hidden sm:inline">Program</span></TabsTrigger>
         </TabsList>
 
         {/* Operational Tab */}
@@ -299,149 +266,93 @@ export default function ReportsPage() {
             <div className="space-y-6">
               {/* Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900">
-                        <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Jumlah Kes</p>
-                        <p className="text-lg font-bold">{operationalData.caseStats.total}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
-                        <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Jumlah Ahli</p>
-                        <p className="text-lg font-bold">{operationalData.memberStats.total}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900">
-                        <PieChartIcon className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Kes Ditutup</p>
-                        <p className="text-lg font-bold">{operationalData.caseStats.statusCounts.closed || 0}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900">
-                        <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Aktiviti 30 Hari</p>
-                        <p className="text-lg font-bold">{operationalData.activitySummary.totalLast30Days}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900"><BarChart3 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" /></div><div><p className="text-xs text-muted-foreground">Jumlah Kes</p><p className="text-lg font-bold">{operationalData.caseStats.total}</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900"><TrendingUp className="h-5 w-5 text-teal-600 dark:text-teal-400" /></div><div><p className="text-xs text-muted-foreground">Jumlah Ahli</p><p className="text-lg font-bold">{operationalData.memberStats.total}</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900"><PieChartIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" /></div><div><p className="text-xs text-muted-foreground">Kes Ditutup</p><p className="text-lg font-bold">{operationalData.caseStats.statusCounts.closed || 0}</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900"><Calendar className="h-5 w-5 text-rose-600 dark:text-rose-400" /></div><div><p className="text-xs text-muted-foreground">Aktiviti 30 Hari</p><p className="text-lg font-bold">{operationalData.activitySummary.totalLast30Days}</p></div></div></CardContent></Card>
               </div>
 
               {/* Charts */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Case Status Pie Chart */}
+                {/* Case Status Pie */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Status Kes</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Status Kes</CardTitle></CardHeader>
                   <CardContent className="p-4">
-                    <ChartContainer config={caseStatusChartConfig} className="h-[280px] w-full">
-                      <PieChart>
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Pie
-                          data={Object.entries(operationalData.caseStats.statusCounts).map(([name, value]) => ({ name, value }))}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
-                          dataKey="value"
-                          nameKey="name"
-                        >
-                          {Object.entries(operationalData.caseStats.statusCounts).map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Legend content={<ChartLegendContent nameKey="name" />} />
-                      </PieChart>
-                    </ChartContainer>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Tooltip content={<ChartTooltip />} />
+                          <Pie data={Object.entries(operationalData.caseStats.statusCounts).map(([name, value]) => ({ name, value }))} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" nameKey="name" paddingAngle={2}>
+                            {Object.entries(operationalData.caseStats.statusCounts).map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Legend formatter={(value: string) => <span className="text-xs text-muted-foreground">{STATUS_LABELS[value] || value}</span>} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Member Growth Line Chart */}
+                {/* Member Growth Line */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Pertumbuhan Ahli</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Pertumbuhan Ahli</CardTitle></CardHeader>
                   <CardContent className="p-4">
-                    <ChartContainer config={memberGrowthChartConfig} className="h-[280px] w-full">
-                      <LineChart data={operationalData.memberStats.monthlyGrowth.map(d => ({ ...d, month: formatMonth(d.month) }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={2} dot={{ r: 3 }} />
-                      </LineChart>
-                    </ChartContainer>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={operationalData.memberStats.monthlyGrowth.map(d => ({ ...d, month: formatMonth(d.month) }))}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="month" tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                          <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Case Type Bar Chart */}
+                {/* Case Type Bar */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Kes Mengikut Jenis</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Kes Mengikut Jenis</CardTitle></CardHeader>
                   <CardContent className="p-4">
-                    <ChartContainer config={activityCategoryChartConfig} className="h-[280px] w-full">
-                      <BarChart data={Object.entries(operationalData.caseStats.typeCounts).map(([name, value]) => ({ name, value }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                          {Object.entries(operationalData.caseStats.typeCounts).map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ChartContainer>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={Object.entries(operationalData.caseStats.typeCounts).map(([name, value]) => ({ name, value }))}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                          <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                            {Object.entries(operationalData.caseStats.typeCounts).map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Activity Category Bar Chart */}
+                {/* Activity Category Bar */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Aktiviti Mengikut Kategori (30 Hari)</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Aktiviti Mengikut Kategori (30 Hari)</CardTitle></CardHeader>
                   <CardContent className="p-4">
-                    <ChartContainer config={activityCategoryChartConfig} className="h-[280px] w-full">
-                      <BarChart data={Object.entries(operationalData.activitySummary.categoryCounts).map(([name, value]) => ({ name, value }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                          {Object.entries(operationalData.activitySummary.categoryCounts).map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ChartContainer>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={Object.entries(operationalData.activitySummary.categoryCounts).map(([name, value]) => ({ name, value }))}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                          <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                            {Object.entries(operationalData.activitySummary.categoryCounts).map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -461,153 +372,99 @@ export default function ReportsPage() {
             <div className="space-y-6">
               {/* Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
-                        <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Jumlah Sumbangan</p>
-                        <p className="text-lg font-bold">{formatRM(financialData.donationTotals.total)}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900">
-                        <BarChart3 className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Jumlah Agihan</p>
-                        <p className="text-lg font-bold">{formatRM(financialData.disbursementTotals.total)}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900">
-                        <PieChartIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Kadar Patuh Syariah</p>
-                        <p className="text-lg font-bold">{financialData.donationTotals.shariahRate}%</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900">
-                        <Calendar className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Baki</p>
-                        <p className="text-lg font-bold">{formatRM(financialData.donationTotals.total - financialData.disbursementTotals.total)}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900"><TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" /></div><div><p className="text-xs text-muted-foreground">Jumlah Sumbangan</p><p className="text-lg font-bold">{formatRM(financialData.donationTotals.total)}</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900"><BarChart3 className="h-5 w-5 text-amber-600 dark:text-amber-400" /></div><div><p className="text-xs text-muted-foreground">Jumlah Agihan</p><p className="text-lg font-bold">{formatRM(financialData.disbursementTotals.total)}</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900"><PieChartIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" /></div><div><p className="text-xs text-muted-foreground">Kadar Patuh Syariah</p><p className="text-lg font-bold">{financialData.donationTotals.shariahRate}%</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900"><Calendar className="h-5 w-5 text-rose-600 dark:text-rose-400" /></div><div><p className="text-xs text-muted-foreground">Baki</p><p className="text-lg font-bold">{formatRM(financialData.donationTotals.total - financialData.disbursementTotals.total)}</p></div></div></CardContent></Card>
               </div>
 
               {/* Charts */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Donation by Category */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Sumbangan Mengikut Kategori</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Sumbangan Mengikut Kategori</CardTitle></CardHeader>
                   <CardContent className="p-4">
-                    <ChartContainer config={donationCategoryChartConfig} className="h-[280px] w-full">
-                      <BarChart data={Object.entries(financialData.donationTotals.categoryTotals).map(([name, value]) => ({ name, value }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                          {Object.entries(financialData.donationTotals.categoryTotals).map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ChartContainer>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={Object.entries(financialData.donationTotals.categoryTotals).map(([name, value]) => ({ name, value }))}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                          <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                          <Tooltip content={<ChartTooltip valueFormatter={(v) => formatRM(v)} />} />
+                          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                            {Object.entries(financialData.donationTotals.categoryTotals).map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Monthly Donation Trend */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Trend Sumbangan Bulanan</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Trend Sumbangan Bulanan</CardTitle></CardHeader>
                   <CardContent className="p-4">
-                    <ChartContainer config={donationTrendChartConfig} className="h-[280px] w-full">
-                      <LineChart data={financialData.donationTotals.monthlyTrends.map(d => ({ ...d, month: formatMonth(d.month) }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="amount" stroke="var(--color-amount)" strokeWidth={2} dot={{ r: 3 }} />
-                      </LineChart>
-                    </ChartContainer>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={financialData.donationTotals.monthlyTrends.map(d => ({ ...d, month: formatMonth(d.month) }))}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="month" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                          <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`} className="text-muted-foreground" />
+                          <Tooltip content={<ChartTooltip valueFormatter={(v) => formatRM(v)} />} />
+                          <Line type="monotone" dataKey="amount" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Disbursement by Category */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Agihan Mengikut Kategori</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Agihan Mengikut Kategori</CardTitle></CardHeader>
                   <CardContent className="p-4">
-                    <ChartContainer config={donationCategoryChartConfig} className="h-[280px] w-full">
-                      <BarChart data={Object.entries(financialData.disbursementTotals.categoryTotals).map(([name, value]) => ({ name, value }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                          {Object.entries(financialData.disbursementTotals.categoryTotals).map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[(index + 2) % PIE_COLORS.length]} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ChartContainer>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={Object.entries(financialData.disbursementTotals.categoryTotals).map(([name, value]) => ({ name, value }))}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                          <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                          <Tooltip content={<ChartTooltip valueFormatter={(v) => formatRM(v)} />} />
+                          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                            {Object.entries(financialData.disbursementTotals.categoryTotals).map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={PIE_COLORS[(index + 2) % PIE_COLORS.length]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Monthly Disbursement Trend */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Trend Agihan Bulanan</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Trend Agihan Bulanan</CardTitle></CardHeader>
                   <CardContent className="p-4">
-                    <ChartContainer config={disbursementTrendChartConfig} className="h-[280px] w-full">
-                      <LineChart data={financialData.disbursementTotals.monthlyTrends.map(d => ({ ...d, month: formatMonth(d.month) }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="amount" stroke="var(--color-amount)" strokeWidth={2} dot={{ r: 3 }} />
-                      </LineChart>
-                    </ChartContainer>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={financialData.disbursementTotals.monthlyTrends.map(d => ({ ...d, month: formatMonth(d.month) }))}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="month" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                          <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`} className="text-muted-foreground" />
+                          <Tooltip content={<ChartTooltip valueFormatter={(v) => formatRM(v)} />} />
+                          <Line type="monotone" dataKey="amount" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
 
               {/* Disbursement Summary */}
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Ringkasan Status Agihan</CardTitle>
-                </CardHeader>
+                <CardHeader className="pb-2"><CardTitle className="text-base">Ringkasan Status Agihan</CardTitle></CardHeader>
                 <CardContent className="p-4">
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                     {Object.entries(financialData.disbursementTotals.statusTotals).map(([status, count]) => (
                       <div key={status} className="text-center p-3 rounded-lg bg-muted/50">
-                        <p className="text-xs text-muted-foreground capitalize">{status}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{status.replace('_', ' ')}</p>
                         <p className="text-xl font-bold">{count}</p>
                       </div>
                     ))}
@@ -630,133 +487,71 @@ export default function ReportsPage() {
             <div className="space-y-6">
               {/* Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
-                        <PieChartIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Skor Pematuhan</p>
-                        <p className="text-lg font-bold">{complianceData.overallScore}%</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900">
-                        <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Jumlah Rekod</p>
-                        <p className="text-lg font-bold">{complianceData.totalRecords}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900">
-                        <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Patuh</p>
-                        <p className="text-lg font-bold">{complianceData.compliantCount}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900">
-                        <Calendar className="h-5 w-5 text-red-600 dark:text-red-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Tamat Tempoh</p>
-                        <p className="text-lg font-bold">{complianceData.overdueItems.length}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900"><PieChartIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" /></div><div><p className="text-xs text-muted-foreground">Skor Pematuhan</p><p className="text-lg font-bold">{complianceData.overallScore}%</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900"><BarChart3 className="h-5 w-5 text-amber-600 dark:text-amber-400" /></div><div><p className="text-xs text-muted-foreground">Jumlah Rekod</p><p className="text-lg font-bold">{complianceData.totalRecords}</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900"><TrendingUp className="h-5 w-5 text-teal-600 dark:text-teal-400" /></div><div><p className="text-xs text-muted-foreground">Patuh</p><p className="text-lg font-bold">{complianceData.compliantCount}</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900"><Calendar className="h-5 w-5 text-red-600 dark:text-red-400" /></div><div><p className="text-xs text-muted-foreground">Tamat Tempoh</p><p className="text-lg font-bold">{complianceData.overdueItems.length}</p></div></div></CardContent></Card>
               </div>
 
               {/* Charts */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Compliance Score by Category */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Skor Pematuhan Mengikut Kategori</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Skor Pematuhan Mengikut Kategori</CardTitle></CardHeader>
                   <CardContent className="p-4">
-                    <ChartContainer config={complianceCategoryChartConfig} className="h-[280px] w-full">
-                      <BarChart data={Object.entries(complianceData.categoryScores).map(([name, data]) => ({ name, score: data.score }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                        <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="score" radius={[4, 4, 0, 0]}>
-                          {Object.entries(complianceData.categoryScores).map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ChartContainer>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={Object.entries(complianceData.categoryScores).map(([name, data]) => ({ name, score: data.score }))}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="name" tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                          <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                          <Tooltip content={<ChartTooltip valueFormatter={(v) => `${v}%`} />} />
+                          <Bar dataKey="score" radius={[4, 4, 0, 0]}>
+                            {Object.entries(complianceData.categoryScores).map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Status Breakdown Pie */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Pecahan Status</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Pecahan Status</CardTitle></CardHeader>
                   <CardContent className="p-4">
-                    <ChartContainer config={caseStatusChartConfig} className="h-[280px] w-full">
-                      <PieChart>
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Pie
-                          data={Object.entries(complianceData.statusBreakdown).map(([name, value]) => ({ name, value }))}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
-                          dataKey="value"
-                          nameKey="name"
-                        >
-                          {Object.entries(complianceData.statusBreakdown).map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Legend content={<ChartLegendContent nameKey="name" />} />
-                      </PieChart>
-                    </ChartContainer>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Tooltip content={<ChartTooltip />} />
+                          <Pie data={Object.entries(complianceData.statusBreakdown).map(([name, value]) => ({ name, value }))} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" nameKey="name" paddingAngle={2}>
+                            {Object.entries(complianceData.statusBreakdown).map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Legend formatter={(value: string) => <span className="text-xs text-muted-foreground">{STATUS_LABELS[value] || value}</span>} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Overdue Items List */}
+              {/* Overdue Items */}
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Item Tamat Tempoh</CardTitle>
-                </CardHeader>
+                <CardHeader className="pb-2"><CardTitle className="text-base">Item Tamat Tempoh</CardTitle></CardHeader>
                 <CardContent className="p-4">
                   {complianceData.overdueItems.length === 0 ? (
                     <p className="text-center text-muted-foreground py-6">Tiada item tamat tempoh</p>
                   ) : (
                     <div className="space-y-3">
                       {complianceData.overdueItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-950/30">
+                        <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/30">
                           <div>
                             <p className="font-medium text-sm">{item.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Kategori: {item.category} · Tarikh Akhir: {item.dueDate || '—'}
-                            </p>
+                            <p className="text-xs text-muted-foreground">Kategori: {CATEGORY_LABELS[item.category] || item.category} · Tarikh Akhir: {item.dueDate || '—'}</p>
                           </div>
-                          <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                            {item.status}
+                          <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 w-fit">
+                            {STATUS_LABELS[item.status] || item.status}
                           </Badge>
                         </div>
                       ))}
@@ -780,145 +575,57 @@ export default function ReportsPage() {
             <div className="space-y-6">
               {/* Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900">
-                        <BarChart3 className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Jumlah Program</p>
-                        <p className="text-lg font-bold">{programmeData.programmeStats.total}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
-                        <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Jumlah Bajet</p>
-                        <p className="text-lg font-bold">{formatRM(programmeData.programmeStats.totalBudget)}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900">
-                        <PieChartIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Belanja</p>
-                        <p className="text-lg font-bold">{formatRM(programmeData.programmeStats.totalSpent)}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900">
-                        <Calendar className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Penggunaan Bajet</p>
-                        <p className="text-lg font-bold">{programmeData.programmeStats.overallUtilization}%</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900"><BarChart3 className="h-5 w-5 text-violet-600 dark:text-violet-400" /></div><div><p className="text-xs text-muted-foreground">Jumlah Program</p><p className="text-lg font-bold">{programmeData.programmeStats.total}</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900"><TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" /></div><div><p className="text-xs text-muted-foreground">Jumlah Bajet</p><p className="text-lg font-bold">{formatRM(programmeData.programmeStats.totalBudget)}</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900"><PieChartIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" /></div><div><p className="text-xs text-muted-foreground">Perbelanjaan</p><p className="text-lg font-bold">{formatRM(programmeData.programmeStats.totalSpent)}</p></div></div></CardContent></Card>
+                <Card><CardContent className="p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900"><Calendar className="h-5 w-5 text-teal-600 dark:text-teal-400" /></div><div><p className="text-xs text-muted-foreground">Penggunaan</p><p className="text-lg font-bold">{programmeData.programmeStats.overallUtilization}%</p></div></div></CardContent></Card>
               </div>
 
-              {/* Budget Utilization Progress Bars */}
+              {/* Budget Chart */}
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Penggunaan Bajet Program</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 space-y-4">
-                  {programmeData.programmeBudgetData.map((p, i) => (
-                    <div key={i} className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{p.name}</span>
-                          <Badge variant="secondary" className={`text-[10px] ${
-                            p.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                            p.status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
-                            p.status === 'suspended' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-                            'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
-                          }`}>
-                            {p.status}
-                          </Badge>
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {formatRM(p.spent)} / {formatRM(p.budget)} ({p.utilization}%)
-                        </span>
-                      </div>
-                      <Progress value={p.utilization} className="h-2" />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Penerima: {p.beneficiaries} / {p.target}</span>
-                        <span>Baki: {formatRM(p.budget - p.spent)}</span>
-                      </div>
-                    </div>
-                  ))}
+                <CardHeader className="pb-2"><CardTitle className="text-base">Bajet vs Perbelanjaan Mengikut Program</CardTitle></CardHeader>
+                <CardContent className="p-4">
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={programmeData.programmeBudgetData} layout="vertical" margin={{ left: 20 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`} className="text-muted-foreground" />
+                        <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={120} className="text-muted-foreground" />
+                        <Tooltip content={<ChartTooltip valueFormatter={(v) => formatRM(v)} />} />
+                        <Legend />
+                        <Bar dataKey="budget" name="Bajet" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                        <Bar dataKey="spent" name="Perbelanjaan" fill="#f59e0b" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </CardContent>
               </Card>
 
-              {/* Programme Status Chart */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Status Program</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <ChartContainer config={caseStatusChartConfig} className="h-[280px] w-full">
-                      <PieChart>
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Pie
-                          data={Object.entries(programmeData.programmeStats.statusCounts).map(([name, value]) => ({ name, value }))}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
-                          dataKey="value"
-                          nameKey="name"
-                        >
-                          {Object.entries(programmeData.programmeStats.statusCounts).map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Legend content={<ChartLegendContent nameKey="name" />} />
-                      </PieChart>
-                    </ChartContainer>
-                  </CardContent>
-                </Card>
-
-                {/* Beneficiary Count by Programme */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Penerima Mengikut Program</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <ChartContainer config={complianceCategoryChartConfig} className="h-[280px] w-full">
-                      <BarChart data={programmeData.programmeBudgetData.map(p => ({
-                        name: p.name.length > 12 ? p.name.slice(0, 12) + '...' : p.name,
-                        beneficiaries: p.beneficiaries,
-                        target: p.target,
-                      }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" tick={{ fontSize: 9 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="beneficiaries" name="Penerima" fill="#10b981" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="target" name="Sasaran" fill="#94a3b8" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ChartContainer>
-                  </CardContent>
-                </Card>
+              {/* Programme Detail Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {programmeData.programmeBudgetData.map((prog) => (
+                  <Card key={prog.name}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-sm">{prog.name}</h4>
+                        <Badge variant="outline" className="text-xs capitalize">{prog.status}</Badge>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Penggunaan Bajet</span>
+                          <span className="font-medium">{prog.utilization}%</span>
+                        </div>
+                        <Progress value={prog.utilization} className="h-2" />
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div><span className="text-muted-foreground">Bajet:</span> <span className="font-medium">{formatRM(prog.budget)}</span></div>
+                          <div><span className="text-muted-foreground">Belanja:</span> <span className="font-medium">{formatRM(prog.spent)}</span></div>
+                          <div><span className="text-muted-foreground">Penerima:</span> <span className="font-medium">{prog.beneficiaries}</span></div>
+                          <div><span className="text-muted-foreground">Sasaran:</span> <span className="font-medium">{prog.target}</span></div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </div>
           )}
