@@ -2,7 +2,7 @@
 
 import { useAppStore, type ViewId } from '@/lib/store'
 import { canAccessView } from '@/lib/access-control'
-import { PuspaLogo } from '@/components/puspa-logo'
+import { PUSPA_LOGO_URI, PUSPA_BRAND_URI } from '@/lib/puspa-brand-assets'
 import {
   LayoutDashboard,
   Users,
@@ -79,9 +79,9 @@ export function AppSidebar() {
   }, {})
 
   return (
-    <Sidebar collapsible="icon" className="border-r-0">
+    <Sidebar collapsible="icon" className="border-r-0 max-w-[260px]">
       {/* Logo Header */}
-      <SidebarHeader className="p-3">
+      <SidebarHeader className="p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -89,12 +89,21 @@ export function AppSidebar() {
               className="hover:bg-sidebar-accent"
               tooltip="PUSPA V4 — PPM-024-10-05012022"
             >
-              <div className="relative flex h-8 w-8 items-center justify-center shrink-0">
-                <PuspaLogo size={26} variant="auto" />
+              {/* Collapsed: Show just the logo icon on white bg */}
+              <div className="flex h-8 w-8 items-center justify-center shrink-0 rounded bg-white">
+                <img
+                  src={PUSPA_LOGO_URI}
+                  alt="PUSPA"
+                  className="h-7 w-7 object-contain"
+                />
               </div>
-              <div className="flex flex-col gap-0.5 leading-none min-w-0">
-                <span className="font-bold text-sm truncate text-sidebar-primary">PUSPA V4</span>
-                <span className="text-[10px] text-sidebar-foreground/60 truncate">PPM-024-10-05012022</span>
+              {/* Expanded: Show brand identity image */}
+              <div className="flex items-center min-w-0 overflow-hidden group-data-[collapsible=icon]:hidden">
+                <img
+                  src={PUSPA_BRAND_URI}
+                  alt="PUSPA — Pertubuhan Urus Peduli Asnaf"
+                  className="h-7 w-auto max-w-[180px] object-contain"
+                />
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -141,7 +150,7 @@ export function AppSidebar() {
       <SidebarSeparator />
 
       {/* User Footer */}
-      <SidebarFooter className="p-3">
+      <SidebarFooter className="p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton

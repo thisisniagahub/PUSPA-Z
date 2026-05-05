@@ -14,7 +14,6 @@ export const PUSPA_KNOWLEDGE_BASE = `
 - Official Website: https://puspa.org.my/ (under construction as of 2026)
 - Email: salam.puspaKL@gmail.com
 - Phone: +6012-3183369
-- Operational Contact: Zaki
 - Address: 2253, Jalan Permata 22, Taman Permata, 53300 Gombak, Selangor
 - Donation Account: Maybank 562209677503
 - Facebook: Pertubuhan Urus Peduli Asnaf KL & Selangor
@@ -25,7 +24,6 @@ export const PUSPA_KNOWLEDGE_BASE = `
 - Treasurer: YM Raja Nuraini Raja Hassan
 - Deputy Secretary: Pn Shahidah @ Fauziah Hashim
 - Adviser: Prof. Emeritus Datuk Ismail Hassan
-- Operational Contact: Zaki
 
 ### Verified Partners & Funders
 - Perumahan Kinrara Berhad (PKB) — Major funder via zakat
