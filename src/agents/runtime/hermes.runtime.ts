@@ -1,11 +1,16 @@
 // PUSPA V4 — Hermes Runtime Engine
 // Core AI orchestration: memory → tools → streaming response
-// Phase 1 + Phase 4: Includes system prompt, RBAC, tool execution loop
+// Uses OpenRouter API (OpenAI-compatible) with key rotation
 
 import { getConversationHistory, saveMessage } from '@/lib/memory'
 import { getToolsForRole, toOpenAITools, executeTool } from '@/tools'
+import {
+  getConfiguredModel,
+  isConfigured,
+} from '@/lib/openrouter'
+import type { OpenRouterMessage, OpenRouterToolCall } from '@/lib/openrouter'
 
-// ─── System Prompt (Phase 4) ─────────────────────────────────
+// ─── System Prompt ───────────────────────────────────────────
 
 const HERMES_SYSTEM_PROMPT = `You are Hermes, the AI operator for PUSPA (Pertubuhan Urus Peduli Asnaf). You are professional, concise, and communicate in bilingual Bahasa Melayu/English based on the user's language preference.
 
@@ -38,20 +43,16 @@ PUSPA V4 manages: Asnaf Members, Cases (welfare/medical/education/housing/emerge
 
 // ─── Types ───────────────────────────────────────────────────
 
-interface HermesMessage {
-  role: 'system' | 'user' | 'assistant' | 'tool'
-  content: string
-  tool_call_id?: string
-  name?: string
-}
+export type HermesMessage = OpenRouterMessage
 
-interface ToolCall {
-  id: string
-  type: 'function'
-  function: {
-    name: string
-    arguments: string
-  }
+export type ToolCall = OpenRouterToolCall
+
+export interface HermesPayload {
+  messages: HermesMessage[]
+  tools: ReturnType<typeof toOpenAITools>
+  userId: string
+  userRole: string
+  model: string
 }
 
 // ─── Main Runtime ────────────────────────────────────────────
@@ -64,17 +65,14 @@ interface ToolCall {
  * 2. Append the new user prompt
  * 3. Save the user message to memory
  * 4. Prepare tool registry (filtered by user role)
- * 5. Call the AI with streaming enabled
- * 6. If tool calls are detected, execute them and continue
- * 7. Save the assistant response to memory
- * 8. Return the streaming response
+ * 5. Return the payload ready for OpenRouter API call
  */
 export async function runHermes(
   prompt: string,
   userId: string,
   userRole: string = 'staff',
   currentView: string = 'dashboard'
-) {
+): Promise<HermesPayload> {
   // 1. Fetch conversation history
   const history = await getConversationHistory(userId)
 
@@ -95,14 +93,17 @@ export async function runHermes(
 
   // 4. Prepare tool registry based on role
   const allowedTools = getToolsForRole(userRole)
-  const openaiTools = toOpenAITools(allowedTools)
+  const tools = toOpenAITools(allowedTools)
+
+  // 5. Determine model
+  const model = getConfiguredModel()
 
   return {
     messages,
-    tools: openaiTools,
+    tools,
     userId,
     userRole,
-    allowedTools,
+    model,
   }
 }
 
@@ -147,4 +148,11 @@ export async function saveAssistantMessage(
   await saveMessage(userId, 'assistant', content)
 }
 
-export type { HermesMessage, ToolCall }
+/**
+ * Check if OpenRouter is configured.
+ */
+export function isHermesConfigured(): boolean {
+  return isConfigured()
+}
+
+export type { OpenRouterMessage, OpenRouterToolCall }
