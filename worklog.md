@@ -376,3 +376,48 @@ Stage Summary:
 - Rate limiter includes 4 pre-configured presets and proxy support
 - API utils provide complete request/response standardization
 - Lint passes cleanly, dev server compiles successfully
+
+---
+Task ID: Auth-System
+Agent: Main
+Task: Create complete Supabase authentication system for PUSPA V5
+
+Work Log:
+- Read worklog.md and analyzed existing project structure (Zustand store with simulated auth, PuspaLogo component, ThemeProvider, etc.)
+- Created `src/lib/supabase/client.ts` — Browser-side Supabase client using @supabase/ssr createBrowserClient
+- Created `src/lib/supabase/server.ts` — Server-side Supabase client with cookie-based session management (getAll/setAll pattern)
+- Created `src/lib/supabase/middleware.ts` — Auth middleware client with session refresh, protected route redirect, and login page redirect for authenticated users
+- Created `src/middleware.ts` — Next.js middleware entry point with matcher excluding static assets
+- Created `src/lib/auth.ts` — Auth helper functions: getCurrentUser(), requireAuth(), requireRole() with Bahasa Melayu error messages
+- Created `src/components/auth-provider.tsx` — React context provider with: user state, loading, signIn, signUp, signOut functions, onAuthStateChange listener
+- Created `src/app/login/page.tsx` — Professional login page with:
+  - PUSPA purple theme (#6A0DAD) and branding
+  - Centered card with PuspaLogo, organization name, tagline
+  - Email/password form with validation and toggle to sign-up mode
+  - Error messages translated to Bahasa Melayu (8 common Supabase errors translated)
+  - Password show/hide toggle
+  - Loading states with spinner
+  - Dark mode support
+  - Responsive design
+  - Background decoration with gradient blobs
+- Updated `src/app/layout.tsx` — Wrapped children with AuthProvider inside ThemeProvider
+- Updated `src/app/page.tsx` — Added auth gate:
+  - Checks if Supabase is configured (env vars present)
+  - If configured + not authenticated: shows loading screen then redirects to /login
+  - If configured + authenticated: syncs Supabase user with Zustand app store
+  - If not configured: falls back to simulated auth (existing behavior)
+- Created `.env.local` with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+- Added both env vars to Vercel production environment
+- Lint passes cleanly, production build compiles successfully (20 routes including /login)
+- Middleware confirmed active in build output (ƒ Proxy)
+
+Stage Summary:
+- Complete Supabase authentication system with 9 new/modified files
+- Three client types: browser (client.ts), server (server.ts), middleware (middleware.ts)
+- Auth middleware protects all routes except /login, /api/*, and root /
+- AuthProvider wraps entire app with real-time auth state management
+- Professional login page with PUSPA branding, Bahasa Melayu error messages, dark mode
+- Graceful fallback: if Supabase env vars missing, uses simulated auth (no breaking changes)
+- Server-side auth helpers: getCurrentUser(), requireAuth(), requireRole(minRole) for API routes
+- Role hierarchy: staff < admin < developer with Bahasa Melayu access denied messages
+- Vercel production env vars configured for deployment
