@@ -53,6 +53,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
+    // Validation
+    if (!body.name) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    }
+    if (!body.category) {
+      return NextResponse.json({ error: 'Category is required' }, { status: 400 })
+    }
+
     const programme = await db.programme.create({
       data: {
         name: body.name,

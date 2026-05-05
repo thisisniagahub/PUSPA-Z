@@ -8,10 +8,10 @@ import {
 } from '@/components/ui'
 import {
   BarChart3, Download, Calendar, TrendingUp,
-  PieChart as PieChartIcon, BarChart, LineChart,
+  PieChart as PieChartIcon, BarChart as BarChartIcon,
 } from 'lucide-react'
 import {
-  Bar, Line, XAxis, YAxis, CartesianGrid, Cell,
+  BarChart, LineChart, Bar, Line, XAxis, YAxis, CartesianGrid, Cell,
   Pie, PieChart, ResponsiveContainer, Tooltip, Legend,
 } from 'recharts'
 
@@ -251,7 +251,7 @@ export default function ReportsPage() {
           <TabsTrigger value="operational" className="gap-1"><BarChart3 className="h-4 w-4" /><span className="hidden sm:inline">Operasi</span></TabsTrigger>
           <TabsTrigger value="financial" className="gap-1"><TrendingUp className="h-4 w-4" /><span className="hidden sm:inline">Kewangan</span></TabsTrigger>
           <TabsTrigger value="compliance" className="gap-1"><PieChartIcon className="h-4 w-4" /><span className="hidden sm:inline">Pematuhan</span></TabsTrigger>
-          <TabsTrigger value="programme" className="gap-1"><BarChart className="h-4 w-4" /><span className="hidden sm:inline">Program</span></TabsTrigger>
+          <TabsTrigger value="programme" className="gap-1"><BarChartIcon className="h-4 w-4" /><span className="hidden sm:inline">Program</span></TabsTrigger>
         </TabsList>
 
         {/* Operational Tab */}

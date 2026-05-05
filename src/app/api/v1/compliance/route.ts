@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     // Compute compliance score
     const allRecords = await db.complianceRecord.findMany({
-      select: { status: true, category: true },
+      select: { status: true, category: true, dueDate: true },
     })
 
     const compliantCount = allRecords.filter((r) => r.status === 'compliant').length
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     // Overdue items
     const now = new Date().toISOString().split('T')[0]
     const overdueItems = allRecords.filter((r) =>
-      r.status !== 'compliant' && r.status !== 'expired'
+      r.status !== 'compliant' && r.status !== 'expired' && r.dueDate && r.dueDate < now
     ).length
 
     // Status breakdown

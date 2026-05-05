@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     const pendingCount = allDisbursements.filter((d) => d.status === 'pending').length
     const approvedCount = allDisbursements.filter((d) => d.status === 'approved').length
-    const scheduledCount = allDisbursements.filter((d) => d.status === 'approved').length
+    const scheduledCount = allDisbursements.filter((d) => d.status === 'disbursed').length
     const verifiedCount = allDisbursements.filter((d) => d.status === 'verified').length
 
     return NextResponse.json({

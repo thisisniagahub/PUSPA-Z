@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
     const completion = await zai.chat.completions.create({
       messages: [
-        { role: 'assistant', content: systemPrompt },
+        { role: 'system', content: systemPrompt },
         ...messages.map((m: { role: string; content: string }) => ({
           role: m.role === 'assistant' ? 'assistant' : m.role,
           content: m.content,

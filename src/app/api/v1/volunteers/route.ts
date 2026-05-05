@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const availability = searchParams.get('availability')
     const search = searchParams.get('search')
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')))
 
     const where: Record<string, unknown> = {}
 
@@ -21,27 +23,32 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const volunteers = await db.volunteer.findMany({
-      where,
-      include: {
-        activities: {
-          select: { id: true, hours: true, role: true, status: true, date: true },
-          orderBy: { createdAt: 'desc' },
-          take: 10,
+    const [volunteers, total] = await Promise.all([
+      db.volunteer.findMany({
+        where,
+        include: {
+          activities: {
+            select: { id: true, hours: true, role: true, status: true, date: true },
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+          },
+          certificates: {
+            select: { id: true, title: true, issuedDate: true, certificateUrl: true },
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+          },
+          _count: {
+            select: { activities: true, certificates: true },
+          },
         },
-        certificates: {
-          select: { id: true, title: true, issuedDate: true, certificateUrl: true },
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-        },
-        _count: {
-          select: { activities: true, certificates: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      db.volunteer.count({ where }),
+    ])
 
-    return NextResponse.json({ data: volunteers, total: volunteers.length })
+    return NextResponse.json({ data: volunteers, total, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
   } catch (error) {
     console.error('Error fetching volunteers:', error)
     return NextResponse.json(
@@ -54,6 +61,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+
+    // Validation
+    if (!body.name) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    }
 
     const volunteer = await db.volunteer.create({
       data: {

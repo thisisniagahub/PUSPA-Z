@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
         monthlyIncome: body.monthlyIncome ? parseFloat(body.monthlyIncome) : 0,
         householdSize: body.householdSize ? parseInt(body.householdSize) : 1,
         asnafCategory: body.asnafCategory || 'fakir',
-        status: body.status || 'pending',
+        status: body.status || 'active',
         ekycStatus: 'pending',
         notes: body.notes || null,
       },
