@@ -1,12 +1,39 @@
-// PUSPA V4 — Maria Puspa Tool Registry
+// PUSPA V5 — Maria Puspa Tool Registry
 // Central registry for all domain tools with RBAC metadata
 // Compatible with OpenAI function calling schema format
+// Gracefully falls back when database is unavailable (e.g. Vercel serverless)
 
 import { z } from 'zod'
 import { getRecentDonations, getDonationStats } from './donations'
 import { getActiveCases, getCaseSummary } from './cases'
 import { extendedTools } from './web-tools'
 import { db } from '@/lib/db'
+
+// ─── DB Availability Check ───────────────────────────────────
+
+let dbChecked = false
+let dbOk = false
+
+async function isDbReady(): Promise<boolean> {
+  if (dbChecked) return dbOk
+  try {
+    await db.$queryRaw`SELECT 1`
+    dbOk = true
+  } catch {
+    console.warn('[Tools] Database unavailable — tool results will show fallback data')
+    dbOk = false
+  }
+  dbChecked = true
+  return dbOk
+}
+
+function dbFallback(toolName: string) {
+  return {
+    status: 'database_unavailable',
+    message: `Pangkalan data tidak tersedia sekarang. Data untuk "${toolName}" tidak boleh dimuat. Sila cuba lagi nanti atau hubungi admin.`,
+    hint: 'Feature ini memerlukan sambungan database yang aktif.',
+  }
+}
 
 // ─── Tool Definition Types ───────────────────────────────────
 
@@ -36,7 +63,14 @@ const ping_system: MariaPuspaTool = {
     type: 'object',
     properties: {},
   },
-  execute: async () => ({ status: 'System is online', timestamp: new Date().toISOString() }),
+  execute: async () => {
+    const dbReady = await isDbReady()
+    return {
+      status: 'System is online',
+      database: dbReady ? 'connected' : 'unavailable (running in memory-only mode)',
+      timestamp: new Date().toISOString(),
+    }
+  },
   requiredRole: ['staff', 'admin', 'developer'],
 }
 
@@ -54,6 +88,7 @@ const get_recent_donations: MariaPuspaTool = {
     },
   },
   execute: async (params) => {
+    if (!(await isDbReady())) return dbFallback('get_recent_donations')
     const limit = typeof params.limit === 'number' ? params.limit : 10
     return getRecentDonations(limit)
   },
@@ -68,7 +103,10 @@ const get_donation_stats: MariaPuspaTool = {
     type: 'object',
     properties: {},
   },
-  execute: async () => getDonationStats(),
+  execute: async () => {
+    if (!(await isDbReady())) return dbFallback('get_donation_stats')
+    return getDonationStats()
+  },
   requiredRole: ['staff', 'admin', 'developer'],
 }
 
@@ -87,6 +125,7 @@ const get_active_cases: MariaPuspaTool = {
     },
   },
   execute: async (params) => {
+    if (!(await isDbReady())) return dbFallback('get_active_cases')
     const status = typeof params.status === 'string' ? params.status : undefined
     return getActiveCases(status)
   },
@@ -108,6 +147,7 @@ const get_case_summary: MariaPuspaTool = {
     required: ['caseId'],
   },
   execute: async (params) => {
+    if (!(await isDbReady())) return dbFallback('get_case_summary')
     const caseId = params.caseId
     if (typeof caseId !== 'string') return { error: 'caseId must be a string' }
     const result = await getCaseSummary(caseId)
@@ -137,6 +177,7 @@ const get_member_list: MariaPuspaTool = {
     },
   },
   execute: async (params) => {
+    if (!(await isDbReady())) return dbFallback('get_member_list')
     const category = typeof params.category === 'string' ? params.category : undefined
     const limit = typeof params.limit === 'number' ? Math.min(params.limit, 100) : 20
 
@@ -174,6 +215,7 @@ const get_member_stats: MariaPuspaTool = {
     properties: {},
   },
   execute: async () => {
+    if (!(await isDbReady())) return dbFallback('get_member_stats')
     const [total, byCategory, ekycPending, ekycVerified] = await Promise.all([
       db.member.count(),
       db.member.groupBy({ by: ['asnafCategory'], _count: { asnafCategory: true } }),
@@ -207,6 +249,7 @@ const get_active_programmes: MariaPuspaTool = {
     },
   },
   execute: async (params) => {
+    if (!(await isDbReady())) return dbFallback('get_active_programmes')
     const limit = typeof params.limit === 'number' ? params.limit : 10
     const programmes = await db.programme.findMany({
       where: { status: 'active' },
@@ -245,6 +288,7 @@ const get_volunteer_stats: MariaPuspaTool = {
     properties: {},
   },
   execute: async () => {
+    if (!(await isDbReady())) return dbFallback('get_volunteer_stats')
     const [total, active] = await Promise.all([
       db.volunteer.count(),
       db.volunteer.count({ where: { status: 'active' } }),
@@ -266,6 +310,7 @@ const get_compliance_status: MariaPuspaTool = {
     properties: {},
   },
   execute: async () => {
+    if (!(await isDbReady())) return dbFallback('get_compliance_status')
     const [total, completed, pending, overdue] = await Promise.all([
       db.complianceRecord.count(),
       db.complianceRecord.count({ where: { status: 'completed' } }),
@@ -305,6 +350,7 @@ const get_disbursement_summary: MariaPuspaTool = {
     properties: {},
   },
   execute: async () => {
+    if (!(await isDbReady())) return dbFallback('get_disbursement_summary')
     const [total, totalAmount, byStatus] = await Promise.all([
       db.disbursement.count(),
       db.disbursement.aggregate({ _sum: { amount: true } }),
@@ -337,6 +383,7 @@ const get_dashboard_overview: MariaPuspaTool = {
     properties: {},
   },
   execute: async () => {
+    if (!(await isDbReady())) return dbFallback('get_dashboard_overview')
     const [
       memberCount,
       activeCases,
