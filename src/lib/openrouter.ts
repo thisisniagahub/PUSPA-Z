@@ -1,11 +1,11 @@
-// PUSPA V4 — OpenRouter Client
+// PUSPA V5 — OpenRouter Client
 // Handles API calls to OpenRouter with automatic key rotation
 // Docs: https://openrouter.ai/docs/quickstart
 // OpenRouter is fully OpenAI-compatible (chat completions + tool calling + streaming)
 
 const OPENROUTER_BASE_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini'
-const OPENROUTER_APP_NAME = process.env.OPENROUTER_APP_NAME || 'PUSPA V4'
+const OPENROUTER_APP_NAME = process.env.OPENROUTER_APP_NAME || 'PUSPA V5'
 const OPENROUTER_APP_URL = process.env.OPENROUTER_APP_URL || 'http://localhost:3000'
 
 // ─── Key Rotation ────────────────────────────────────────────
@@ -100,9 +100,13 @@ export interface OpenRouterChatOptions {
   max_tokens?: number
 }
 
+// ─── Retry Logic ─────────────────────────────────────────────
+
+const MAX_RETRIES = 2
+
 // ─── Chat Completion (Non-Streaming) ─────────────────────────
 
-export async function createChatCompletion(options: OpenRouterChatOptions) {
+export async function createChatCompletion(options: OpenRouterChatOptions, retryCount = 0) {
   const apiKey = getNextKey()
   const model = options.model || OPENROUTER_MODEL
 
@@ -129,9 +133,13 @@ export async function createChatCompletion(options: OpenRouterChatOptions) {
       const errorText = await response.text()
       console.error(`[OpenRouter] API error ${response.status}: ${errorText}`)
 
-      // If rate limited or server error, try rotating key
+      // If rate limited or server error, rotate key and retry
       if (response.status === 429 || response.status >= 500) {
         rotateKey()
+        if (retryCount < MAX_RETRIES) {
+          console.log(`[OpenRouter] Retrying (${retryCount + 1}/${MAX_RETRIES})...`)
+          return createChatCompletion(options, retryCount + 1)
+        }
       }
 
       throw new Error(`OpenRouter API error ${response.status}: ${errorText}`)
@@ -147,7 +155,7 @@ export async function createChatCompletion(options: OpenRouterChatOptions) {
 // ─── Chat Completion (Streaming) ─────────────────────────────
 // Per OpenRouter docs: Set stream: true for SSE responses
 
-export async function createChatCompletionStream(options: OpenRouterChatOptions) {
+export async function createChatCompletionStream(options: OpenRouterChatOptions, retryCount = 0) {
   const apiKey = getNextKey()
   const model = options.model || OPENROUTER_MODEL
 
@@ -175,9 +183,13 @@ export async function createChatCompletionStream(options: OpenRouterChatOptions)
       const errorText = await response.text()
       console.error(`[OpenRouter] Stream error ${response.status}: ${errorText}`)
 
-      // If rate limited or server error, try rotating key
+      // If rate limited or server error, rotate key and retry
       if (response.status === 429 || response.status >= 500) {
         rotateKey()
+        if (retryCount < MAX_RETRIES) {
+          console.log(`[OpenRouter] Retrying stream (${retryCount + 1}/${MAX_RETRIES})...`)
+          return createChatCompletionStream(options, retryCount + 1)
+        }
       }
 
       throw new Error(`OpenRouter stream error ${response.status}: ${errorText}`)

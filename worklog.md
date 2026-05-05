@@ -276,3 +276,103 @@ Stage Summary:
 - PUSPA logo fixed: no more gradient fills, uses currentColor for auto theme adaptation
 - Both services verified working (Next.js HTTP 200, Telegram API returns response)
 - Note: Background processes in sandbox are killed between Bash sessions — need manual restart
+
+---
+Task ID: 3
+Agent: Bugfix
+Task: Fix 8 critical bugs — runtime crashes, PII breach, version inconsistency, production logging
+
+Work Log:
+- Fixed `getActiveProgrammes` in `src/tools/index.ts`:
+  - Changed `type: true` → `category: true` in Prisma select (Programme model has `category`, not `type`)
+  - Changed `type: p.type` → `category: p.category` in mapping
+  - Changed `p.startDate.toISOString().split('T')[0]` → `p.startDate || 'N/A'` (startDate is String, not DateTime)
+  - Changed `p.endDate?.toISOString().split('T')[0] || 'Ongoing'` → `p.endDate || 'Ongoing'` (endDate is String, not DateTime)
+  - Updated tool description to say "category" instead of "type"
+- Masked IC numbers in `src/app/api/v1/members/route.ts`:
+  - GET: Applied `'****' + m.icNumber.slice(-4)` to member IC numbers and household member IC numbers
+- Masked IC numbers in `src/app/api/v1/cases/route.ts`:
+  - GET: Applied `'****' + c.member.icNumber.slice(-4)` to case member IC numbers
+  - POST: Applied same masking to newly created case record member IC number
+- Fixed version V4 → V5 in `src/app/layout.tsx`:
+  - Changed title from "PUSPA V4" to "PUSPA V5"
+- Fixed version V4 → V5 in `src/lib/openrouter.ts`:
+  - Changed comment from "PUSPA V4" to "PUSPA V5"
+  - Changed OPENROUTER_APP_NAME default from "PUSPA V4" to "PUSPA V5"
+- Fixed Prisma query logging in `src/lib/db.ts`:
+  - Changed `log: ['query']` to `log: process.env.NODE_ENV === 'development' ? ['query'] : ['error']`
+- Verified `src/tools/cases.ts`: No fix needed — Case model has `type` field (correct usage)
+- Verified `src/app/api/v1/dashboard/route.ts`: No Programme date `.toISOString()` calls found
+- Verified `src/app/api/v1/programmes/route.ts`: No `.toISOString()` on Programme dates (startDate/endDate returned as raw Strings via spread)
+
+Stage Summary:
+- 6 files edited with 8 bug fixes applied
+- Runtime crash: `getActiveProgrammes` type→category + String date handling fixed
+- PII breach: IC numbers masked in members and cases API responses (GET and POST)
+- Version consistency: V4 → V5 in layout metadata and OpenRouter app name
+- Production logging: Prisma now only logs queries in development, errors in production
+- Lint passes, dev server compiles successfully
+
+---
+Task ID: 5
+Agent: Business Logic Port
+Task: Port critical business logic libraries from PUSPA-V4 to V5
+
+Work Log:
+- Updated Prisma schema (prisma/schema.prisma) with missing fields:
+  - Donor: added `donorNumber` (unique), `ic`, `isAnonymous`, `preferredContact`, `status`, `totalDonated`, `donationCount`, `firstDonationAt`, `lastDonationAt`
+  - Donation: added `donorIC`, `donorEmail`, `donorPhone`, `isAnonymous`, `status`, `donatedAt`
+  - Ran `bun run db:push` successfully
+- Created `src/lib/case-intelligence.ts` — Case Intelligence Engine:
+  - computeEligibility() — 100-point scoring system (active member +20, income threshold +20, IC +15, phone +10, address +10, amount vs income +15, programme match +10, eKYC bonus +5)
+  - computeRecommendation() — Programme and amount suggestions based on income/household
+  - computeRiskFlags() — Duplicate IC, eKYC high risk, missing info, amount/income inconsistencies
+  - computeBeneficiary360() — Full beneficiary profile aggregation (household, cases, disbursements, totals)
+  - computeNextAction() — Workflow step suggestions mapped to V5 case statuses (draft→intake→verification→assessment→approval→disbursement→follow_up→closed)
+  - computeDisbursementReconciliation() — Missing bank info, overdue schedules, missing contact
+  - DB-backed wrappers: computeEligibilityFromDB(), computeBeneficiary360FromDB()
+- Created `src/lib/donor-sync.ts` — Donor Sync Engine:
+  - findOrCreateDonorForDonation() — Auto-matches by IC/email/phone, creates with collision-safe donor number
+  - findMatchingDonorIdsForDonation() — Find donor IDs without creating
+  - syncDonorTotals() — Aggregates totalDonated, donationCount, firstDonationAt, lastDonationAt
+  - backfillDonorsFromDonations() — One-time migration from donation snapshots
+  - Convenience wrappers: findOrCreateDonor(), syncDonor(), backfillDonors()
+- Created `src/lib/domain.ts` — Domain Normalization (Bilingual):
+  - Member status aliases (aktif→active, tidak_aktif→inactive, senarai_hitam→blacklisted, menunggu→pending)
+  - Case type aliases (kebajikan→welfare, perubatan→medical, pendidikan→education, etc.)
+  - Case status aliases (draf→draft, penerimaan→intake, pengesahan→verification, etc.)
+  - Asnaf category aliases (mualaf→muallaf, ibnu_sabil→ibn_sabil, fi_sabilillah→fisabilillah)
+  - Donation category aliases (sedekah→sadaqah, wakaf→waqf, infak→infaq, umum→general)
+  - Compliance category aliases (dalaman→internal)
+  - Programme category/status aliases with full bilingual mapping
+  - Disbursement status aliases (menunggu→pending, diluluskan→approved, dibayar→disbursed, etc.)
+  - Label functions for all domains: getMemberStatusLabel, getCaseTypeLabel, getAsnafCategoryLabel, etc.
+- Created `src/lib/sequence.ts` — Sequence Generator (Collision-Safe):
+  - createWithGeneratedUniqueValue() — Retry on P2002 with configurable max attempts
+  - generateCaseNumber() — Format: CAS-YYYYMMDD-XXXX
+  - generateReceiptNumber() — Format: RCP-YYYYMMDD-XXXX
+  - generateDonorNumber() — Format: DNR-XXXX
+- Created `src/lib/rate-limit.ts` — Rate Limiter:
+  - rateLimit() — Token bucket with configurable window/max
+  - getClientIp() — IP extraction with trusted proxy support (TRUSTED_PROXY_IPS env)
+  - buildRateLimitHeaders() — X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+  - Pre-configured limiters: API_RATE_LIMIT (100/min), AI_RATE_LIMIT (20/min), AUTH_RATE_LIMIT (5/min), DONATION_RATE_LIMIT (10/min)
+  - Automatic bucket pruning to prevent memory leaks
+- Created `src/lib/api-utils.ts` — API Input Validation Utility:
+  - parsePagination() — Handles NaN, negative, too large; returns page/pageSize/skip/take
+  - buildPaginationMeta() — totalPages, hasNextPage, hasPreviousPage
+  - sanitizeSearch() — Trim, length limit, empty→undefined
+  - parseSort() — Whitelisted fields, validated direction
+  - Error responses: errorResponse(), badRequestError(), unauthorizedError(), forbiddenError(), notFoundError(), rateLimitError(), internalServerError()
+  - Success responses: successResponse(), createdResponse()
+  - Body parsing: safeParseBody(), requireBody()
+
+Stage Summary:
+- 6 library files ported/created with production-quality TypeScript
+- Prisma schema enhanced with donor/donation fields for full business logic support
+- All V5 model differences gracefully handled (ic→icNumber, Programme category mapping, eKYC fields)
+- Bilingual normalization covers 10+ domain categories with Malay/English aliases
+- Sequence generator includes 3 format generators (case, receipt, donor numbers)
+- Rate limiter includes 4 pre-configured presets and proxy support
+- API utils provide complete request/response standardization
+- Lint passes cleanly, dev server compiles successfully

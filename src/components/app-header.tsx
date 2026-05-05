@@ -30,7 +30,7 @@ const viewTitles: Record<ViewId, { en: string; ms: string }> = {
 }
 
 export function AppHeader() {
-  const { currentView, toggleAiChat } = useAppStore()
+  const { currentView, toggleAiChat, searchQuery, setSearchQuery } = useAppStore()
   const { theme, setTheme } = useTheme()
   
   const title = viewTitles[currentView] || { en: currentView, ms: currentView }
@@ -51,16 +51,16 @@ export function AppHeader() {
           <Input
             placeholder="Cari... / Search..."
             className="pl-8 h-8 text-xs"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="h-8 w-8 relative">
+        <Button variant="ghost" size="icon" className="h-8 w-8">
           <Bell className="h-4 w-4" />
-          <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 p-0 text-[9px] flex items-center justify-center bg-primary text-primary-foreground">
-            3
-          </Badge>
+          <span className="sr-only">Notifications</span>
         </Button>
 
         <Button

@@ -41,8 +41,18 @@ export async function GET(request: NextRequest) {
       db.member.count({ where }),
     ])
 
+    // Mask IC numbers for PDPA compliance
+    const maskedMembers = members.map((m) => ({
+      ...m,
+      icNumber: m.icNumber ? '****' + m.icNumber.slice(-4) : null,
+      householdMembers: m.householdMembers.map((hm) => ({
+        ...hm,
+        icNumber: hm.icNumber ? '****' + hm.icNumber.slice(-4) : null,
+      })),
+    }))
+
     return NextResponse.json({
-      data: members,
+      data: maskedMembers,
       pagination: {
         page,
         limit,

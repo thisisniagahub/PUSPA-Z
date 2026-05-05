@@ -11,11 +11,13 @@ import { db } from '@/lib/db'
 
 // ─── DB Availability Check ───────────────────────────────────
 
-let dbChecked = false
 let dbOk = false
+let dbCheckTime = 0
+const DB_CHECK_TTL = 60000 // Re-check every 60 seconds
 
 async function isDbReady(): Promise<boolean> {
-  if (dbChecked) return dbOk
+  const now = Date.now()
+  if ((now - dbCheckTime) < DB_CHECK_TTL && dbCheckTime > 0) return dbOk
   try {
     await db.$queryRaw`SELECT 1`
     dbOk = true
@@ -23,7 +25,7 @@ async function isDbReady(): Promise<boolean> {
     console.warn('[Tools] Database unavailable — tool results will show fallback data')
     dbOk = false
   }
-  dbChecked = true
+  dbCheckTime = now
   return dbOk
 }
 
@@ -238,7 +240,7 @@ const get_member_stats: MariaPuspaTool = {
 const get_active_programmes: MariaPuspaTool = {
   name: 'get_active_programmes',
   description:
-    'Fetch programmes that are currently active. Returns programme name, type, start/end dates, and status.',
+    'Fetch programmes that are currently active. Returns programme name, category, start/end dates, and status.',
   parameters: {
     type: 'object',
     properties: {
@@ -256,7 +258,7 @@ const get_active_programmes: MariaPuspaTool = {
       select: {
         id: true,
         name: true,
-        type: true,
+        category: true,
         startDate: true,
         endDate: true,
         status: true,
@@ -268,9 +270,9 @@ const get_active_programmes: MariaPuspaTool = {
     return programmes.map((p) => ({
       id: p.id,
       name: p.name,
-      type: p.type,
-      start: p.startDate.toISOString().split('T')[0],
-      end: p.endDate?.toISOString().split('T')[0] || 'Ongoing',
+      category: p.category,
+      start: p.startDate || 'N/A',
+      end: p.endDate || 'Ongoing',
       status: p.status,
     }))
   },

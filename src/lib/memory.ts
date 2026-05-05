@@ -19,18 +19,21 @@ interface MemoryMessage {
 const inMemoryStore = new Map<string, MemoryMessage[]>()
 
 let dbAvailable: boolean | null = null
+let dbCheckTime = 0
+const DB_CHECK_TTL = 60000 // Re-check every 60 seconds
 
 async function checkDbAvailable(): Promise<boolean> {
-  if (dbAvailable !== null) return dbAvailable
+  const now = Date.now()
+  if (dbAvailable !== null && (now - dbCheckTime) < DB_CHECK_TTL) return dbAvailable
   try {
     await db.aIMemory.findMany({ take: 1 })
     dbAvailable = true
-    return true
   } catch {
     console.warn('[Memory] Database unavailable, using in-memory fallback')
     dbAvailable = false
-    return false
   }
+  dbCheckTime = now
+  return dbAvailable
 }
 
 /**

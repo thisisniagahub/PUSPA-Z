@@ -129,37 +129,52 @@ model CaseProgramme {
 // ─── Donations & Donors ─────────────────────────────────────────
 
 model Donor {
-  id          String   @id @default(cuid())
-  name        String
-  email       String?
-  phone       String?
-  address     String?
-  type        String   @default("individual") // individual, corporate, government
-  category    String?  // regular, occasional, one_time
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String    @id @default(cuid())
+  donorNumber     String    @unique
+  name            String
+  ic              String?
+  email           String?
+  phone           String?
+  address         String?
+  type            String     @default("individual") // individual, corporate, government
+  category        String?    // regular, occasional, one_time
+  isAnonymous     Boolean    @default(false)
+  preferredContact String?   // email, phone, null
+  status          String     @default("active") // active, inactive, blacklisted
+  totalDonated    Float      @default(0)
+  donationCount   Int        @default(0)
+  firstDonationAt DateTime?
+  lastDonationAt  DateTime?
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
   donations   Donation[]
 }
 
 model Donation {
-  id              String   @id @default(cuid())
-  donorId         String?
-  donorName       String?
-  category        String   @default("sadaqah") // zakat, sadaqah, waqf, infaq, general
-  amount          Float
-  currency        String   @default("MYR")
-  method          String?  // cash, bank_transfer, online, cheque
-  receiptNumber   String?
-  receiptIssued   Boolean  @default(false)
-  shariahCompliant Boolean @default(true)
-  date            String?
-  notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String   @id @default(cuid())
+  donorId          String?
+  donorName        String?
+  donorIC          String?
+  donorEmail       String?
+  donorPhone       String?
+  isAnonymous      Boolean  @default(false)
+  category         String   @default("sadaqah") // zakat, sadaqah, waqf, infaq, general
+  amount           Float
+  currency         String   @default("MYR")
+  method           String?  // cash, bank_transfer, online, cheque
+  status           String   @default("confirmed") // pending, confirmed, cancelled, refunded
+  receiptNumber    String?
+  receiptIssued    Boolean  @default(false)
+  shariahCompliant Boolean  @default(true)
+  date             String?
+  donatedAt        DateTime @default(now())
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  donor           Donor?   @relation(fields: [donorId], references: [id])
+  donor            Donor?   @relation(fields: [donorId], references: [id])
 }
 
 // ─── Disbursements ──────────────────────────────────────────────

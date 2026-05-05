@@ -62,8 +62,17 @@ export async function GET(request: NextRequest) {
       db.case.count({ where }),
     ])
 
+    // Mask IC numbers for PDPA compliance
+    const maskedCases = cases.map((c) => ({
+      ...c,
+      member: {
+        ...c.member,
+        icNumber: c.member.icNumber ? '****' + c.member.icNumber.slice(-4) : null,
+      },
+    }))
+
     return NextResponse.json({
-      data: cases,
+      data: maskedCases,
       pagination: {
         page,
         limit,
@@ -151,7 +160,16 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ data: caseRecord }, { status: 201 })
+    // Mask IC number for PDPA compliance
+    const maskedCaseRecord = {
+      ...caseRecord,
+      member: {
+        ...caseRecord.member,
+        icNumber: caseRecord.member.icNumber ? '****' + caseRecord.member.icNumber.slice(-4) : null,
+      },
+    }
+
+    return NextResponse.json({ data: maskedCaseRecord }, { status: 201 })
   } catch (error) {
     console.error('Error creating case:', error)
     return NextResponse.json(

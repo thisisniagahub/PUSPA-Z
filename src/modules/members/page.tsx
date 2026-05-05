@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { toast } from 'sonner'
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -224,8 +225,14 @@ export default function MembersPage() {
   // Dialog states
   const [registerOpen, setRegisterOpen] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [editingMember, setEditingMember] = useState<Member | null>(null)
+
+  // Debounce timer ref
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>()
 
   // Form
   const form = useForm<MemberFormData>({
@@ -298,12 +305,60 @@ export default function MembersPage() {
 
   // Reset form when dialog opens
   const openRegister = () => {
+    setEditingMember(null)
     form.reset({
       name: '', icNumber: '', phone: '', email: '', address: '', city: '',
       state: '', postcode: '', gender: '', dateOfBirth: '', occupation: '',
       monthlyIncome: '0', householdSize: '1', asnafCategory: 'fakir', notes: '',
     })
     setRegisterOpen(true)
+  }
+
+  // Open form pre-filled for editing
+  const openEdit = (member: Member) => {
+    setEditingMember(member)
+    form.reset({
+      name: member.name,
+      icNumber: member.icNumber,
+      phone: member.phone || '',
+      email: member.email || '',
+      address: member.address || '',
+      city: member.city || '',
+      state: member.state || '',
+      postcode: member.postcode || '',
+      gender: member.gender || '',
+      dateOfBirth: member.dateOfBirth || '',
+      occupation: member.occupation || '',
+      monthlyIncome: String(member.monthlyIncome),
+      householdSize: String(member.householdSize),
+      asnafCategory: member.asnafCategory,
+      notes: member.notes || '',
+    })
+    setRegisterOpen(true)
+  }
+
+  // Delete member
+  const confirmDelete = async () => {
+    if (!memberToDelete) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/v1/members/${memberToDelete.id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const json = await res.json()
+        toast.error(json.error || 'Gagal memadam ahli')
+        return
+      }
+      toast.success(`Ahli "${memberToDelete.name}" berjaya dipadam`)
+      setDeleteConfirmOpen(false)
+      setMemberToDelete(null)
+      fetchMembers()
+    } catch {
+      toast.error('Gagal memadam ahli. Sila cuba lagi.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   // Submit new member
@@ -323,15 +378,17 @@ export default function MembersPage() {
       const json = await res.json()
 
       if (!res.ok) {
-        alert(json.error || 'Failed to create member')
+        toast.error(json.error || 'Gagal mendaftar ahli')
         return
       }
 
       setRegisterOpen(false)
+      setEditingMember(null)
+      toast.success(editingMember ? 'Maklumat ahli dikemaskini' : 'Ahli baru berjaya didaftarkan')
       fetchMembers()
     } catch (error) {
       console.error('Error creating member:', error)
-      alert('Failed to create member')
+      toast.error('Gagal menyimpan maklumat ahli. Sila cuba lagi.')
     } finally {
       setSubmitting(false)
     }
@@ -378,7 +435,14 @@ export default function MembersPage() {
               <Input
                 placeholder="Cari nama atau No. IC..."
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+                onChange={(e) => {
+                  if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+                  const val = e.target.value
+                  searchTimerRef.current = setTimeout(() => {
+                    setSearch(val)
+                    setPage(1)
+                  }, 300)
+                }}
                 className="pl-9"
               />
             </div>
@@ -488,10 +552,10 @@ export default function MembersPage() {
                           <Button variant="ghost" size="sm" className="h-9 w-9 p-0" onClick={() => viewMember(member)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0" onClick={() => openEdit(member)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 text-destructive hover:text-destructive">
+                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 text-destructive hover:text-destructive" onClick={() => { setMemberToDelete(member); setDeleteConfirmOpen(true) }}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -531,16 +595,16 @@ export default function MembersPage() {
         </CardContent>
       </Card>
 
-      {/* Register Member Dialog */}
-      <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
+      {/* Register/Edit Member Dialog */}
+      <Dialog open={registerOpen} onOpenChange={(open) => { setRegisterOpen(open); if (!open) setEditingMember(null) }}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5 text-primary" />
-              Daftar Ahli Baru
+              {editingMember ? 'Edit Maklumat Ahli' : 'Daftar Ahli Baru'}
             </DialogTitle>
             <DialogDescription>
-              Isi maklumat ahli asnaf baru. Ruangan bertanda * wajib diisi.
+              {editingMember ? 'Kemaskini maklumat ahli asnaf. Ruangan bertanda * wajib diisi.' : 'Isi maklumat ahli asnaf baru. Ruangan bertanda * wajib diisi.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -681,7 +745,7 @@ export default function MembersPage() {
                 Batal
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Menyimpan...' : 'Daftar Ahli'}
+                {submitting ? 'Menyimpan...' : editingMember ? 'Kemaskini' : 'Daftar Ahli'}
               </Button>
             </DialogFooter>
           </form>
@@ -846,11 +910,11 @@ export default function MembersPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1 gap-2">
+                  <Button variant="outline" className="flex-1 gap-2" onClick={() => { setDetailOpen(false); openEdit(selectedMember!) }}>
                     <Pencil className="h-4 w-4" />
                     Edit
                   </Button>
-                  <Button variant="outline" className="flex-1 gap-2 text-destructive hover:text-destructive">
+                  <Button variant="outline" className="flex-1 gap-2 text-destructive hover:text-destructive" onClick={() => { setDetailOpen(false); setMemberToDelete(selectedMember!); setDeleteConfirmOpen(true) }}>
                     <Trash2 className="h-4 w-4" />
                     Padam
                   </Button>
@@ -860,6 +924,29 @@ export default function MembersPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              Padam Ahli
+            </DialogTitle>
+            <DialogDescription>
+              Adakah anda pasti mahu memadam ahli <strong>{memberToDelete?.name}</strong>? Tindakan ini tidak boleh dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)} disabled={submitting}>
+              Batal
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete} disabled={submitting}>
+              {submitting ? 'Memadam...' : 'Padam'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

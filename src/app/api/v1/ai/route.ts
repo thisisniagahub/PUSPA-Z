@@ -223,6 +223,8 @@ function handleSSEStream(
 
           const secondStream = await createChatCompletionStream({
             messages: secondMessages,
+            tools: tools.length > 0 ? tools : undefined,
+            tool_choice: tools.length > 0 ? 'auto' as const : undefined,
             model,
           })
 
