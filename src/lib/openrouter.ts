@@ -1,5 +1,6 @@
 // PUSPA V4 — OpenRouter Client
 // Handles API calls to OpenRouter with automatic key rotation
+// Docs: https://openrouter.ai/docs/quickstart
 // OpenRouter is fully OpenAI-compatible (chat completions + tool calling + streaming)
 
 const OPENROUTER_BASE_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
@@ -12,10 +13,14 @@ const OPENROUTER_APP_URL = process.env.OPENROUTER_APP_URL || 'http://localhost:3
 const API_KEYS = [
   process.env.OPENROUTER_API_KEY_1,
   process.env.OPENROUTER_API_KEY_2,
+  process.env.OPENROUTER_API_KEY_3,
+  process.env.OPENROUTER_API_KEY_4,
 ].filter(Boolean) as string[]
 
 if (API_KEYS.length === 0) {
   console.warn('[OpenRouter] WARNING: No API keys configured in .env')
+} else {
+  console.log(`[OpenRouter] ${API_KEYS.length} API key(s) loaded`)
 }
 
 let currentKeyIndex = 0
@@ -33,6 +38,28 @@ function rotateKey(): void {
     currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length
     console.log(`[OpenRouter] Rotated to key index ${currentKeyIndex}`)
   }
+}
+
+// ─── Build Headers (per OpenRouter docs) ─────────────────────
+// Authorization: Bearer <KEY>
+// HTTP-Referer: <YOUR_SITE_URL> (optional, for rankings)
+// X-OpenRouter-Title: <YOUR_SITE_NAME> (optional, for rankings)
+
+function buildHeaders(apiKey: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`,
+  }
+
+  // Optional headers per OpenRouter docs — for app attribution/rankings
+  if (OPENROUTER_APP_URL) {
+    headers['HTTP-Referer'] = OPENROUTER_APP_URL
+  }
+  if (OPENROUTER_APP_NAME) {
+    headers['X-OpenRouter-Title'] = OPENROUTER_APP_NAME
+  }
+
+  return headers
 }
 
 // ─── Types ───────────────────────────────────────────────────
@@ -94,12 +121,7 @@ export async function createChatCompletion(options: OpenRouterChatOptions) {
   try {
     const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': OPENROUTER_APP_URL,
-        'X-Title': OPENROUTER_APP_NAME,
-      },
+      headers: buildHeaders(apiKey),
       body: JSON.stringify(body),
     })
 
@@ -123,6 +145,7 @@ export async function createChatCompletion(options: OpenRouterChatOptions) {
 }
 
 // ─── Chat Completion (Streaming) ─────────────────────────────
+// Per OpenRouter docs: Set stream: true for SSE responses
 
 export async function createChatCompletionStream(options: OpenRouterChatOptions) {
   const apiKey = getNextKey()
@@ -144,12 +167,7 @@ export async function createChatCompletionStream(options: OpenRouterChatOptions)
   try {
     const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': OPENROUTER_APP_URL,
-        'X-Title': OPENROUTER_APP_NAME,
-      },
+      headers: buildHeaders(apiKey),
       body: JSON.stringify(body),
     })
 

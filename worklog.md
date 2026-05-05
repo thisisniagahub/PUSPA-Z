@@ -67,3 +67,30 @@ Stage Summary:
 - Role-based tool filtering: staff (5 tools), admin (7 tools), developer (7 tools)
 - Runtime RBAC check in executeTool() as defense-in-depth
 - API route accepts userId and userRole from client (production would use Supabase SSR)
+
+---
+Task ID: 5
+Agent: Main
+Task: Integrate OpenRouter API with 4 keys, review docs, fix streaming
+
+Work Log:
+- Fetched OpenRouter docs from https://openrouter.ai/docs/quickstart.md
+- Key findings: endpoint is /api/v1/chat/completions, headers are Authorization + HTTP-Referer + X-OpenRouter-Title, streaming via SSE with stream: true
+- Created src/lib/openrouter.ts — dedicated OpenRouter client with 4-key rotation
+- Updated .env with 4 API keys (KEY_1 through KEY_4)
+- Updated hermes.runtime.ts to use OpenRouter client instead of z-ai-web-dev-sdk
+- Updated API route to use createChatCompletionStream() from openrouter.ts
+- Tested with openai/gpt-4o-mini → 403 (not available in region)
+- Tested with google/gemma-4-31b-it:free → 429 (rate-limited upstream)
+- Tested with qwen/qwen3.6-flash → 200 SUCCESS with streaming SSE
+- Set default model to qwen/qwen3.6-flash (cheap, fast, tool-calling support)
+- Headers per OpenRouter docs: Authorization, HTTP-Referer, X-OpenRouter-Title
+- Key rotation works: auto-rotates on 429/5xx errors
+
+Stage Summary:
+- OpenRouter fully integrated and working with real streaming
+- 4 API keys with automatic rotation on rate limits
+- SSE streaming confirmed working end-to-end
+- Hermes responds in bilingual BM/English as designed
+- Memory persistence working (Prisma queries confirmed)
+- Default model: qwen/qwen3.6-flash (supports tool calling)
