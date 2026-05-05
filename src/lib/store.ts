@@ -5,7 +5,7 @@ export type ViewId =
   | 'dashboard' | 'members' | 'cases' | 'programmes' | 'donations' 
   | 'disbursements' | 'volunteers' | 'compliance' | 'reports' | 'ekyc'
   | 'documents' | 'activities' | 'donors' | 'ai' | 'settings' 
-  | 'tapsecure' | 'admin'
+  | 'tapsecure' | 'admin' | 'asnafpreneur' | 'sedekah-jumaat' | 'docs'
 
 interface AppState {
   // Navigation

@@ -21,6 +21,9 @@ import {
   Lock,
   UserCog,
   Sparkles,
+  Rocket,
+  UtensilsCrossed,
+  BookOpen,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -55,7 +58,9 @@ const navItems: NavItem[] = [
   { id: 'donations', label: 'Donations', labelMs: 'Sumbangan', icon: HandCoins, group: 'Kewangan' },
   { id: 'donors', label: 'Donors', labelMs: 'Penderma', icon: Heart, group: 'Kewangan' },
   { id: 'disbursements', label: 'Disbursements', labelMs: 'Agihan', icon: ArrowDownToLine, group: 'Kewangan' },
-  { id: 'programmes', label: 'Programmes', labelMs: 'Program', icon: Calendar, group: 'Operasi' },
+  { id: 'programmes', label: 'Programmes', labelMs: 'Program', icon: Calendar, group: 'Program' },
+  { id: 'asnafpreneur', label: 'Asnafpreneur', labelMs: 'Asnafpreneur', icon: Rocket, group: 'Program' },
+  { id: 'sedekah-jumaat', label: 'Sedekah Jumaat', labelMs: 'Sedekah Jumaat', icon: UtensilsCrossed, group: 'Program' },
   { id: 'volunteers', label: 'Volunteers', labelMs: 'Sukarelawan', icon: Sparkles, group: 'Operasi' },
   { id: 'documents', label: 'Documents', labelMs: 'Dokumen', icon: FolderOpen, group: 'Operasi' },
   { id: 'compliance', label: 'Compliance', labelMs: 'Pematuhan', icon: Shield, group: 'Tadbir Urus' },
@@ -63,7 +68,8 @@ const navItems: NavItem[] = [
   { id: 'ekyc', label: 'eKYC', labelMs: 'eKYC', icon: ScanFace, group: 'Tadbir Urus' },
   { id: 'admin', label: 'Admin', labelMs: 'Pentadbiran', icon: UserCog, group: 'Tadbir Urus' },
   { id: 'tapsecure', label: 'TapSecure', labelMs: 'TapSecure', icon: Lock, group: 'Tadbir Urus' },
-  { id: 'ai', label: 'PUSPA AI', labelMs: 'AI PUSPA', icon: Bot, group: 'AI & Ops' },
+  { id: 'ai', label: 'PUSPA AI', labelMs: 'AI PUSPA', icon: Bot, group: 'AI & Bantuan' },
+  { id: 'docs', label: 'Panduan', labelMs: 'Panduan', icon: BookOpen, group: 'AI & Bantuan' },
   { id: 'settings', label: 'Settings', labelMs: 'Tetapan', icon: Settings, group: 'Sistem' },
 ]
 

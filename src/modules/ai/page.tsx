@@ -15,7 +15,6 @@ import {
   Zap, History, ArrowRight, RotateCcw, Terminal,
   AlertCircle, Wrench, ChevronDown, ArrowDown, Mic,
 } from 'lucide-react'
-import { PuspaLogo } from '@/components/puspa-logo'
 import { MARIA_PUSPA_AVATAR_URI } from '@/lib/maria-avatar'
 
 /* ─── Suggested Prompts ────────────────────────────────── */
