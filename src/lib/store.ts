@@ -12,11 +12,6 @@ interface AppState {
   currentView: ViewId
   setView: (view: ViewId) => void
   
-  // Sidebar
-  sidebarOpen: boolean
-  setSidebarOpen: (open: boolean) => void
-  toggleSidebar: () => void
-  
   // AI Chat
   aiChatOpen: boolean
   setAiChatOpen: (open: boolean) => void
@@ -42,10 +37,6 @@ export const useAppStore = create<AppState>()(
       currentView: 'dashboard',
       setView: (view) => set({ currentView: view }),
       
-      sidebarOpen: true,
-      setSidebarOpen: (open) => set({ sidebarOpen: open }),
-      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-      
       aiChatOpen: false,
       setAiChatOpen: (open) => set({ aiChatOpen: open }),
       toggleAiChat: () => set((state) => ({ aiChatOpen: !state.aiChatOpen })),
@@ -65,7 +56,6 @@ export const useAppStore = create<AppState>()(
       name: 'puspa-app-store',
       partialize: (state) => ({
         currentView: state.currentView,
-        sidebarOpen: state.sidebarOpen,
         currentUser: state.currentUser,
       }),
     }

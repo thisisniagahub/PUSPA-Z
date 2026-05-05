@@ -2,7 +2,6 @@
 
 import { useAppStore, type ViewId } from '@/lib/store'
 import { canAccessView } from '@/lib/access-control'
-import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import {
   LayoutDashboard,
@@ -21,15 +20,23 @@ import {
   Settings,
   Lock,
   UserCog,
-  ChevronDown,
-  ChevronRight,
   Sparkles,
 } from 'lucide-react'
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  SidebarSeparator,
+} from '@/components/ui/sidebar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 interface NavItem {
   id: ViewId
@@ -61,21 +68,8 @@ const navItems: NavItem[] = [
 ]
 
 export function AppSidebar() {
-  const { currentView, setView, currentUser, sidebarOpen, setSidebarOpen } = useAppStore()
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    'Utama': true,
-    'Kewangan': true,
-    'Operasi': true,
-    'Tadbir Urus': true,
-    'AI & Ops': true,
-    'Sistem': true,
-  })
-
+  const { currentView, setView, currentUser } = useAppStore()
   const userRole = currentUser?.role || 'staff'
-
-  const toggleGroup = (group: string) => {
-    setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }))
-  }
 
   const groupedItems = navItems.reduce<Record<string, NavItem[]>>((acc, item) => {
     const group = item.group || 'Other'
@@ -84,103 +78,99 @@ export function AppSidebar() {
     return acc
   }, {})
 
-  if (!sidebarOpen) return null
-
   return (
-    <aside className={cn(
-      "fixed left-0 top-0 z-40 h-full w-64 border-r bg-sidebar text-sidebar-foreground transition-all duration-300",
-      "flex flex-col",
-      !sidebarOpen && "-translate-x-full"
-    )}>
-      {/* Logo Area - PUSPA Branded */}
-      <div className="flex items-center gap-3 p-4 border-b border-sidebar-border">
-        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white/10 shrink-0">
-          <Image
-            src="/puspa-logo-transparent.png"
-            alt="PUSPA Logo"
-            width={36}
-            height={36}
-            className="object-contain"
-            priority
-          />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-bold tracking-tight truncate text-sidebar-primary">PUSPA V4</h1>
-          <p className="text-[10px] text-sidebar-foreground/60 truncate">Peduli Asnaf</p>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 md:hidden hover:bg-sidebar-accent"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
+    <Sidebar collapsible="icon" className="border-r-0">
+      {/* Logo Header */}
+      <SidebarHeader className="p-3">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              className="hover:bg-sidebar-accent"
+              tooltip="PUSPA V4 — Peduli Asnaf"
+            >
+              <div className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden bg-sidebar-primary/10 shrink-0">
+                <Image
+                  src="/puspa-logo-transparent.png"
+                  alt="PUSPA Logo"
+                  width={28}
+                  height={28}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <div className="flex flex-col gap-0.5 leading-none min-w-0">
+                <span className="font-bold text-sm truncate text-sidebar-primary">PUSPA V4</span>
+                <span className="text-[10px] text-sidebar-foreground/60 truncate">Peduli Asnaf</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
-      {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-2">
+      <SidebarSeparator />
+
+      {/* Navigation Groups */}
+      <SidebarContent>
         {Object.entries(groupedItems).map(([group, items]) => {
           const accessibleItems = items.filter(item => canAccessView(item.id, userRole))
           if (accessibleItems.length === 0) return null
-          
+
           return (
-            <div key={group} className="mb-2">
-              <button
-                onClick={() => toggleGroup(group)}
-                className="flex items-center w-full px-2 py-1.5 text-[11px] font-semibold text-sidebar-foreground/50 uppercase tracking-wider hover:text-sidebar-foreground/80 transition-colors"
-              >
-                <ChevronDown className={cn(
-                  "h-3 w-3 mr-1 transition-transform",
-                  !expandedGroups[group] && "-rotate-90"
-                )} />
-                {group}
-              </button>
-              {expandedGroups[group] && (
-                <div className="space-y-0.5">
+            <SidebarGroup key={group}>
+              <SidebarGroupLabel>{group}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
                   {accessibleItems.map((item) => {
                     const Icon = item.icon
                     const isActive = currentView === item.id
                     return (
-                      <button
-                        key={item.id}
-                        onClick={() => setView(item.id)}
-                        className={cn(
-                          "flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-all duration-150",
-                          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                          isActive && "bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm",
-                        )}
-                      >
-                        <Icon className={cn("h-4 w-4 shrink-0")} />
-                        <span className="truncate">{item.label}</span>
-                        {item.badge && (
-                          <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0">
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </button>
+                      <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          onClick={() => setView(item.id)}
+                          tooltip={`${item.label} — ${item.labelMs || item.label}`}
+                          className={isActive ? 'bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm hover:bg-sidebar-primary/90 hover:text-sidebar-primary-foreground' : ''}
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
                     )
                   })}
-                </div>
-              )}
-              <Separator className="my-2 bg-sidebar-border/50" />
-            </div>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           )
         })}
-      </ScrollArea>
+      </SidebarContent>
 
-      {/* User Area */}
-      <div className="border-t border-sidebar-border p-3">
-        <div className="flex items-center gap-3 rounded-lg px-2 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary/20 text-sidebar-primary text-xs font-semibold">
-            {currentUser?.name?.charAt(0) || 'U'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate">{currentUser?.name || 'User'}</p>
-            <p className="text-[10px] text-sidebar-foreground/50 capitalize">{userRole}</p>
-          </div>
-        </div>
-      </div>
-    </aside>
+      <SidebarSeparator />
+
+      {/* User Footer */}
+      <SidebarFooter className="p-3">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              className="hover:bg-sidebar-accent"
+              tooltip={`${currentUser?.name || 'User'} (${userRole})`}
+            >
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarFallback className="bg-sidebar-primary/20 text-sidebar-primary text-xs font-semibold">
+                  {currentUser?.name?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-0.5 leading-none min-w-0">
+                <span className="text-xs font-medium truncate">{currentUser?.name || 'User'}</span>
+                <span className="text-[10px] text-sidebar-foreground/50 capitalize">{userRole}</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+
+      <SidebarRail />
+    </Sidebar>
   )
 }

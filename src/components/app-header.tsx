@@ -1,9 +1,11 @@
 'use client'
 
 import { useAppStore, type ViewId } from '@/lib/store'
-import { Menu, Search, Moon, Sun, MessageSquare, Bell } from 'lucide-react'
+import { Search, Moon, Sun, MessageSquare, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { SidebarTrigger } from '@/components/ui/sidebar'
+import { Separator } from '@/components/ui/separator'
 import { useTheme } from 'next-themes'
 import { Badge } from '@/components/ui/badge'
 
@@ -28,22 +30,15 @@ const viewTitles: Record<ViewId, { en: string; ms: string }> = {
 }
 
 export function AppHeader() {
-  const { currentView, toggleSidebar, toggleAiChat } = useAppStore()
+  const { currentView, toggleAiChat } = useAppStore()
   const { theme, setTheme } = useTheme()
   
   const title = viewTitles[currentView] || { en: currentView, ms: currentView }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8"
-        onClick={toggleSidebar}
-      >
-        <Menu className="h-4 w-4" />
-        <span className="sr-only">Toggle sidebar</span>
-      </Button>
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6">
+      <SidebarTrigger className="-ml-1 size-7" />
+      <Separator orientation="vertical" className="mr-2 h-4" />
 
       <div className="flex-1">
         <h2 className="text-sm font-semibold">{title.en}</h2>
