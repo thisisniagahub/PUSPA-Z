@@ -12,7 +12,7 @@ import {
   Zap, History, ArrowRight, RotateCcw, Terminal,
   AlertCircle, Wrench,
 } from 'lucide-react'
-import Image from 'next/image'
+import { PuspaLogo } from '@/components/puspa-logo'
 
 /* ─── Suggested Prompts ────────────────────────────────── */
 const suggestedPrompts = [
@@ -74,13 +74,7 @@ export default function AiPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 overflow-hidden">
-            <Image
-              src="/puspa-logo-transparent.png"
-              alt="PUSPA AI"
-              width={40}
-              height={40}
-              className="object-contain"
-            />
+            <PuspaLogo size={40} className="text-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-primary">PUSPA AI</h1>
@@ -136,13 +130,7 @@ export default function AiPage() {
                     {msg.role === 'user' ? (
                       <User className="h-4 w-4" />
                     ) : (
-                      <Image
-                        src="/puspa-logo-transparent.png"
-                        alt="PUSPA"
-                        width={24}
-                        height={24}
-                        className="object-contain"
-                      />
+                      <PuspaLogo size={20} className="text-primary" />
                     )}
                   </div>
                   <div className={`max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}>
@@ -181,13 +169,7 @@ export default function AiPage() {
               {isStreaming && messages[messages.length - 1]?.content === '' && (
                 <div className="flex gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
-                    <Image
-                      src="/puspa-logo-transparent.png"
-                      alt="PUSPA"
-                      width={24}
-                      height={24}
-                      className="object-contain animate-pulse"
-                    />
+                    <PuspaLogo size={20} className="text-primary animate-pulse" />
                   </div>
                   <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -251,13 +233,7 @@ export default function AiPage() {
           <Card className="overflow-hidden">
             <div className="bg-primary p-3 flex items-center gap-3">
               <div className="relative h-10 w-10 rounded-full overflow-hidden bg-white/20 shrink-0">
-                <Image
-                  src="/puspa-logo-transparent.png"
-                  alt="PUSPA"
-                  width={36}
-                  height={36}
-                  className="object-contain p-0.5"
-                />
+                <PuspaLogo size={32} className="text-primary-foreground" animate />
               </div>
               <div className="text-primary-foreground">
                 <p className="text-sm font-bold">Hermes AI Operator</p>

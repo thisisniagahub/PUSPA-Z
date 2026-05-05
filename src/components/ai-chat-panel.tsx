@@ -4,7 +4,7 @@ import { useAppStore } from '@/lib/store'
 import { useHermesStore } from '@/stores/hermes-store'
 import { cn } from '@/lib/utils'
 import { X, Send, User, Loader2, Sparkles, Wrench } from 'lucide-react'
-import Image from 'next/image'
+import { PuspaLogo } from '@/components/puspa-logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -59,13 +59,7 @@ export function AiChatPanel() {
         <div className="flex items-center justify-between p-3 border-b bg-primary text-primary-foreground rounded-t-2xl md:rounded-none">
           <div className="flex items-center gap-2.5">
             <div className="relative h-8 w-8 rounded-full overflow-hidden bg-white/20 shrink-0">
-              <Image
-                src="/puspa-logo-transparent.png"
-                alt="PUSPA"
-                width={32}
-                height={32}
-                className="object-contain p-0.5"
-              />
+              <PuspaLogo size={28} className="text-primary-foreground" animate />
             </div>
             <div>
               <h3 className="text-xs font-bold">Hermes AI</h3>
@@ -127,13 +121,7 @@ export function AiChatPanel() {
                   {msg.role === 'user' ? (
                     <User className="h-3.5 w-3.5" />
                   ) : (
-                    <Image
-                      src="/puspa-logo-transparent.png"
-                      alt="PUSPA"
-                      width={20}
-                      height={20}
-                      className="object-contain"
-                    />
+                    <PuspaLogo size={18} className="text-primary" />
                   )}
                 </div>
                 <div className={cn(
@@ -157,13 +145,7 @@ export function AiChatPanel() {
             {isStreaming && messages[messages.length - 1]?.content === '' && (
               <div className="flex gap-2">
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
-                  <Image
-                    src="/puspa-logo-transparent.png"
-                    alt="PUSPA"
-                    width={20}
-                    height={20}
-                    className="object-contain animate-pulse"
-                  />
+                  <PuspaLogo size={18} className="text-primary animate-pulse" />
                 </div>
                 <div className="rounded-xl px-3 py-2 bg-muted border border-border">
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />

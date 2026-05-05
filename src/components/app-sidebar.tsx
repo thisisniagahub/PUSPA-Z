@@ -2,7 +2,7 @@
 
 import { useAppStore, type ViewId } from '@/lib/store'
 import { canAccessView } from '@/lib/access-control'
-import Image from 'next/image'
+import { PuspaLogo } from '@/components/puspa-logo'
 import {
   LayoutDashboard,
   Users,
@@ -90,14 +90,7 @@ export function AppSidebar() {
               tooltip="PUSPA V4 — Peduli Asnaf"
             >
               <div className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden bg-sidebar-primary/10 shrink-0">
-                <Image
-                  src="/puspa-logo-transparent.png"
-                  alt="PUSPA Logo"
-                  width={28}
-                  height={28}
-                  className="object-contain"
-                  priority
-                />
+                <PuspaLogo size={28} className="text-sidebar-primary" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none min-w-0">
                 <span className="font-bold text-sm truncate text-sidebar-primary">PUSPA V4</span>

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "PUSPA V4 — Pertubuhan Urus Peduli Asnaf",
   description: "Platform Pengurusan NGO PUSPA — Cerdas. Mesra. Sentiasa di sisi anda.",
   icons: {
-    icon: "/puspa-logo-transparent.png",
+    icon: "/logo.svg",
   },
 };
 
