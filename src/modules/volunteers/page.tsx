@@ -368,7 +368,7 @@ export default function VolunteersPage() {
                   onChange={(e) => setNewForm((f) => ({ ...f, name: e.target.value }))}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="vol-email">E-mel</Label>
                   <Input
@@ -398,7 +398,7 @@ export default function VolunteersPage() {
                   onChange={(e) => setNewForm((f) => ({ ...f, skills: e.target.value }))}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Ketersediaan</Label>
                   <Select
@@ -618,12 +618,12 @@ export default function VolunteersPage() {
                         <TableCell className="hidden lg:table-cell">
                           <div className="flex flex-wrap gap-1 max-w-[200px]">
                             {(volunteer.skills || '').split(',').slice(0, 3).map((skill, i) => (
-                              <Badge key={i} variant="secondary" className="text-[10px]">
+                              <Badge key={i} variant="secondary" className="text-[11px]">
                                 {skill.trim()}
                               </Badge>
                             ))}
                             {(volunteer.skills || '').split(',').length > 3 && (
-                              <Badge variant="secondary" className="text-[10px]">
+                              <Badge variant="secondary" className="text-[11px]">
                                 +{(volunteer.skills || '').split(',').length - 3}
                               </Badge>
                             )}
@@ -644,7 +644,7 @@ export default function VolunteersPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-8 w-8"
                             onClick={(e) => {
                               e.stopPropagation()
                               setSelectedVolunteer(volunteer)

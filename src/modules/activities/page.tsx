@@ -592,7 +592,7 @@ export default function ActivitiesPage() {
                   key={p}
                   variant={p === page ? 'default' : 'outline'}
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-9 w-9 p-0"
                   onClick={() => setPage(p)}
                 >
                   {p}

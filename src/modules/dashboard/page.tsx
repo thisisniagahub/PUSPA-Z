@@ -509,7 +509,7 @@ export default function DashboardPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs h-7"
+                className="text-xs h-8"
                 onClick={() => setView('activities')}
               >
                 Lihat Semua

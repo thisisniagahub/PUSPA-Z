@@ -201,7 +201,7 @@ export default function DocumentsPage() {
                 <Label htmlFor="docTitle">Tajuk Dokumen</Label>
                 <Input id="docTitle" placeholder="Masukkan tajuk dokumen..." value={formTitle} onChange={(e) => setFormTitle(e.target.value)} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>Kategori</Label>
                   <Select value={formCategory} onValueChange={setFormCategory}>
@@ -341,7 +341,7 @@ export default function DocumentsPage() {
                   {doc.tags && (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {doc.tags.split(',').slice(0, 3).map((tag, idx) => (
-                        <span key={idx} className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground bg-muted rounded px-1.5 py-0.5">
+                        <span key={idx} className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground bg-muted rounded px-1.5 py-0.5">
                           <Tag className="h-2.5 w-2.5" />
                           {tag.trim()}
                         </span>
@@ -371,7 +371,7 @@ export default function DocumentsPage() {
                       <span className="mx-1">•</span>
                       {formatFileSize(doc.fileSize)}
                     </div>
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1" onClick={() => setDetailDoc(doc)}>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 px-2 text-[10px] gap-1" onClick={() => setDetailDoc(doc)}>
                       <Eye className="h-3 w-3" />
                       Lihat
                     </Button>
@@ -402,7 +402,7 @@ export default function DocumentsPage() {
                     <Badge variant="secondary" className={catConf.color}>{catConf.label}</Badge>
                     <Badge variant="outline">Versi {detailDoc.version}</Badge>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <div>
                       <p className="text-xs text-muted-foreground">Nama Fail</p>
                       <p className="font-medium">{detailDoc.fileName || '—'}</p>

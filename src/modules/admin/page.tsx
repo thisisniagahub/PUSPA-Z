@@ -259,10 +259,10 @@ export default function AdminPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nama</TableHead>
-                  <TableHead>Emel</TableHead>
+                  <TableHead className="hidden md:table-cell">Emel</TableHead>
                   <TableHead>Peranan</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Log Masuk Terakhir</TableHead>
+                  <TableHead className="hidden md:table-cell">Log Masuk Terakhir</TableHead>
                   <TableHead className="text-right">Tindakan</TableHead>
                 </TableRow>
               </TableHeader>
@@ -277,13 +277,13 @@ export default function AdminPage() {
                         <span className="font-medium text-sm">{user.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{user.email}</TableCell>
+                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{user.email}</TableCell>
                     <TableCell>
                       <Select
                         value={user.role}
                         onValueChange={(val) => handleRoleChange(user.id, val as 'staff' | 'admin' | 'developer')}
                       >
-                        <SelectTrigger className="h-7 w-[130px] text-xs">
+                        <SelectTrigger className="h-8 w-[130px] text-xs">
                           <Badge variant="secondary" className={`text-[10px] ${roleColors[user.role]}`}>
                             {roleLabels[user.role]}
                           </Badge>
@@ -303,7 +303,7 @@ export default function AdminPage() {
                         {user.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {formatTime(user.lastLogin)}
@@ -363,7 +363,7 @@ export default function AdminPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium">{entry.action}</p>
-                      <Badge variant="outline" className="text-[9px]">{entry.category}</Badge>
+                      <Badge variant="outline" className="text-[10px]">{entry.category}</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">{entry.target}</p>
                     <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">

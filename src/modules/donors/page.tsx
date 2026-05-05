@@ -248,7 +248,7 @@ export default function DonorsPage() {
                 <Label htmlFor="name">Nama Penderma *</Label>
                 <Input id="name" placeholder="Nama penuh..." value={formName} onChange={(e) => setFormName(e.target.value)} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="email">E-mel</Label>
                   <Input id="email" type="email" placeholder="email@contoh.com" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} />
@@ -262,7 +262,7 @@ export default function DonorsPage() {
                 <Label htmlFor="address">Alamat</Label>
                 <Textarea id="address" placeholder="Alamat penuh..." value={formAddress} onChange={(e) => setFormAddress(e.target.value)} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>Jenis Penderma</Label>
                   <Select value={formType} onValueChange={setFormType}>
@@ -384,10 +384,10 @@ export default function DonorsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nama</TableHead>
-                  <TableHead>E-mel</TableHead>
-                  <TableHead>Telefon</TableHead>
+                  <TableHead className="hidden md:table-cell">E-mel</TableHead>
+                  <TableHead className="hidden md:table-cell">Telefon</TableHead>
                   <TableHead>Jenis</TableHead>
-                  <TableHead className="text-right">Jumlah Derma (RM)</TableHead>
+                  <TableHead className="hidden lg:table-cell text-right">Jumlah Derma (RM)</TableHead>
                   <TableHead className="text-center">Bil. Derma</TableHead>
                   <TableHead className="text-right">Tindakan</TableHead>
                 </TableRow>
@@ -428,7 +428,7 @@ export default function DonorsPage() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="hidden md:table-cell text-sm">
                           {d.email ? (
                             <div className="flex items-center gap-1">
                               <Mail className="h-3 w-3 text-muted-foreground" />
@@ -436,7 +436,7 @@ export default function DonorsPage() {
                             </div>
                           ) : '—'}
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="hidden md:table-cell text-sm">
                           {d.phone ? (
                             <div className="flex items-center gap-1">
                               <Phone className="h-3 w-3 text-muted-foreground" />
@@ -450,7 +450,7 @@ export default function DonorsPage() {
                             {typeConf.label}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right font-mono">{formatRM(d.totalDonated)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-right font-mono">{formatRM(d.totalDonated)}</TableCell>
                         <TableCell className="text-center">{d.donationCount}</TableCell>
                         <TableCell className="text-right">
                           <Button variant="ghost" size="sm" className="gap-1" onClick={() => openDonorDetail(d)}>

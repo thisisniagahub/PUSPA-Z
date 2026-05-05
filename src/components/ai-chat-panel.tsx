@@ -90,12 +90,23 @@ export function AiChatPanel() {
   if (!aiChatOpen) return null
 
   return (
-    <aside className={cn(
-      "fixed right-0 top-0 z-40 h-full w-80 border-l bg-background shadow-lg transition-all duration-300",
-      "flex flex-col",
-    )}>
+    <>
+      {/* Mobile overlay backdrop */}
+      <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setAiChatOpen(false)} />
+      <aside className={cn(
+        "fixed z-40 flex flex-col bg-background border-l md:border-l shadow-lg transition-all duration-300",
+        // Mobile: bottom drawer
+        "inset-x-0 bottom-0 h-[70vh] rounded-t-2xl border-t md:border-t",
+        // Desktop: right sidebar
+        "md:inset-y-0 md:right-0 md:left-auto md:top-0 md:h-full md:w-80 md:rounded-none",
+      )}>
+      {/* Mobile drag handle indicator */}
+      <div className="flex justify-center pt-2 pb-1 md:hidden">
+        <div className="h-1.5 w-10 rounded-full bg-muted-foreground/30" />
+      </div>
+
       {/* Header - PUSPA AI Branded */}
-      <div className="flex items-center justify-between p-3 border-b bg-primary text-primary-foreground">
+      <div className="flex items-center justify-between p-3 border-b bg-primary text-primary-foreground rounded-t-2xl md:rounded-none">
         <div className="flex items-center gap-2.5">
           <div className="relative h-8 w-8 rounded-full overflow-hidden bg-white/20 shrink-0">
             <Image
@@ -135,7 +146,7 @@ export function AiChatPanel() {
 
       {/* Messages */}
       <ScrollArea className="flex-1 px-3 py-2">
-        <div ref={scrollRef} className="space-y-3 max-h-[calc(100vh-220px)] overflow-y-auto">
+        <div ref={scrollRef} className="space-y-3 overflow-y-auto">
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -234,5 +245,6 @@ export function AiChatPanel() {
         </p>
       </div>
     </aside>
+    </>
   )
 }

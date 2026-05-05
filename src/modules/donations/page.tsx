@@ -203,7 +203,7 @@ export default function DonationsPage() {
                 <Label htmlFor="donorName">Nama Penderma</Label>
                 <Input id="donorName" placeholder="Cari atau masukkan nama..." value={formDonorName} onChange={(e) => setFormDonorName(e.target.value)} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>Kategori</Label>
                   <Select value={formCategory} onValueChange={setFormCategory}>
@@ -222,7 +222,7 @@ export default function DonationsPage() {
                   <Input id="amount" type="number" min="0" step="0.01" placeholder="0.00" value={formAmount} onChange={(e) => setFormAmount(e.target.value)} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>Kaedah Pembayaran</Label>
                   <Select value={formMethod} onValueChange={setFormMethod}>
@@ -371,10 +371,10 @@ export default function DonationsPage() {
                   <TableHead>Nama Penderma</TableHead>
                   <TableHead>Kategori</TableHead>
                   <TableHead className="text-right">Jumlah (RM)</TableHead>
-                  <TableHead>Kaedah</TableHead>
-                  <TableHead>No. Resit</TableHead>
-                  <TableHead>Syariah</TableHead>
-                  <TableHead>Tarikh</TableHead>
+                  <TableHead className="hidden md:table-cell">Kaedah</TableHead>
+                  <TableHead className="hidden md:table-cell">No. Resit</TableHead>
+                  <TableHead className="hidden md:table-cell">Syariah</TableHead>
+                  <TableHead className="hidden lg:table-cell">Tarikh</TableHead>
                   <TableHead className="text-right">Tindakan</TableHead>
                 </TableRow>
               </TableHeader>
@@ -412,14 +412,14 @@ export default function DonationsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right font-mono">{formatRM(d.amount)}</TableCell>
-                        <TableCell className="text-sm">{methodLabels[d.method || ''] || d.method || '—'}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{methodLabels[d.method || ''] || d.method || '—'}</TableCell>
+                        <TableCell className="hidden md:table-cell">
                           <div className="flex items-center gap-1">
                             <FileText className="h-3 w-3 text-muted-foreground" />
                             <span className="text-sm">{d.receiptNumber || '—'}</span>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           {d.shariahCompliant ? (
                             <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
                               <CheckCircle2 className="h-3 w-3 mr-1" />Patuh
@@ -430,7 +430,7 @@ export default function DonationsPage() {
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="hidden lg:table-cell text-sm">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
                             {d.date || '—'}

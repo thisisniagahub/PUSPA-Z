@@ -323,7 +323,7 @@ export default function ProgrammesPage() {
               Program Baru
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Cipta Program Baru</DialogTitle>
             </DialogHeader>
@@ -347,7 +347,7 @@ export default function ProgrammesPage() {
                   rows={3}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Kategori</Label>
                   <Select
@@ -395,7 +395,7 @@ export default function ProgrammesPage() {
                   onChange={(e) => setNewForm((f) => ({ ...f, budget: e.target.value }))}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="prog-start">Tarikh Mula</Label>
                   <Input
@@ -663,7 +663,7 @@ export default function ProgrammesPage() {
 
       {/* Programme Detail Dialog */}
       <Dialog open={!!selectedProgramme} onOpenChange={(open) => !open && setSelectedProgramme(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           {selectedProgramme && (
             <>
               <DialogHeader>
@@ -690,7 +690,7 @@ export default function ProgrammesPage() {
                 {/* Budget Breakdown */}
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold">Pecahan Belanjawan</h4>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-lg bg-emerald-50 p-3">
                       <p className="text-xs text-emerald-700">Belanjawan</p>
                       <p className="text-lg font-bold text-emerald-800">

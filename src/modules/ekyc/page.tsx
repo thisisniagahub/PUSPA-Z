@@ -316,10 +316,10 @@ export default function EKYCPage() {
                 <TableRow>
                   <TableHead>Nama Ahli</TableHead>
                   <TableHead>Risiko</TableHead>
-                  <TableHead>Padanan Wajah</TableHead>
+                  <TableHead className="hidden md:table-cell">Padanan Wajah</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Disahkan Oleh</TableHead>
-                  <TableHead>Tarikh</TableHead>
+                  <TableHead className="hidden md:table-cell">Disahkan Oleh</TableHead>
+                  <TableHead className="hidden lg:table-cell">Tarikh</TableHead>
                   <TableHead className="text-right">Tindakan</TableHead>
                 </TableRow>
               </TableHeader>
@@ -359,7 +359,7 @@ export default function EKYCPage() {
                         <TableCell>
                           <Badge variant="secondary" className={riskConf.color}>{riskConf.label}</Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           <span className={`text-sm font-mono font-semibold ${getScoreColor(v.faceMatchScore)}`}>
                             {v.faceMatchScore !== null ? `${v.faceMatchScore}%` : '—'}
                           </span>
@@ -370,8 +370,8 @@ export default function EKYCPage() {
                             {statConf.label}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm">{v.verifiedBy || '—'}</TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="hidden md:table-cell text-sm">{v.verifiedBy || '—'}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
                             {new Date(v.createdAt).toLocaleDateString('ms-MY')}
@@ -409,7 +409,7 @@ export default function EKYCPage() {
                 <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
                   <User className="h-4 w-4" /> Maklumat Ahli
                 </h3>
-                <div className="grid grid-cols-2 gap-3 p-4 rounded-lg bg-muted/50">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-muted/50">
                   <div>
                     <p className="text-xs text-muted-foreground">Nama</p>
                     <p className="font-medium text-sm">{selectedVerification.member?.name || '—'}</p>
@@ -444,7 +444,7 @@ export default function EKYCPage() {
                 <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
                   <CreditCard className="h-4 w-4" /> Dokumen Pengenalan
                 </h3>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">IC Hadapan</p>
                     <div className="aspect-[1.6/1] rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center bg-muted/30">
@@ -477,7 +477,7 @@ export default function EKYCPage() {
                   <FileText className="h-4 w-4" /> Data OCR Diekstrak
                 </h3>
                 {parseOcrData(selectedVerification.ocrExtracted) ? (
-                  <div className="grid grid-cols-2 gap-3 p-4 rounded-lg bg-muted/50">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-muted/50">
                     {Object.entries(parseOcrData(selectedVerification.ocrExtracted)!).map(([key, value]) => (
                       <div key={key}>
                         <p className="text-xs text-muted-foreground capitalize">{key}</p>
@@ -521,7 +521,7 @@ export default function EKYCPage() {
               </div>
 
               {/* Current Status & Risk */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Status Semasa</p>
                   <Badge variant="secondary" className={`${(statusConfig[selectedVerification.status] || statusConfig.pending).color} gap-1`}>

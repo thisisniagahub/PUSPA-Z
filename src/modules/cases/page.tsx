@@ -644,7 +644,7 @@ export default function CasesPage() {
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => viewCase(caseRecord)}>
+                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0" onClick={() => viewCase(caseRecord)}>
                             <Eye className="h-4 w-4" />
                           </Button>
                         </div>

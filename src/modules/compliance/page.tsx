@@ -268,7 +268,7 @@ export default function CompliancePage() {
                 <Label htmlFor="description">Penerangan</Label>
                 <Textarea id="description" placeholder="Penerangan terperinci..." value={formDescription} onChange={(e) => setFormDescription(e.target.value)} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>Kategori</Label>
                   <Select value={formCategory} onValueChange={setFormCategory}>
@@ -296,7 +296,7 @@ export default function CompliancePage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="dueDate">Tarikh Akhir</Label>
                   <Input id="dueDate" type="date" value={formDueDate} onChange={(e) => setFormDueDate(e.target.value)} />
@@ -408,9 +408,9 @@ export default function CompliancePage() {
                   <TableHead>Tajuk</TableHead>
                   <TableHead>Kategori</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Tarikh Akhir</TableHead>
-                  <TableHead>Ditugaskan</TableHead>
-                  <TableHead>Bukti</TableHead>
+                  <TableHead className="hidden lg:table-cell">Tarikh Akhir</TableHead>
+                  <TableHead className="hidden md:table-cell">Ditugaskan</TableHead>
+                  <TableHead className="hidden md:table-cell">Bukti</TableHead>
                   <TableHead className="text-right">Tindakan</TableHead>
                 </TableRow>
               </TableHeader>
@@ -454,7 +454,7 @@ export default function CompliancePage() {
                             {statConf.label}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
                             <span className={`text-sm ${overdue ? 'text-red-600 dark:text-red-400 font-semibold' : ''}`}>
@@ -465,8 +465,8 @@ export default function CompliancePage() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm">{r.assignedTo || '—'}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{r.assignedTo || '—'}</TableCell>
+                        <TableCell className="hidden md:table-cell">
                           {r.evidenceUrl ? (
                             <div className="flex items-center gap-1 text-primary">
                               <FileCheck className="h-3 w-3" />

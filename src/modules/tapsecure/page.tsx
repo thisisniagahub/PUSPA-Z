@@ -228,7 +228,7 @@ export default function TapSecurePage() {
                     <span>•</span>
                     <span>{device.browser}</span>
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground">
                     <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatTime(device.lastActive)}</span>
                     <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{device.lastIp}</span>
                     {device.bindingDate && <span className="flex items-center gap-1"><Key className="h-3 w-3" />{device.bindingDate}</span>}
@@ -239,7 +239,7 @@ export default function TapSecurePage() {
                     {statusConf.label}
                   </Badge>
                   {device.trustStatus !== 'revoked' && !device.isCurrent && (
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   )}
@@ -280,10 +280,10 @@ export default function TapSecurePage() {
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium">{event.description}</p>
                       {event.severity === 'critical' && (
-                        <Badge variant="destructive" className="text-[9px] shrink-0">Kritikal</Badge>
+                        <Badge variant="destructive" className="text-[10px] shrink-0">Kritikal</Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+                    <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
                       <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatTime(event.timestamp)}</span>
                       <span>•</span>
                       <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{event.ip}</span>

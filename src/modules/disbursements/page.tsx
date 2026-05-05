@@ -272,7 +272,7 @@ export default function DisbursementsPage() {
               <DialogTitle>Agihan Baru</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="memberId">ID Ahli *</Label>
                   <Input id="memberId" placeholder="cuid ahli..." value={formMemberId} onChange={(e) => setFormMemberId(e.target.value)} />
@@ -282,7 +282,7 @@ export default function DisbursementsPage() {
                   <Input id="caseId" placeholder="cuid kes (pilihan)" value={formCaseId} onChange={(e) => setFormCaseId(e.target.value)} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="disbAmount">Jumlah (RM) *</Label>
                   <Input id="disbAmount" type="number" min="0" step="0.01" placeholder="0.00" value={formAmount} onChange={(e) => setFormAmount(e.target.value)} />
@@ -302,7 +302,7 @@ export default function DisbursementsPage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>Kaedah Bayaran</Label>
                   <Select value={formPaymentMethod} onValueChange={setFormPaymentMethod}>
@@ -447,10 +447,10 @@ export default function DisbursementsPage() {
                 <TableRow>
                   <TableHead>Penerima</TableHead>
                   <TableHead className="text-right">Jumlah (RM)</TableHead>
-                  <TableHead>Kategori</TableHead>
+                  <TableHead className="hidden lg:table-cell">Kategori</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Kaedah Bayaran</TableHead>
-                  <TableHead>Tarikh Dijadual</TableHead>
+                  <TableHead className="hidden md:table-cell">Kaedah Bayaran</TableHead>
+                  <TableHead className="hidden md:table-cell">Tarikh Dijadual</TableHead>
                   <TableHead className="text-right">Tindakan</TableHead>
                 </TableRow>
               </TableHeader>
@@ -487,7 +487,7 @@ export default function DisbursementsPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-mono">{formatRM(d.amount)}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           <Badge variant="secondary" className="text-xs">
                             {categoryLabels[d.category] || d.category}
                           </Badge>
@@ -498,10 +498,10 @@ export default function DisbursementsPage() {
                             {stConf.label}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="hidden md:table-cell text-sm">
                           {methodLabels[d.paymentMethod || ''] || d.paymentMethod || '—'}
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="hidden md:table-cell text-sm">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
                             {d.scheduledDate || '—'}
