@@ -1,29 +1,69 @@
-# PUSPA V4 Worklog
-
 ---
 Task ID: 1
-Agent: Main Agent
-Task: Full review of all project files and fix bugs to ensure fully functional
+Agent: Main
+Task: Implement Phase 1 - Hermes Zero-Server Engine Backend Infrastructure
 
 Work Log:
-- Read and reviewed all 17 module pages in /src/modules/
-- Read and reviewed all 15 API routes in /src/app/api/
-- Read and reviewed all core components (sidebar, header, chat panel, view renderer, store, access-control)
-- Read and reviewed UI barrel export, theme provider, types
-- Read and reviewed Prisma schema
-- Ran ESLint (passed cleanly)
-- Tested dev server (200 OK on homepage and API endpoints)
+- Added AIMemory model to prisma/schema.prisma (id, userId, role, content, createdAt + index)
+- Ran `bun run db:push` to sync database
+- Created src/lib/memory.ts with getConversationHistory(), saveMessage(), clearConversationHistory()
+- Created src/tools/index.ts with HermesTool interface, ping_system tool, role-based filtering (getToolsForRole), OpenAI format converter (toOpenAITools), tool executor (executeTool)
+- Created src/agents/runtime/hermes.runtime.ts with runHermes() function: fetches memory, builds messages, prepares tool registry, returns payload for AI
+- Created src/app/api/v1/ai/route.ts with streaming POST handler using z-ai-web-dev-sdk (stream: true returns ReadableStream)
 
 Stage Summary:
-- **CRITICAL FIX**: Reports page had naming collision — `BarChart` and `LineChart` from lucide-react (icons) shadowed the recharts chart components, causing "Could not find Recharts context" runtime error. Fixed by aliasing lucide imports to `BarChartIcon`/`LineChartIcon` and adding `BarChart`/`LineChart` to recharts imports.
-- **P0 FIX**: AI route system prompt sent with `role: 'assistant'` instead of `role: 'system'` — AI wouldn't follow system instructions properly. Fixed.
-- **P0 FIX**: Disbursements route `scheduledCount` was duplicate of `approvedCount` (same filter). Changed to filter `'disbursed'` status.
-- **P0 FIX**: Compliance route `overdueCount` didn't check `dueDate` — counted all non-compliant records as overdue. Fixed to only count records where `dueDate < now`.
-- **P1 FIX**: Programmes POST route missing validation for required fields `name` and `category`. Added validation.
-- **P1 FIX**: Volunteers POST route missing validation for required field `name`. Added validation.
-- **P1 FIX**: Volunteers GET route had no pagination (fetched all records). Added pagination with `page`/`limit` params.
-- **P1 FIX**: Members POST route defaulted status to `'pending'` but Prisma schema default is `'active'`. Fixed to match schema.
-- Removed unused `LineChartIcon` import from reports page (lint warning).
-- All 17 module pages confirmed clean after fixes.
-- All API routes confirmed working.
-- Dev server compiles and serves pages without errors.
+- Full backend infrastructure for Hermes AI engine
+- Streaming SSE support via z-ai-web-dev-sdk
+- Tool calling with OpenAI function calling format
+- Conversation persistence to AIMemory table
+
+---
+Task ID: 2
+Agent: Main
+Task: Implement Phase 2 - Frontend Connection with Streaming
+
+Work Log:
+- Created src/stores/hermes-store.ts (Zustand) with full streaming state management
+- Updated src/modules/ai/page.tsx to use HermesStore with streaming UI (progressive rendering, cursor animation, tool call badges)
+- Updated src/components/ai-chat-panel.tsx to use HermesStore with streaming support
+
+Stage Summary:
+- Zustand store manages: messages, streaming state, tool calls, errors, model name
+- sendMessage() handles both SSE streaming and JSON fallback responses
+- UI shows streaming cursor, tool call indicators, error banners
+- Both AI page and floating chat panel use the shared HermesStore
+
+---
+Task ID: 3
+Agent: Main
+Task: Implement Phase 3 - Real Domain Tools
+
+Work Log:
+- Created src/tools/donations.ts with getRecentDonations(limit) and getDonationStats()
+- Created src/tools/cases.ts with getActiveCases(status?) and getCaseSummary(caseId)
+- IC numbers are masked (****XXXX) for PII protection
+- Updated src/tools/index.ts with all tools: ping_system, get_recent_donations, get_donation_stats, get_active_cases, get_case_summary, approve_disbursement (admin-only), delete_case (admin-only)
+
+Stage Summary:
+- 7 tools in the registry with RBAC metadata
+- PII masking applied (IC numbers, sensitive data)
+- Admin-only tools: approve_disbursement, delete_case
+- All tools have OpenAI function calling format parameters
+
+---
+Task ID: 4
+Agent: Main
+Task: Implement Phase 4 - Security & RBAC
+
+Work Log:
+- Added robust HERMES_SYSTEM_PROMPT to hermes.runtime.ts with persona, capabilities, security rules, response format
+- Implemented getToolsForRole(userRole) that filters tools based on user role
+- API route passes userRole from request body to runHermes
+- executeTool() performs runtime RBAC check before executing any tool
+- Staff cannot access approve_disbursement or delete_case tools
+
+Stage Summary:
+- System prompt: Hermes persona, bilingual BM/English, no hallucination rule
+- Role-based tool filtering: staff (5 tools), admin (7 tools), developer (7 tools)
+- Runtime RBAC check in executeTool() as defense-in-depth
+- API route accepts userId and userRole from client (production would use Supabase SSR)

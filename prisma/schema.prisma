@@ -352,6 +352,16 @@ model Activity {
 
 // ─── AI / Hermes ────────────────────────────────────────────────
 
+model AIMemory {
+  id        String   @id @default(uuid())
+  userId    String
+  role      String   // user, assistant, system, tool
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
 model AiConversation {
   id          String   @id @default(cuid())
   userId      String
