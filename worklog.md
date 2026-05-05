@@ -177,3 +177,40 @@ Stage Summary:
 - System prompt enforces MANDATORY RAG with web_search/web_read fallback
 - Mobile chat significantly improved: expand/collapse, 44px touch targets, round inputs, scrollable pills
 - All lint checks pass, page compiles and serves 200 OK
+
+---
+Task ID: 9
+Agent: Main
+Task: Add Telegram Bot integration for Maria Puspa + PUSPA Knowledge Base from organizational data
+
+Work Log:
+- Created `mini-services/telegram-bot/` — standalone Bun service for Telegram long-polling bot
+  - Handles /start, /help, /reset, /role, /status commands
+  - Long polling to receive Telegram messages
+  - Forwards messages to Maria Puspa AI API endpoint
+  - SSE stream parsing for progressive response collection
+  - Session tracking per Telegram chat with role management
+  - Auto-splits long messages (Telegram 4096 char limit)
+  - Markdown formatting with fallback
+- Created `src/app/api/v1/ai/telegram/route.ts` — dedicated Telegram API endpoint
+  - Non-streaming (full response) for Telegram compatibility
+  - Supports tool calling (same as web endpoint)
+  - Saves conversation to AI memory
+- Created `src/lib/puspa-knowledge.ts` — comprehensive PUSPA knowledge base
+  - All organizational data from user's research document
+  - Leadership, partners, verified programmes, transparency assessment
+  - Self-reported vs verified data clearly distinguished
+  - Contact details, address, donation account
+- Updated `src/agents/runtime/hermes.runtime.ts` to inject PUSPA knowledge base into system prompt
+  - `getPuspaKnowledgeContext()` appended to context prompt for RAG
+- Added `TELEGRAM_BOT_TOKEN` to `.env`
+- Added Telegram Integration section to Settings page with step-by-step setup guide
+- All lint checks pass, page compiles and serves 200 OK
+
+Stage Summary:
+- Telegram Bot service created: mini-services/telegram-bot/
+- Dedicated API endpoint: /api/v1/ai/telegram
+- PUSPA Knowledge Base created with full organizational data (leadership, partners, programmes, verified vs self-reported data)
+- System prompt now includes PUSPA knowledge for grounded RAG responses
+- Settings page shows Telegram setup instructions
+- User needs to: 1) Create bot via @BotFather, 2) Add token to .env, 3) Start telegram-bot service

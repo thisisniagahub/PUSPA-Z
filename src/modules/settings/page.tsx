@@ -8,7 +8,7 @@ import {
 } from '@/components/ui'
 import {
   User, Globe, Moon, PanelLeft, Bell, BellOff, Mail, MailX,
-  Info, Save, Check, Camera, Shield, Palette,
+  Info, Save, Check, Camera, Shield, Palette, Bot, MessageCircle,
 } from 'lucide-react'
 
 /* ─── Types ────────────────────────────────────────────── */
@@ -290,6 +290,81 @@ export default function SettingsPage() {
               {idx < 5 && <Separator />}
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      {/* Telegram Integration Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" />
+            Integrasi Telegram — Maria Puspa Bot
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Sambung Maria Puspa ke Telegram untuk bersembang di mana-mana
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <h4 className="text-sm font-semibold text-primary mb-2">Cara Setup Telegram Bot</h4>
+            <ol className="text-xs space-y-2 text-muted-foreground">
+              <li className="flex gap-2">
+                <Badge variant="outline" className="h-5 w-5 p-0 flex items-center justify-center text-[10px] shrink-0">1</Badge>
+                <span>Buka Telegram, cari <strong>@BotFather</strong></span>
+              </li>
+              <li className="flex gap-2">
+                <Badge variant="outline" className="h-5 w-5 p-0 flex items-center justify-center text-[10px] shrink-0">2</Badge>
+                <span>Hantar <code className="bg-muted px-1 rounded">/newbot</code></span>
+              </li>
+              <li className="flex gap-2">
+                <Badge variant="outline" className="h-5 w-5 p-0 flex items-center justify-center text-[10px] shrink-0">3</Badge>
+                <span>Pilih nama: <strong>Maria Puspa AI</strong></span>
+              </li>
+              <li className="flex gap-2">
+                <Badge variant="outline" className="h-5 w-5 p-0 flex items-center justify-center text-[10px] shrink-0">4</Badge>
+                <span>Pilih username: <strong>MariaPuspaAI_bot</strong></span>
+              </li>
+              <li className="flex gap-2">
+                <Badge variant="outline" className="h-5 w-5 p-0 flex items-center justify-center text-[10px] shrink-0">5</Badge>
+                <span>Salin bot token yang diberikan</span>
+              </li>
+              <li className="flex gap-2">
+                <Badge variant="outline" className="h-5 w-5 p-0 flex items-center justify-center text-[10px] shrink-0">6</Badge>
+                <span>Tampal token dalam <code className="bg-muted px-1 rounded">.env</code> → <code className="bg-muted px-1 rounded">TELEGRAM_BOT_TOKEN=...</code></span>
+              </li>
+              <li className="flex gap-2">
+                <Badge variant="outline" className="h-5 w-5 p-0 flex items-center justify-center text-[10px] shrink-0">7</Badge>
+                <span>Mula service: <code className="bg-muted px-1 rounded">cd mini-services/telegram-bot && bun run dev</code></span>
+              </li>
+            </ol>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-lg bg-muted/50 p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Bot className="h-3.5 w-3.5 text-primary" />
+                <p className="text-xs font-medium">Service Status</p>
+              </div>
+              <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700 border-amber-200">
+                Menunggu Token
+              </Badge>
+            </div>
+            <div className="rounded-lg bg-muted/50 p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <MessageCircle className="h-3.5 w-3.5 text-primary" />
+                <p className="text-xs font-medium">Arahan Telegram</p>
+              </div>
+              <p className="text-[10px] text-muted-foreground">/start, /help, /reset, /role, /status</p>
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-muted/30 p-3">
+            <p className="text-[10px] text-muted-foreground">
+              Maria Puspa di Telegram mempunyai akses penuh kepada semua 18 tools — termasuk carian web,
+              baca halaman web, semak data ahli/kes/derma, dan delegasi tugas.
+              Respons adalah ringkas dan padat (Short & Sharp).
+            </p>
+          </div>
         </CardContent>
       </Card>
 

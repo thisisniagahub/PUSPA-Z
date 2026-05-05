@@ -1,0 +1,9 @@
+{
+  "name": "puspa-telegram-bot",
+  "version": "1.0.0",
+  "description": "Maria Puspa Telegram Bot — PUSPA AI Assistant via Telegram",
+  "scripts": {
+    "dev": "bun --hot index.ts"
+  },
+  "dependencies": {}
+}

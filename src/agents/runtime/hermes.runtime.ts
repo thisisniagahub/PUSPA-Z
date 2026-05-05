@@ -9,6 +9,7 @@ import {
   isConfigured,
 } from '@/lib/openrouter'
 import type { OpenRouterMessage, OpenRouterToolCall } from '@/lib/openrouter'
+import { getPuspaKnowledgeContext } from '@/lib/puspa-knowledge'
 
 // ─── System Prompt ───────────────────────────────────────────
 
@@ -101,8 +102,9 @@ export async function runMariaPuspa(
   // 1. Fetch conversation history
   const history = await getConversationHistory(userId)
 
-  // 2. Build the message array
-  const contextPrompt = `${MARIA_PUSPA_SYSTEM_PROMPT}\n\n## Current Module\nThe user is currently viewing: **${currentView}** module.`
+  // 2. Build the message array with PUSPA knowledge base
+  const puspaKnowledge = getPuspaKnowledgeContext()
+  const contextPrompt = `${MARIA_PUSPA_SYSTEM_PROMPT}\n\n${puspaKnowledge}\n\n## Current Module\nThe user is currently viewing: **${currentView}** module.`
 
   const messages: MariaPuspaMessage[] = [
     { role: 'system', content: contextPrompt },
