@@ -60,7 +60,7 @@ const WELCOME_MESSAGE: MariaPuspaMessage = {
   id: 'welcome',
   role: 'assistant',
   content:
-    'Hai, saya Maria Puspa. AI Assistant PUSPA yang sentiasa di sisi anda. Cerdas. Mesra. Sentiasa di sisi anda. Apa yang boleh saya bantu hari ini?',
+    'Hai, saya Maria Puspa. AI Assistant PUSPA. Apa yang boleh saya bantu?',
   timestamp: new Date(),
   model: 'maria-puspa',
 }
@@ -68,7 +68,8 @@ const WELCOME_MESSAGE: MariaPuspaMessage = {
 // Keep backward-compatible type alias
 export type HermesMessage = MariaPuspaMessage
 
-export const useHermesStore = create<MariaPuspaState>()((set, get) => ({
+// Primary export name
+export const useMariaPuspaStore = create<MariaPuspaState>()((set, get) => ({
   // ─── Messages ────────────────────────────────────────────
   messages: [WELCOME_MESSAGE],
 
@@ -313,3 +314,6 @@ export const useHermesStore = create<MariaPuspaState>()((set, get) => ({
     }
   },
 }))
+
+// Backward-compatible alias
+export const useHermesStore = useMariaPuspaStore

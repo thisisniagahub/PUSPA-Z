@@ -5,6 +5,7 @@
 import { z } from 'zod'
 import { getRecentDonations, getDonationStats } from './donations'
 import { getActiveCases, getCaseSummary } from './cases'
+import { extendedTools } from './web-tools'
 import { db } from '@/lib/db'
 
 // ─── Tool Definition Types ───────────────────────────────────
@@ -454,6 +455,7 @@ const ALL_TOOLS: MariaPuspaTool[] = [
   get_dashboard_overview,
   approve_disbursement,
   delete_case,
+  ...extendedTools,
 ]
 
 // ─── Role-Based Filtering ────────────────────────────────────

@@ -124,32 +124,11 @@ Work Log:
   - Image 2: Character reference sheet (multiple views/expressions of PUSPA AI character)
   - Image 3: Official PUSPA logo (geometric floral/mandala in deep purple + "PUSPA" + "Pertubuhan Urus Peduli Asnaf")
 - Converted official PUSPA logo (upload/puspa-logo-official.png) to base64 and updated src/lib/puspa-logo-data.ts
-- Replaced ALL "Hermes" references with "Maria Puspa" across 11 files:
-  - src/agents/runtime/hermes.runtime.ts (system prompt + function names + types)
-  - src/app/api/v1/ai/route.ts (comments, error messages, SSE handler)
-  - src/stores/hermes-store.ts (welcome message, store name, model defaults)
-  - src/components/ai-chat-panel.tsx (header, placeholders, footer text)
-  - src/modules/ai/page.tsx (title, character card, badges, placeholders)
-  - src/components/app-header.tsx (AI view title)
-  - src/modules/admin/page.tsx (system health, user names, audit log)
-  - src/modules/settings/page.tsx (AI Engine name)
-  - src/lib/memory.ts (comments)
-  - src/tools/index.ts (type names, comments, export alias)
-  - src/tools/donations.ts + src/tools/cases.ts (comments)
+- Replaced ALL "Hermes" references with "Maria Puspa" across 11 files
 - Removed ALL 🦞 emojis from: system prompt, welcome message, error messages, footer text
 - Removed model name (tencent/hy3-preview:free) from UI display — now shows "Maria Puspa" only
-- Rewrote MARIA_PUSPA_SYSTEM_PROMPT with:
-  - Identity: Maria Puspa, AI Assistant Pelanggan
-  - Personality: Cerdas, Mesra, Profesional, Empati, Boleh Dipercayai
-  - Communication: Jelas, Ringkas, Sopan, Berorientasikan Penyelesaian
-  - RAG rules: MUST use tools before answering, NEVER fabricate data, cite sources
-  - Response format: SHORT & SHARP (max 3-4 sentences), bullet points, no filler, no emojis
-  - Security: IC masking, PII protection, access control
-- Expanded tool registry from 7 → 14 tools:
-  - Added: get_member_list, get_member_stats, get_active_programmes, get_volunteer_stats, get_compliance_status, get_disbursement_summary, get_dashboard_overview
-  - All new tools query Prisma database directly for real RAG data
-- SSE stream now returns model: 'maria-puspa' instead of raw model ID
-- Backward-compatible aliases preserved (runHermes→runMariaPuspa, isHermesConfigured→isMariaPuspaConfigured)
+- Rewrote MARIA_PUSPA_SYSTEM_PROMPT with RAG rules, SHORT & SHARP format, security rules
+- Expanded tool registry from 7 → 14 tools
 
 Stage Summary:
 - PUSPA logo updated to official logo from uploaded brand assets
@@ -158,5 +137,43 @@ Stage Summary:
 - Model name hidden from UI (shows "Maria Puspa" instead of tencent/hy3-preview:free)
 - AI system prompt completely rewritten for Short, Sharp, RAG-based responses
 - Tool registry expanded from 7 → 14 tools covering all PUSPA modules
-- Maria Puspa character matches brand guide: Cerdas. Mesra. Sentiasa di sisi anda.
-- Lint passes, dev server running, all modules operational
+
+---
+Task ID: 8
+Agent: Main
+Task: Fix logo visibility (remove background color), add Hermes Agent features to Maria Puspa, improve mobile chat UX
+
+Work Log:
+- Rewrote `puspa-logo.tsx` with 4 variants: auto (currentColor), light (dark green), dark (light emerald), colorful (gradient gold/crimson/green)
+- Changed ALL PuspaLogo usages to `variant="colorful"` for visibility on ANY background
+- Fetched Hermes Agent docs from https://hermes-agent.nousresearch.com/docs — key features: tools, skills, memory, delegation, web control, MCP
+- Created `src/tools/web-tools.ts` with 4 new Hermes Agent-style tools:
+  - `web_search` — search the web for real-time information (z-ai-web-dev-sdk)
+  - `web_read` — read and extract web page content for RAG (z-ai-web-dev-sdk)
+  - `delegate_task` — delegate tasks to sub-agents for parallel execution
+  - `system_health` — comprehensive system health check (DB, AI service, tool count)
+- Updated `src/tools/index.ts` to include extendedTools (14 → 18 tools total)
+- Rewrote MARIA_PUSPA_SYSTEM_PROMPT with stronger enforcement:
+  - MANDATORY RAG — must use tools/web_search before answering
+  - SHORT & SHARP — max 2-3 sentences, no filler, no emojis
+  - Project Editing Capabilities section
+  - Tool Usage Priority (database → web → system → delegation → admin)
+- Improved mobile chat in `ai-chat-panel.tsx`:
+  - Expand/collapse toggle (85vh ↔ 95vh)
+  - Round input fields (44px touch targets)
+  - Compact horizontal scrollable quick prompts
+  - Smaller avatar sizes for more message space
+  - Round send/mic buttons
+- Improved mobile chat in `ai/page.tsx`:
+  - Round input fields with 44px touch targets
+  - Horizontal scrollable suggested prompts
+  - Round send/mic buttons
+- Renamed store: `useMariaPuspaStore` (primary), `useHermesStore` (backward compat alias)
+- Updated welcome message: shorter "Hai, saya Maria Puspa. AI Assistant PUSPA. Apa yang boleh saya bantu?"
+
+Stage Summary:
+- Logo now uses colorful gradient variant — visible on ANY background (no more "same color" issue)
+- Maria Puspa has 18 tools (14 DB + 4 Hermes Agent-style: web_search, web_read, delegate_task, system_health)
+- System prompt enforces MANDATORY RAG with web_search/web_read fallback
+- Mobile chat significantly improved: expand/collapse, 44px touch targets, round inputs, scrollable pills
+- All lint checks pass, page compiles and serves 200 OK
