@@ -62,14 +62,14 @@ export function AiChatPanel() {
               <PuspaLogo size={28} className="text-primary-foreground" animate />
             </div>
             <div>
-              <h3 className="text-xs font-bold">Hermes AI</h3>
+              <h3 className="text-xs font-bold">Maria Puspa</h3>
               <div className="flex items-center gap-1.5">
                 <div className={cn(
                   "h-1.5 w-1.5 rounded-full animate-pulse",
                   isStreaming ? "bg-amber-400" : "bg-emerald-400"
                 )} />
                 <p className="text-[10px] opacity-80">
-                  {isStreaming ? 'Memproses...' : 'Online'} • {modelName}
+                  {isStreaming ? 'Memproses...' : 'Online'}
                 </p>
               </div>
             </div>
@@ -198,7 +198,7 @@ export function AiChatPanel() {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Tanya Hermes sesuatu..."
+              placeholder="Tanya Maria Puspa sesuatu..."
               className="h-8 text-xs border-primary/20 focus:border-primary"
               disabled={isStreaming}
             />
@@ -216,7 +216,7 @@ export function AiChatPanel() {
             </Button>
           </form>
           <p className="text-[9px] text-muted-foreground mt-1.5 text-center">
-            Hermes Runtime • Cerdas. Mesra. Sentiasa di sisi anda. 🦞
+            Maria Puspa — Cerdas. Mesra. Sentiasa di sisi anda.
           </p>
         </div>
       </aside>

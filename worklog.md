@@ -112,3 +112,51 @@ Stage Summary:
 - All 4 OpenRouter API keys remain configured with rotation support
 - Hermes runtime picks up model from env automatically via getConfiguredModel()
 - Server restarted and running successfully
+
+---
+Task ID: 7
+Agent: Main
+Task: Review uploaded images, merge PUSPA brand into project, rename Hermes→Maria Puspa, remove 🦞 emoji, remove model name from UI, improve AI responses (short/sharp/RAG)
+
+Work Log:
+- Analyzed 3 uploaded images with VLM:
+  - Image 1: PUSPA AI Assistant brand guide (purple theme, hijab character, tagline "Cerdas. Mesra. Sentiasa di sisi anda.")
+  - Image 2: Character reference sheet (multiple views/expressions of PUSPA AI character)
+  - Image 3: Official PUSPA logo (geometric floral/mandala in deep purple + "PUSPA" + "Pertubuhan Urus Peduli Asnaf")
+- Converted official PUSPA logo (upload/puspa-logo-official.png) to base64 and updated src/lib/puspa-logo-data.ts
+- Replaced ALL "Hermes" references with "Maria Puspa" across 11 files:
+  - src/agents/runtime/hermes.runtime.ts (system prompt + function names + types)
+  - src/app/api/v1/ai/route.ts (comments, error messages, SSE handler)
+  - src/stores/hermes-store.ts (welcome message, store name, model defaults)
+  - src/components/ai-chat-panel.tsx (header, placeholders, footer text)
+  - src/modules/ai/page.tsx (title, character card, badges, placeholders)
+  - src/components/app-header.tsx (AI view title)
+  - src/modules/admin/page.tsx (system health, user names, audit log)
+  - src/modules/settings/page.tsx (AI Engine name)
+  - src/lib/memory.ts (comments)
+  - src/tools/index.ts (type names, comments, export alias)
+  - src/tools/donations.ts + src/tools/cases.ts (comments)
+- Removed ALL 🦞 emojis from: system prompt, welcome message, error messages, footer text
+- Removed model name (tencent/hy3-preview:free) from UI display — now shows "Maria Puspa" only
+- Rewrote MARIA_PUSPA_SYSTEM_PROMPT with:
+  - Identity: Maria Puspa, AI Assistant Pelanggan
+  - Personality: Cerdas, Mesra, Profesional, Empati, Boleh Dipercayai
+  - Communication: Jelas, Ringkas, Sopan, Berorientasikan Penyelesaian
+  - RAG rules: MUST use tools before answering, NEVER fabricate data, cite sources
+  - Response format: SHORT & SHARP (max 3-4 sentences), bullet points, no filler, no emojis
+  - Security: IC masking, PII protection, access control
+- Expanded tool registry from 7 → 14 tools:
+  - Added: get_member_list, get_member_stats, get_active_programmes, get_volunteer_stats, get_compliance_status, get_disbursement_summary, get_dashboard_overview
+  - All new tools query Prisma database directly for real RAG data
+- SSE stream now returns model: 'maria-puspa' instead of raw model ID
+- Backward-compatible aliases preserved (runHermes→runMariaPuspa, isHermesConfigured→isMariaPuspaConfigured)
+
+Stage Summary:
+- PUSPA logo updated to official logo from uploaded brand assets
+- All "Hermes AI" branding replaced with "Maria Puspa"
+- All 🦞 emojis removed
+- Model name hidden from UI (shows "Maria Puspa" instead of tencent/hy3-preview:free)
+- AI system prompt completely rewritten for Short, Sharp, RAG-based responses
+- Tool registry expanded from 7 → 14 tools covering all PUSPA modules
+- Maria Puspa character matches brand guide: Cerdas. Mesra. Sentiasa di sisi anda.
+- Lint passes, dev server running, all modules operational

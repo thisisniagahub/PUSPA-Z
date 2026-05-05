@@ -317,7 +317,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">AI Engine</p>
-              <p className="font-medium">Hermes v4 (OpenRouter)</p>
+              <p className="font-medium">Maria Puspa v4 (OpenRouter)</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Database</p>

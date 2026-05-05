@@ -1,14 +1,15 @@
-// PUSPA V4 — Hermes Tool Registry
+// PUSPA V4 — Maria Puspa Tool Registry
 // Central registry for all domain tools with RBAC metadata
 // Compatible with OpenAI function calling schema format
 
 import { z } from 'zod'
 import { getRecentDonations, getDonationStats } from './donations'
 import { getActiveCases, getCaseSummary } from './cases'
+import { db } from '@/lib/db'
 
 // ─── Tool Definition Types ───────────────────────────────────
 
-export interface HermesTool {
+export interface MariaPuspaTool {
   /** Unique tool name (snake_case) */
   name: string
   /** Human-readable description for the AI */
@@ -27,7 +28,7 @@ export interface HermesTool {
 
 // ─── Tool Definitions ────────────────────────────────────────
 
-const ping_system: HermesTool = {
+const ping_system: MariaPuspaTool = {
   name: 'ping_system',
   description: 'Check if the PUSPA system is online and operational. Returns system status.',
   parameters: {
@@ -38,7 +39,7 @@ const ping_system: HermesTool = {
   requiredRole: ['staff', 'admin', 'developer'],
 }
 
-const get_recent_donations: HermesTool = {
+const get_recent_donations: MariaPuspaTool = {
   name: 'get_recent_donations',
   description:
     'Fetch the most recent donations in the system. Returns amount, category, donor name, and date. Use this to answer questions about recent donation activity.',
@@ -58,7 +59,7 @@ const get_recent_donations: HermesTool = {
   requiredRole: ['staff', 'admin', 'developer'],
 }
 
-const get_donation_stats: HermesTool = {
+const get_donation_stats: MariaPuspaTool = {
   name: 'get_donation_stats',
   description:
     'Get donation statistics for the current month, including total amount, count, and breakdown by category (zakat, sadaqah, waqf, infaq, general).',
@@ -70,7 +71,7 @@ const get_donation_stats: HermesTool = {
   requiredRole: ['staff', 'admin', 'developer'],
 }
 
-const get_active_cases: HermesTool = {
+const get_active_cases: MariaPuspaTool = {
   name: 'get_active_cases',
   description:
     'Fetch cases that are currently active (not closed or rejected). Returns case number, type, priority, status, and masked member info. Optionally filter by specific status.',
@@ -91,7 +92,7 @@ const get_active_cases: HermesTool = {
   requiredRole: ['staff', 'admin', 'developer'],
 }
 
-const get_case_summary: HermesTool = {
+const get_case_summary: MariaPuspaTool = {
   name: 'get_case_summary',
   description:
     'Fetch detailed information about a specific case by its ID, including member details (with masked IC), recent notes, and disbursement history.',
@@ -115,9 +116,264 @@ const get_case_summary: HermesTool = {
   requiredRole: ['staff', 'admin', 'developer'],
 }
 
+// ─── Member Tools ──────────────────────────────────────────────
+
+const get_member_list: MariaPuspaTool = {
+  name: 'get_member_list',
+  description:
+    'Fetch a list of asnaf members. Returns name, asnaf category, eKYC status, and join date. Optionally filter by asnaf category.',
+  parameters: {
+    type: 'object',
+    properties: {
+      category: {
+        type: 'string',
+        description: 'Filter by asnaf category: fakir, miskin, amil, muallaf, gharimin, riqab, ibnu_sabil, fisabilillah',
+      },
+      limit: {
+        type: 'number',
+        description: 'Number of members to return (default 20, max 100)',
+      },
+    },
+  },
+  execute: async (params) => {
+    const category = typeof params.category === 'string' ? params.category : undefined
+    const limit = typeof params.limit === 'number' ? Math.min(params.limit, 100) : 20
+
+    const where = category ? { asnafCategory: category } : {}
+    const members = await db.member.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        asnafCategory: true,
+        ekycStatus: true,
+        createdAt: true,
+      },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return members.map((m) => ({
+      id: m.id,
+      name: m.name,
+      category: m.asnafCategory,
+      ekyc: m.ekycStatus,
+      joined: m.createdAt.toISOString().split('T')[0],
+    }))
+  },
+  requiredRole: ['staff', 'admin', 'developer'],
+}
+
+const get_member_stats: MariaPuspaTool = {
+  name: 'get_member_stats',
+  description:
+    'Get member statistics: total count, breakdown by asnaf category, eKYC verification status, and recent registrations.',
+  parameters: {
+    type: 'object',
+    properties: {},
+  },
+  execute: async () => {
+    const [total, byCategory, ekycPending, ekycVerified] = await Promise.all([
+      db.member.count(),
+      db.member.groupBy({ by: ['asnafCategory'], _count: { asnafCategory: true } }),
+      db.member.count({ where: { ekycStatus: 'pending' } }),
+      db.member.count({ where: { ekycStatus: 'verified' } }),
+    ])
+
+    return {
+      total,
+      byCategory: Object.fromEntries(byCategory.map((r) => [r.asnafCategory, r._count.asnafCategory])),
+      ekycPending,
+      ekycVerified,
+    }
+  },
+  requiredRole: ['staff', 'admin', 'developer'],
+}
+
+// ─── Programme Tools ────────────────────────────────────────────
+
+const get_active_programmes: MariaPuspaTool = {
+  name: 'get_active_programmes',
+  description:
+    'Fetch programmes that are currently active. Returns programme name, type, start/end dates, and status.',
+  parameters: {
+    type: 'object',
+    properties: {
+      limit: {
+        type: 'number',
+        description: 'Number of programmes to return (default 10)',
+      },
+    },
+  },
+  execute: async (params) => {
+    const limit = typeof params.limit === 'number' ? params.limit : 10
+    const programmes = await db.programme.findMany({
+      where: { status: 'active' },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        startDate: true,
+        endDate: true,
+        status: true,
+      },
+      take: limit,
+      orderBy: { startDate: 'desc' },
+    })
+
+    return programmes.map((p) => ({
+      id: p.id,
+      name: p.name,
+      type: p.type,
+      start: p.startDate.toISOString().split('T')[0],
+      end: p.endDate?.toISOString().split('T')[0] || 'Ongoing',
+      status: p.status,
+    }))
+  },
+  requiredRole: ['staff', 'admin', 'developer'],
+}
+
+// ─── Volunteer Tools ────────────────────────────────────────────
+
+const get_volunteer_stats: MariaPuspaTool = {
+  name: 'get_volunteer_stats',
+  description:
+    'Get volunteer statistics: total count, active volunteers, and skills breakdown.',
+  parameters: {
+    type: 'object',
+    properties: {},
+  },
+  execute: async () => {
+    const [total, active] = await Promise.all([
+      db.volunteer.count(),
+      db.volunteer.count({ where: { status: 'active' } }),
+    ])
+
+    return { total, active, inactive: total - active }
+  },
+  requiredRole: ['staff', 'admin', 'developer'],
+}
+
+// ─── Compliance Tools ──────────────────────────────────────────
+
+const get_compliance_status: MariaPuspaTool = {
+  name: 'get_compliance_status',
+  description:
+    'Get compliance status overview: total records, completed, pending, and overdue items by category (ROSM, LHDN, PDPA).',
+  parameters: {
+    type: 'object',
+    properties: {},
+  },
+  execute: async () => {
+    const [total, completed, pending, overdue] = await Promise.all([
+      db.complianceRecord.count(),
+      db.complianceRecord.count({ where: { status: 'completed' } }),
+      db.complianceRecord.count({ where: { status: 'pending' } }),
+      db.complianceRecord.count({
+        where: {
+          status: 'pending',
+          dueDate: { lt: new Date() },
+        },
+      }),
+    ])
+
+    const byCategory = await db.complianceRecord.groupBy({
+      by: ['category'],
+      _count: { category: true },
+    })
+
+    return {
+      total,
+      completed,
+      pending,
+      overdue,
+      byCategory: Object.fromEntries(byCategory.map((r) => [r.category, r._count.category])),
+    }
+  },
+  requiredRole: ['staff', 'admin', 'developer'],
+}
+
+// ─── Disbursement Tools ────────────────────────────────────────
+
+const get_disbursement_summary: MariaPuspaTool = {
+  name: 'get_disbursement_summary',
+  description:
+    'Get disbursement summary: total amount disbursed, count, and breakdown by status (pending, approved, disbursed).',
+  parameters: {
+    type: 'object',
+    properties: {},
+  },
+  execute: async () => {
+    const [total, totalAmount, byStatus] = await Promise.all([
+      db.disbursement.count(),
+      db.disbursement.aggregate({ _sum: { amount: true } }),
+      db.disbursement.groupBy({
+        by: ['status'],
+        _count: { status: true },
+        _sum: { amount: true },
+      }),
+    ])
+
+    return {
+      total,
+      totalAmount: totalAmount._sum.amount || 0,
+      byStatus: Object.fromEntries(
+        byStatus.map((r) => [r.status, { count: r._count.status, amount: r._sum.amount || 0 }])
+      ),
+    }
+  },
+  requiredRole: ['staff', 'admin', 'developer'],
+}
+
+// ─── Dashboard Overview Tool ──────────────────────────────────
+
+const get_dashboard_overview: MariaPuspaTool = {
+  name: 'get_dashboard_overview',
+  description:
+    'Get a comprehensive dashboard overview: key metrics across all modules — members, cases, donations, disbursements, programmes, volunteers, and compliance. Use this for general operational summaries.',
+  parameters: {
+    type: 'object',
+    properties: {},
+  },
+  execute: async () => {
+    const [
+      memberCount,
+      activeCases,
+      donationTotal,
+      donationCount,
+      disbursementTotal,
+      activeProgrammes,
+      volunteerActive,
+      compliancePending,
+      complianceOverdue,
+    ] = await Promise.all([
+      db.member.count(),
+      db.case.count({ where: { status: { notIn: ['closed', 'rejected'] } } }),
+      db.donation.aggregate({ _sum: { amount: true }, _count: true }),
+      db.donation.count(),
+      db.disbursement.aggregate({ _sum: { amount: true } }),
+      db.programme.count({ where: { status: 'active' } }),
+      db.volunteer.count({ where: { status: 'active' } }),
+      db.complianceRecord.count({ where: { status: 'pending' } }),
+      db.complianceRecord.count({ where: { status: 'pending', dueDate: { lt: new Date() } } }),
+    ])
+
+    return {
+      members: memberCount,
+      activeCases,
+      donations: { total: donationTotal._sum.amount || 0, count: donationCount },
+      disbursements: { total: disbursementTotal._sum.amount || 0 },
+      activeProgrammes,
+      activeVolunteers: volunteerActive,
+      compliance: { pending: compliancePending, overdue: complianceOverdue },
+    }
+  },
+  requiredRole: ['staff', 'admin', 'developer'],
+}
+
 // ─── Admin-Only Tools ────────────────────────────────────────
 
-const approve_disbursement: HermesTool = {
+const approve_disbursement: MariaPuspaTool = {
   name: 'approve_disbursement',
   description:
     'Approve a pending disbursement. This is a restricted action — only admin and developer roles can execute it.',
@@ -146,7 +402,7 @@ const approve_disbursement: HermesTool = {
   requiredRole: ['admin', 'developer'],
 }
 
-const delete_case: HermesTool = {
+const delete_case: MariaPuspaTool = {
   name: 'delete_case',
   description:
     'Delete a case from the system. This is a highly restricted action — only admin and developer roles can execute it.',
@@ -183,44 +439,45 @@ const delete_case: HermesTool = {
 
 // ─── Complete Registry ───────────────────────────────────────
 
-const ALL_TOOLS: HermesTool[] = [
+const ALL_TOOLS: MariaPuspaTool[] = [
   ping_system,
   get_recent_donations,
   get_donation_stats,
   get_active_cases,
   get_case_summary,
+  get_member_list,
+  get_member_stats,
+  get_active_programmes,
+  get_volunteer_stats,
+  get_compliance_status,
+  get_disbursement_summary,
+  get_dashboard_overview,
   approve_disbursement,
   delete_case,
 ]
 
 // ─── Role-Based Filtering ────────────────────────────────────
 
-const ROLE_HIERARCHY: Record<string, number> = {
-  staff: 1,
-  admin: 2,
-  developer: 3,
-}
-
 /**
  * Filter the tool registry based on the user's role.
  * Only tools whose `requiredRole` includes the user's role are returned.
  */
-export function getToolsForRole(userRole: string): HermesTool[] {
+export function getToolsForRole(userRole: string): MariaPuspaTool[] {
   return ALL_TOOLS.filter((tool) => tool.requiredRole.includes(userRole as 'staff' | 'admin' | 'developer'))
 }
 
 /**
  * Get the full tool registry (for developer role or debugging).
  */
-export function getAllTools(): HermesTool[] {
+export function getAllTools(): MariaPuspaTool[] {
   return ALL_TOOLS
 }
 
 /**
- * Convert HermesTool[] to OpenAI function calling format.
+ * Convert MariaPuspaTool[] to OpenAI function calling format.
  * This is the format sent to the AI model in the `tools` parameter.
  */
-export function toOpenAITools(tools: HermesTool[]) {
+export function toOpenAITools(tools: MariaPuspaTool[]) {
   return tools.map((tool) => ({
     type: 'function' as const,
     function: {
@@ -260,4 +517,4 @@ export async function executeTool(
   }
 }
 
-export { ALL_TOOLS as hermesTools }
+export { ALL_TOOLS as mariaPuspaTools }

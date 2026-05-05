@@ -1,4 +1,4 @@
-// PUSPA V4 — Hermes AI Store (Zustand)
+// PUSPA V4 — Maria Puspa AI Store (Zustand)
 // Manages AI chat state, streaming, and tool call tracking
 // Replaces the old inline chat state in components
 
@@ -6,7 +6,7 @@ import { create } from 'zustand'
 
 // ─── Types ───────────────────────────────────────────────────
 
-export interface HermesMessage {
+export interface MariaPuspaMessage {
   id: string
   role: 'user' | 'assistant' | 'system'
   content: string
@@ -24,10 +24,10 @@ export interface ToolCallLog {
   result?: string
 }
 
-interface HermesState {
+interface MariaPuspaState {
   // Messages
-  messages: HermesMessage[]
-  addMessage: (msg: HermesMessage) => void
+  messages: MariaPuspaMessage[]
+  addMessage: (msg: MariaPuspaMessage) => void
   updateLastAssistantMessage: (content: string) => void
   finalizeLastAssistantMessage: (model?: string, toolCalls?: string[]) => void
   clearMessages: () => void
@@ -56,16 +56,19 @@ interface HermesState {
 
 // ─── Store ───────────────────────────────────────────────────
 
-const WELCOME_MESSAGE: HermesMessage = {
+const WELCOME_MESSAGE: MariaPuspaMessage = {
   id: 'welcome',
   role: 'assistant',
   content:
-    'Hai! 🦞 Saya Hermes, AI operator PUSPA. Saya boleh bantu anda dengan data operasi — derma, kes, ahli asnaf, dan lain-lain. Apa yang boleh saya bantu hari ini?',
+    'Hai, saya Maria Puspa. AI Assistant PUSPA yang sentiasa di sisi anda. Cerdas. Mesra. Sentiasa di sisi anda. Apa yang boleh saya bantu hari ini?',
   timestamp: new Date(),
-  model: 'hermes',
+  model: 'maria-puspa',
 }
 
-export const useHermesStore = create<HermesState>()((set, get) => ({
+// Keep backward-compatible type alias
+export type HermesMessage = MariaPuspaMessage
+
+export const useHermesStore = create<MariaPuspaState>()((set, get) => ({
   // ─── Messages ────────────────────────────────────────────
   messages: [WELCOME_MESSAGE],
 
@@ -109,7 +112,7 @@ export const useHermesStore = create<HermesState>()((set, get) => ({
   setIsStreaming: (streaming) => set({ isStreaming: streaming }),
 
   // ─── Model ───────────────────────────────────────────────
-  modelName: 'hermes',
+  modelName: 'maria-puspa',
   setModelName: (name) => set({ modelName: name }),
 
   // ─── Tool Calls ──────────────────────────────────────────
@@ -137,7 +140,7 @@ export const useHermesStore = create<HermesState>()((set, get) => ({
     if (isStreaming || !text.trim()) return
 
     // Add user message
-    const userMsg: HermesMessage = {
+    const userMsg: MariaPuspaMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
       content: text.trim(),
@@ -147,12 +150,12 @@ export const useHermesStore = create<HermesState>()((set, get) => ({
 
     // Add placeholder assistant message for streaming
     const assistantId = `assistant-${Date.now()}`
-    const assistantMsg: HermesMessage = {
+    const assistantMsg: MariaPuspaMessage = {
       id: assistantId,
       role: 'assistant',
       content: '',
       timestamp: new Date(),
-      model: 'hermes',
+      model: 'maria-puspa',
       isStreaming: true,
     }
     set((state) => ({
@@ -242,7 +245,7 @@ export const useHermesStore = create<HermesState>()((set, get) => ({
                     parsed.model,
                     parsed.toolCalls
                   )
-                  get().setModelName(parsed.model || 'hermes')
+                  get().setModelName(parsed.model || 'maria-puspa')
                   break
 
                 case 'error':
@@ -266,11 +269,11 @@ export const useHermesStore = create<HermesState>()((set, get) => ({
               ...messages[lastIdx],
               content: data.content || 'Maaf, saya tidak dapat memproses permintaan anda.',
               isStreaming: false,
-              model: data.model || 'hermes',
+              model: data.model || 'maria-puspa',
               toolCalls: data.toolCalls,
             }
           }
-          return { messages, modelName: data.model || 'hermes' }
+          return { messages, modelName: data.model || 'maria-puspa' }
         })
 
         // Log tool calls from non-streaming response
@@ -298,7 +301,7 @@ export const useHermesStore = create<HermesState>()((set, get) => ({
             ...messages[lastIdx],
             content:
               state.messages[lastIdx].content ||
-              `Maaf, terdapat ralat: ${errorMessage}. Sila cuba lagi. 🦞`,
+              `Maaf, terdapat ralat: ${errorMessage}. Sila cuba lagi.`,
             isStreaming: false,
             model: 'fallback',
           }

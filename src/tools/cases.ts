@@ -1,4 +1,4 @@
-// PUSPA V4 — Hermes Domain Tool: Cases
+// PUSPA V4 — Maria Puspa Domain Tool: Cases
 // Allows the AI to query case data securely (PII masked)
 
 import { db } from '@/lib/db'

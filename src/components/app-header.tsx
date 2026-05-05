@@ -23,7 +23,7 @@ const viewTitles: Record<ViewId, { en: string; ms: string }> = {
   ekyc: { en: 'eKYC Verification', ms: 'Pengesahan eKYC' },
   documents: { en: 'Document Management', ms: 'Pengurusan Dokumen' },
   activities: { en: 'Activity Log', ms: 'Log Aktiviti' },
-  ai: { en: 'PUSPA AI — Hermes', ms: 'AI PUSPA — Hermes' },
+  ai: { en: 'Maria Puspa AI', ms: 'AI Maria Puspa' },
   settings: { en: 'Settings', ms: 'Tetapan' },
   tapsecure: { en: 'TapSecure', ms: 'TapSecure' },
   admin: { en: 'Admin Panel', ms: 'Panel Pentadbir' },

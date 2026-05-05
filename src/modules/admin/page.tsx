@@ -46,7 +46,7 @@ const demoUsers: AdminUser[] = [
   { id: 'usr1', name: 'Admin PUSPA', email: 'admin@puspa.org', role: 'admin', status: 'active', lastLogin: '2025-03-15T10:00:00Z', createdAt: '2024-01-15' },
   { id: 'usr2', name: 'Ahmad Faiz', email: 'ahmad@puspa.org', role: 'staff', status: 'active', lastLogin: '2025-03-15T09:30:00Z', createdAt: '2024-03-10' },
   { id: 'usr3', name: 'Siti Nurhaliza', email: 'siti@puspa.org', role: 'staff', status: 'active', lastLogin: '2025-03-14T16:00:00Z', createdAt: '2024-05-20' },
-  { id: 'usr4', name: 'Dev Hermes', email: 'dev@puspa.org', role: 'developer', status: 'active', lastLogin: '2025-03-15T08:00:00Z', createdAt: '2024-06-01' },
+  { id: 'usr4', name: 'Dev Maria', email: 'dev@puspa.org', role: 'developer', status: 'active', lastLogin: '2025-03-15T08:00:00Z', createdAt: '2024-06-01' },
   { id: 'usr5', name: 'Mohd Razak', email: 'razak@puspa.org', role: 'staff', status: 'inactive', lastLogin: '2025-02-20T11:00:00Z', createdAt: '2024-08-15' },
   { id: 'usr6', name: 'Fatimah Zahra', email: 'fatimah@puspa.org', role: 'admin', status: 'active', lastLogin: '2025-03-15T07:45:00Z', createdAt: '2024-02-28' },
 ]
@@ -54,7 +54,7 @@ const demoUsers: AdminUser[] = [
 const demoSystemHealth: SystemHealth[] = [
   { name: 'Database (SQLite)', status: 'operational', message: 'Semua operasi normal', latency: '2ms', uptime: '99.99%' },
   { name: 'API Server', status: 'operational', message: 'Pelayan berjalan lancar', latency: '15ms', uptime: '99.95%' },
-  { name: 'AI Service (Hermes)', status: 'operational', message: 'Model dimuatkan dan sedia', latency: '450ms', uptime: '98.5%' },
+  { name: 'AI Service (Maria Puspa)', status: 'operational', message: 'Model dimuatkan dan sedia', latency: '450ms', uptime: '98.5%' },
   { name: 'File Storage', status: 'degraded', message: 'Penggunaan storan hampir penuh (87%)', latency: '8ms', uptime: '100%' },
 ]
 
@@ -64,7 +64,7 @@ const demoAuditLog: AuditLogEntry[] = [
   { id: 'al3', action: 'Pematuhan dikemas kini', user: 'Ahmad Faiz', target: 'Polisi PDPA v4.2', timestamp: '2025-03-15T08:00:00Z', category: 'compliance', severity: 'info' },
   { id: 'al4', action: 'Sandaran pangkalan data', user: 'System', target: 'backup_20250315.db', timestamp: '2025-03-15T03:00:00Z', category: 'system', severity: 'info' },
   { id: 'al5', action: 'Percubaan akses gagal', user: 'Unknown', target: 'Percubaan log masuk dari IP 45.33.xxx.xxx', timestamp: '2025-03-13T22:30:00Z', category: 'security', severity: 'critical' },
-  { id: 'al6', action: 'Konfigurasi AI dikemas kini', user: 'Dev Hermes', target: 'Hermes model parameters', timestamp: '2025-03-12T14:00:00Z', category: 'system', severity: 'info' },
+  { id: 'al6', action: 'Konfigurasi AI dikemas kini', user: 'Dev Maria', target: 'Maria Puspa model parameters', timestamp: '2025-03-12T14:00:00Z', category: 'system', severity: 'info' },
   { id: 'al7', action: 'Akaun dinyahaktifkan', user: 'Admin PUSPA', target: 'Mohd Razak (inactive)', timestamp: '2025-03-11T11:00:00Z', category: 'user_management', severity: 'warning' },
   { id: 'al8', action: 'Laporan bulanan dijana', user: 'System', target: 'Laporan Februari 2025', timestamp: '2025-03-01T00:00:00Z', category: 'system', severity: 'info' },
 ]

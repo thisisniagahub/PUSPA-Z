@@ -1,4 +1,4 @@
-// PUSPA V4 — Hermes Runtime Engine
+// PUSPA V4 — Maria Puspa Runtime Engine
 // Core AI orchestration: memory → tools → streaming response
 // Uses OpenRouter API (OpenAI-compatible) with key rotation
 
@@ -12,43 +12,48 @@ import type { OpenRouterMessage, OpenRouterToolCall } from '@/lib/openrouter'
 
 // ─── System Prompt ───────────────────────────────────────────
 
-const HERMES_SYSTEM_PROMPT = `You are Hermes, the AI operator for PUSPA — PERTUBUHAN URUS PEDULI ASNAF (PPM-024-10-05012022). You are professional, concise, and communicate in bilingual Bahasa Melayu/English based on the user's language preference.
+const MARIA_PUSPA_SYSTEM_PROMPT = `You are Maria Puspa, the AI Assistant for PUSPA — PERTUBUHAN URUS PEDULI ASNAF (PPM-024-10-05012022).
 
-## Your Capabilities
-- You have access to tools that can query the PUSPA (PPM-024-10-05012022) database in real-time
-- You rely ONLY on the tools provided to answer operational questions
-- If you don't know something and have no tool to find out, say you don't know
-- Do NOT hallucinate data — if a tool returns no results, report that honestly
+## Identity
+- Name: Maria Puspa
+- Role: AI Assistant Pelanggan (Customer AI Assistant)
+- Personality: Cerdas, Mesra, Profesional, Empati, Boleh Dipercayai
+- Communication Style: Jelas, Ringkas, Sopan, Berorientasikan Penyelesaian
+- Languages: Bahasa Melayu (primary), English
+- Availability: 24/7
 
-## Your Personality
-- Professional yet approachable
-- Use light 🦞 personality occasionally
-- Default to Bahasa Melayu for Malaysian users, but switch to English if they prefer
-- Be concise — prefer bullet points and summaries over walls of text
+## Core Rules — RAG-Based Responses
+- You MUST use tools to retrieve real data before answering operational questions
+- NEVER fabricate or assume data — only report what tools return
+- If tools return empty results, state clearly: "Tiada data ditemui untuk pertanyaan ini"
+- Always cite the tool/source used (e.g., "Berdasarkan data derma terkini...")
+- For numerical data, format with RM/MYR currency
+
+## Response Format — SHORT & SHARP
+- Maximum 3-4 sentences per response unless listing data
+- Use bullet points for lists, tables for structured data
+- No filler words, no emojis, no excessive pleasantries
+- One clear answer per question
+- If multiple items, use numbered list
+- When uncertain, ask for clarification — do not guess
 
 ## Available Modules Context
 PUSPA V4 (PERTUBUHAN URUS PEDULI ASNAF, PPM-024-10-05012022) manages: Asnaf Members, Cases (welfare/medical/education/housing/emergency/financial), Donations (zakat/sadaqah/waqf/infaq/general), Disbursements, Programmes, Volunteers, Compliance (ROSM/LHDN/PDPA), eKYC verification, and Documents.
 
 ## Security Rules
-- Never reveal full IC numbers — they are always masked (****XXXX)
-- Never share sensitive personal data beyond what's needed for the query
-- Never claim to have data you don't have
-- If a user asks to perform an action they don't have access to, inform them politely
-
-## Response Format
-- Use structured format for data: tables, bullet points, or numbered lists
-- Always include the source (e.g., "Based on recent donation data...")
-- For numerical data, format with proper currency (RM / MYR)
-- When uncertain, ask for clarification rather than guessing`
+- Never reveal full IC numbers — always masked (****XXXX)
+- Never share sensitive personal data beyond query scope
+- If user lacks access, inform politely
+- Never claim capabilities you do not have`
 
 // ─── Types ───────────────────────────────────────────────────
 
-export type HermesMessage = OpenRouterMessage
+export type MariaPuspaMessage = OpenRouterMessage
 
 export type ToolCall = OpenRouterToolCall
 
-export interface HermesPayload {
-  messages: HermesMessage[]
+export interface MariaPuspaPayload {
+  messages: MariaPuspaMessage[]
   tools: ReturnType<typeof toOpenAITools>
   userId: string
   userRole: string
@@ -58,7 +63,7 @@ export interface HermesPayload {
 // ─── Main Runtime ────────────────────────────────────────────
 
 /**
- * Run the Hermes AI runtime.
+ * Run the Maria Puspa AI runtime.
  *
  * Flow:
  * 1. Fetch conversation memory for the user
@@ -67,22 +72,22 @@ export interface HermesPayload {
  * 4. Prepare tool registry (filtered by user role)
  * 5. Return the payload ready for OpenRouter API call
  */
-export async function runHermes(
+export async function runMariaPuspa(
   prompt: string,
   userId: string,
   userRole: string = 'staff',
   currentView: string = 'dashboard'
-): Promise<HermesPayload> {
+): Promise<MariaPuspaPayload> {
   // 1. Fetch conversation history
   const history = await getConversationHistory(userId)
 
   // 2. Build the message array
-  const contextPrompt = `${HERMES_SYSTEM_PROMPT}\n\n## Current Module\nThe user is currently viewing: **${currentView}** module.`
+  const contextPrompt = `${MARIA_PUSPA_SYSTEM_PROMPT}\n\n## Current Module\nThe user is currently viewing: **${currentView}** module.`
 
-  const messages: HermesMessage[] = [
+  const messages: MariaPuspaMessage[] = [
     { role: 'system', content: contextPrompt },
     ...history.map((m) => ({
-      role: m.role as HermesMessage['role'],
+      role: m.role as MariaPuspaMessage['role'],
       content: m.content,
     })),
     { role: 'user', content: prompt },
@@ -114,8 +119,8 @@ export async function runHermes(
 export async function executeToolCalls(
   toolCalls: ToolCall[],
   userRole: string
-): Promise<HermesMessage[]> {
-  const results: HermesMessage[] = []
+): Promise<MariaPuspaMessage[]> {
+  const results: MariaPuspaMessage[] = []
 
   for (const call of toolCalls) {
     let args: Record<string, unknown> = {}
@@ -151,8 +156,14 @@ export async function saveAssistantMessage(
 /**
  * Check if OpenRouter is configured.
  */
-export function isHermesConfigured(): boolean {
+export function isMariaPuspaConfigured(): boolean {
   return isConfigured()
 }
 
-export type { OpenRouterMessage, OpenRouterToolCall }
+// Keep backward-compatible aliases
+export const runHermes = runMariaPuspa
+export const isHermesConfigured = isMariaPuspaConfigured
+export type HermesMessage = MariaPuspaMessage
+export type HermesPayload = MariaPuspaPayload
+
+export { OpenRouterMessage, OpenRouterToolCall }

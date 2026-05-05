@@ -1,12 +1,12 @@
-// PUSPA V4 — Hermes AI Streaming API Endpoint
+// PUSPA V4 — Maria Puspa AI Streaming API Endpoint
 // POST /api/v1/ai → OpenRouter (OpenAI-compatible) with streaming + tool calling
 
 import { NextRequest, NextResponse } from 'next/server'
 import {
-  runHermes,
+  runMariaPuspa,
   executeToolCalls,
   saveAssistantMessage,
-  isHermesConfigured,
+  isMariaPuspaConfigured,
 } from '@/agents/runtime/hermes.runtime'
 import { createChatCompletionStream } from '@/lib/openrouter'
 import type { ToolCall } from '@/agents/runtime/hermes.runtime'
@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
     const { messages: clientMessages, currentView, userId, userRole } = body
 
     // ─── Check OpenRouter Configuration ─────────────────────
-    if (!isHermesConfigured()) {
+    if (!isMariaPuspaConfigured()) {
       return NextResponse.json(
         {
-          content: 'Maaf, Hermes tidak dikonfigurasi. OpenRouter API keys belum disetup. Sila tambah OPENROUTER_API_KEY_1 dalam .env 🦞',
+          content: 'Maaf, Maria Puspa tidak dikonfigurasi. OpenRouter API keys belum disetup. Sila tambah OPENROUTER_API_KEY_1 dalam .env',
           model: 'fallback',
           success: false,
           error: 'OpenRouter not configured',
@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ─── Run Hermes Runtime ─────────────────────────────────
-    const payload = await runHermes(
+    // ─── Run Maria Puspa Runtime ────────────────────────────
+    const payload = await runMariaPuspa(
       lastUserMessage,
       effectiveUserId,
       effectiveRole,
@@ -70,13 +70,13 @@ export async function POST(request: NextRequest) {
       payload.model
     )
   } catch (error: unknown) {
-    console.error('[Hermes API] Runtime error:', error)
+    console.error('[Maria Puspa API] Runtime error:', error)
     const message =
       error instanceof Error ? error.message : 'AI service unavailable'
 
     return NextResponse.json(
       {
-        content: `Maaf, Hermes mengalami masalah: ${message}. Sila cuba lagi nanti. 🦞`,
+        content: `Maaf, Maria Puspa mengalami masalah: ${message}. Sila cuba lagi nanti.`,
         model: 'fallback',
         success: false,
         error: message,
@@ -265,18 +265,18 @@ function handleSSEStream(
         // Save assistant message to memory
         await saveAssistantMessage(userId, fullContent)
 
-        // Send completion signal
+        // Send completion signal — hide model name from user
         controller.enqueue(
           encoder.encode(
             `data: ${JSON.stringify({
               type: 'done',
-              model,
+              model: 'maria-puspa',
               toolCalls: toolCallsBuffer.map((tc) => tc.function.name),
             })}\n\n`
           )
         )
       } catch (err) {
-        console.error('[Hermes SSE] Stream processing error:', err)
+        console.error('[Maria Puspa SSE] Stream processing error:', err)
         controller.enqueue(
           encoder.encode(
             `data: ${JSON.stringify({

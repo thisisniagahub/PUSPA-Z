@@ -1,4 +1,4 @@
-// PUSPA V4 — Hermes AI Memory Layer
+// PUSPA V4 — Maria Puspa AI Memory Layer
 // Persists conversation history via the AIMemory Prisma model
 
 import { db } from '@/lib/db'

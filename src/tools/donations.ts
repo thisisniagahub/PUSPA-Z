@@ -1,4 +1,4 @@
-// PUSPA V4 — Hermes Domain Tool: Donations
+// PUSPA V4 — Maria Puspa Domain Tool: Donations
 // Allows the AI to query donation data securely (no raw PII exposed)
 
 import { db } from '@/lib/db'

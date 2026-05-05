@@ -77,14 +77,14 @@ export default function AiPage() {
             <PuspaLogo size={40} className="text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-primary">PUSPA AI</h1>
-            <p className="text-sm text-muted-foreground">Hermes Runtime • Cerdas. Mesra. Sentiasa di sisi anda. 🦞</p>
+            <h1 className="text-2xl font-bold tracking-tight text-primary">Maria Puspa</h1>
+            <p className="text-sm text-muted-foreground">AI Assistant — Cerdas. Mesra. Sentiasa di sisi anda.</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary">
             <Cpu className="h-3 w-3" />
-            {modelName}
+            Maria Puspa
           </Badge>
           <Badge variant="outline" className="gap-1">
             <Terminal className="h-3 w-3" />
@@ -152,7 +152,7 @@ export default function AiPage() {
                     }`}>
                       <span>{msg.timestamp.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' })}</span>
                       {msg.model && msg.role === 'assistant' && (
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">{msg.model}</Badge>
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">Maria Puspa</Badge>
                       )}
                       {msg.toolCalls && msg.toolCalls.length > 0 && (
                         <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 gap-0.5">
@@ -174,7 +174,7 @@ export default function AiPage() {
                   <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                      <span className="text-sm text-muted-foreground">Hermes sedang berfikir...</span>
+                      <span className="text-sm text-muted-foreground">Maria Puspa sedang berfikir...</span>
                     </div>
                   </div>
                 </div>
@@ -211,7 +211,7 @@ export default function AiPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Tanya Hermes sesuatu..."
+                placeholder="Tanya Maria Puspa sesuatu..."
                 className="flex-1 focus-visible:ring-primary"
                 disabled={isStreaming}
               />
@@ -229,21 +229,21 @@ export default function AiPage() {
 
         {/* Context Panel (30%) */}
         <div className="lg:flex-[3] space-y-4">
-          {/* PUSPA Character Card */}
+          {/* Maria Puspa Character Card */}
           <Card className="overflow-hidden">
             <div className="bg-primary p-3 flex items-center gap-3">
               <div className="relative h-10 w-10 rounded-full overflow-hidden bg-white/20 shrink-0">
                 <PuspaLogo size={32} className="text-primary-foreground" animate />
               </div>
               <div className="text-primary-foreground">
-                <p className="text-sm font-bold">Hermes AI Operator</p>
+                <p className="text-sm font-bold">Maria Puspa</p>
                 <p className="text-[10px] opacity-80">Cerdas. Mesra. Sentiasa di sisi anda.</p>
               </div>
             </div>
             <CardContent className="p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Peranan</span>
-                <span className="text-xs font-medium">AI Operator & Data Assistant</span>
+                <span className="text-xs font-medium">AI Assistant & Data Operator</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Personaliti</span>
@@ -279,7 +279,7 @@ export default function AiPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Model</span>
-                <Badge variant="outline">{modelName}</Badge>
+                <Badge variant="outline">Maria Puspa</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Status</span>
