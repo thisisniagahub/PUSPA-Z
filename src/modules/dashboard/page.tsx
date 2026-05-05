@@ -517,7 +517,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="max-h-96 overflow-y-auto space-y-1 pr-1" style={{ scrollbarWidth: 'thin' }}>
+            <div className="max-h-96 overflow-y-auto space-y-1 pr-1">
               {recentActivities.map((activity) => {
                 const Icon = getActivityIcon(activity.category)
                 return (
@@ -531,7 +531,7 @@ export default function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-medium truncate">{activity.title}</p>
-                        <span className="text-[10px] text-muted-foreground whitespace-nowrap flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1">
                           <Clock className="h-2.5 w-2.5" />
                           {timeAgo(activity.createdAt)}
                         </span>
@@ -611,7 +611,7 @@ export default function DashboardPage() {
                   <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                   eKYC Disahkan
                 </span>
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-[11px]">
                   {formatNumber(metrics.totalMembers - metrics.pendingEkyc)}
                 </Badge>
               </div>
@@ -620,7 +620,7 @@ export default function DashboardPage() {
                   <AlertCircle className="h-3 w-3 text-amber-500" />
                   eKYC Menunggu
                 </span>
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-[11px]">
                   {metrics.pendingEkyc}
                 </Badge>
               </div>
@@ -629,7 +629,7 @@ export default function DashboardPage() {
                   <Receipt className="h-3 w-3 text-rose-500" />
                   Nisbah Agihan
                 </span>
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-[11px]">
                   {metrics.totalDonations > 0
                     ? `${Math.round((metrics.totalDisbursements / metrics.totalDonations) * 100)}%`
                     : '0%'}

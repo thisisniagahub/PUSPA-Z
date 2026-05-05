@@ -27,6 +27,9 @@ const viewTitles: Record<ViewId, { en: string; ms: string }> = {
   settings: { en: 'Settings', ms: 'Tetapan' },
   tapsecure: { en: 'TapSecure', ms: 'TapSecure' },
   admin: { en: 'Admin Panel', ms: 'Panel Pentadbir' },
+  asnafpreneur: { en: 'Asnafpreneur', ms: 'Asnafpreneur' },
+  'sedekah-jumaat': { en: 'Sedekah Jumaat', ms: 'Sedekah Jumaat' },
+  docs: { en: 'Panduan', ms: 'Panduan Pengguna' },
 }
 
 export function AppHeader() {
@@ -40,9 +43,9 @@ export function AppHeader() {
       <SidebarTrigger className="-ml-1 size-7" />
       <Separator orientation="vertical" className="mr-2 h-4" />
 
-      <div className="flex-1">
-        <h2 className="text-sm font-semibold">{title.en}</h2>
-        <p className="text-[10px] text-muted-foreground">{title.ms}</p>
+      <div className="flex-1 min-w-0">
+        <h2 className="text-sm font-semibold truncate">{title.en}</h2>
+        <p className="text-xs text-muted-foreground truncate">{title.ms}</p>
       </div>
 
       <div className="hidden md:flex items-center gap-2 w-64">

@@ -9,8 +9,6 @@ import { AppHeader } from '@/components/app-header'
 import { ViewRenderer } from '@/components/view-renderer'
 import { AiChatPanel } from '@/components/ai-chat-panel'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-// Using puspa-logo-official.png image
-import { cn } from '@/lib/utils'
 
 // Check if Supabase is configured
 const isSupabaseConfigured = !!(
@@ -21,7 +19,7 @@ const isSupabaseConfigured = !!(
 export default function Home() {
   const router = useRouter()
   const { user, loading } = useAuth()
-  const { aiChatOpen, currentUser, setCurrentUser } = useAppStore()
+  const { currentUser, setCurrentUser } = useAppStore()
 
   // Sync Supabase auth user with app store
   useEffect(() => {
@@ -52,7 +50,7 @@ export default function Home() {
           <img
             src="/puspa-logo-official.png"
             alt="PUSPA Logo"
-            className="h-12 w-12 object-contain rounded-full bg-white p-0.5"
+            className="h-16 w-16 object-contain rounded-full bg-white p-1"
             style={{ animation: 'puspa-spin 4s linear infinite' }}
           />
           <style>{`
@@ -82,17 +80,14 @@ export default function Home() {
     <SidebarProvider>
       <AppSidebar />
 
-      <SidebarInset className={cn(
-        "transition-all duration-300",
-        aiChatOpen ? "md:mr-80" : "mr-0"
-      )}>
+      <SidebarInset>
         <AppHeader />
         <main className="p-4 lg:p-6">
           <ViewRenderer />
         </main>
       </SidebarInset>
 
-      {/* AI Chat Panel */}
+      {/* AI Chat Panel — fixed positioned, no margin shift needed */}
       <AiChatPanel />
     </SidebarProvider>
   )

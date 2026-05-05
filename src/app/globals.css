@@ -174,3 +174,23 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background: oklch(0.581 0.154 291 / 40%);
 }
+
+/* ─── Utility: Hide scrollbar ──────────────────────────────────── */
+
+.scrollbar-none,
+[data-scrollbar-none="true"] {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar,
+[data-scrollbar-none="true"]::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Chat message text wrapping ───────────────────────────────── */
+
+.chat-message-content {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}

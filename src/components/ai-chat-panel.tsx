@@ -3,7 +3,7 @@
 import { useAppStore } from '@/lib/store'
 import { useHermesStore } from '@/stores/hermes-store'
 import { cn } from '@/lib/utils'
-import { X, Send, User, Loader2, Sparkles, Wrench, Mic, ChevronDown, ArrowDown, Menu } from 'lucide-react'
+import { X, Send, User, Loader2, Sparkles, Wrench, Mic, ChevronDown, ArrowDown } from 'lucide-react'
 import { MARIA_PUSPA_AVATAR_URI } from '@/lib/maria-avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -113,8 +113,8 @@ export function AiChatPanel() {
         isExpanded
           ? "h-[95vh] max-h-[95vh]"
           : "h-[85vh] max-h-[85vh]",
-        // Desktop: side panel
-        "md:inset-y-0 md:right-0 md:left-auto md:top-0 md:h-full md:w-80 md:rounded-none md:pb-0",
+        // Desktop: side panel — wider for better readability
+        "md:inset-y-0 md:right-0 md:left-auto md:top-0 md:h-full md:w-96 md:rounded-none md:pb-0",
       )}>
         {/* Mobile drag handle — swipe to dismiss area */}
         <div
@@ -126,20 +126,20 @@ export function AiChatPanel() {
           <div className="h-1.5 w-10 rounded-full bg-muted-foreground/30" />
         </div>
 
-        {/* Header — compact on mobile */}
-        <div className="flex items-center justify-between px-3 py-2 sm:p-3 border-b bg-primary text-primary-foreground rounded-t-2xl md:rounded-none">
-          <div className="flex items-center gap-2.5">
-            <div className="relative h-8 w-8 sm:h-8 sm:w-8 rounded-full overflow-hidden shrink-0">
+        {/* Header — consistent sizing */}
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-primary text-primary-foreground rounded-t-2xl md:rounded-none">
+          <div className="flex items-center gap-3">
+            <div className="relative h-9 w-9 rounded-full overflow-hidden shrink-0">
               <img src={MARIA_PUSPA_AVATAR_URI} alt="Maria Puspa" className="h-full w-full object-cover" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-xs font-bold leading-tight">Maria Puspa</h3>
+              <h3 className="text-sm font-bold leading-tight">Maria Puspa</h3>
               <div className="flex items-center gap-1.5">
                 <div className={cn(
                   "h-1.5 w-1.5 rounded-full",
                   isStreaming ? "bg-amber-400 animate-pulse" : "bg-emerald-400"
                 )} />
-                <p className="text-[10px] opacity-80">
+                <p className="text-xs opacity-80">
                   {isStreaming ? 'Memproses...' : 'Online'}
                 </p>
               </div>
@@ -159,7 +159,7 @@ export function AiChatPanel() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 sm:h-7 sm:w-7 text-primary-foreground hover:bg-white/20 touch-manipulation"
+              className="h-8 w-8 text-primary-foreground hover:bg-white/20 touch-manipulation"
               onClick={() => setAiChatOpen(false)}
               aria-label="Tutup sembang"
             >
@@ -170,18 +170,18 @@ export function AiChatPanel() {
 
         {/* Error banner */}
         {lastError && (
-          <div className="px-3 py-1.5 bg-destructive/10 border-b border-destructive/20 text-[10px] text-destructive flex items-center gap-1">
+          <div className="px-4 py-2 bg-destructive/10 border-b border-destructive/20 text-xs text-destructive flex items-center gap-1">
             <span className="truncate flex-1">{lastError}</span>
             <button className="ml-auto shrink-0 underline touch-manipulation" onClick={() => setLastError(null)}>✕</button>
           </div>
         )}
 
-        {/* Context Badge — hidden on mobile to save space */}
-        <div className="hidden sm:block px-3 pt-2">
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-primary/5 rounded-md px-2 py-1 border border-primary/10">
+        {/* Context Badge — desktop only */}
+        <div className="hidden md:block px-4 pt-2">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-primary/5 rounded-md px-2 py-1 border border-primary/10">
             <Sparkles className="h-3 w-3 text-primary" />
             <span>Context: {currentView}</span>
-            <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1 border-primary/20 text-primary">
+            <Badge variant="outline" className="ml-auto text-[10px] h-4 px-1.5 border-primary/20 text-primary">
               {currentUser?.role || 'staff'}
             </Badge>
           </div>
@@ -189,9 +189,9 @@ export function AiChatPanel() {
 
         {/* Quick Prompts — always visible at top on mobile when chat is new */}
         {messages.length <= 1 && !isStreaming && (
-          <div className="px-3 pt-2 pb-1 border-b border-border/50 md:border-b-0">
-            <p className="text-[10px] text-muted-foreground mb-1.5">Cadangan pantas:</p>
-            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <div className="px-4 pt-2 pb-2 border-b border-border/50 md:border-b-0">
+            <p className="text-xs text-muted-foreground mb-1.5">Cadangan pantas:</p>
+            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {quickPrompts.map((prompt) => (
                 <button
                   key={prompt.label}
@@ -199,7 +199,7 @@ export function AiChatPanel() {
                     setInput('')
                     sendMessage(prompt.fullText, currentView, currentUser?.id || 'anonymous', currentUser?.role || 'staff')
                   }}
-                  className="flex items-center gap-1 text-[11px] rounded-full bg-primary/5 border border-primary/15 px-3 py-1.5 text-primary hover:bg-primary/10 transition-colors touch-manipulation whitespace-nowrap shrink-0 min-h-[36px]"
+                  className="flex items-center gap-1.5 text-xs rounded-full bg-primary/5 border border-primary/15 px-3 py-2 text-primary hover:bg-primary/10 transition-colors touch-manipulation whitespace-nowrap shrink-0 min-h-[36px]"
                 >
                   <Sparkles className="h-3 w-3 shrink-0" />
                   {prompt.label}
@@ -209,64 +209,66 @@ export function AiChatPanel() {
           </div>
         )}
 
-        {/* Messages */}
-        <ScrollArea className="flex-1 px-3 py-2">
-          <div
-            ref={scrollRef}
-            onScroll={handleScroll}
-            className="space-y-3 overflow-y-auto"
-          >
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={cn(
-                  "flex gap-2 sm:gap-2",
-                  msg.role === 'user' && "flex-row-reverse"
-                )}
-              >
-                <div className={cn(
-                  "flex h-7 w-7 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full overflow-hidden",
-                  msg.role === 'user' ? "bg-primary text-primary-foreground" : "bg-primary/10"
-                )}>
-                  {msg.role === 'user' ? (
-                    <User className="h-3.5 w-3.5" />
-                  ) : (
-                    <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
+        {/* Messages — single scroll container, no nested overflow */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div
+              ref={scrollRef}
+              onScroll={handleScroll}
+              className="px-4 py-3 space-y-3"
+            >
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={cn(
+                    "flex gap-2.5",
+                    msg.role === 'user' && "flex-row-reverse"
                   )}
-                </div>
-                <div className={cn(
-                  "rounded-2xl px-3 py-2 sm:py-2 text-[13px] sm:text-xs max-w-[88%] sm:max-w-[85%] leading-relaxed",
-                  msg.role === 'user'
-                    ? "bg-primary text-primary-foreground rounded-tr-sm"
-                    : "bg-muted border border-border rounded-tl-sm"
-                )}>
-                  {msg.content || (msg.isStreaming ? '' : '...')}
-                  {msg.isStreaming && msg.content && (
-                    <span className="inline-block w-1 h-3.5 bg-primary/60 animate-pulse ml-0.5 align-text-bottom" />
-                  )}
-                  {msg.isStreaming && !msg.content && (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {/* Loading when waiting for first chunk */}
-            {isStreaming && messages[messages.length - 1]?.content === '' && (
-              <div className="flex gap-2">
-                <div className="flex h-7 w-7 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
-                  <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover animate-pulse" />
-                </div>
-                <div className="rounded-2xl rounded-tl-sm px-3 py-2 bg-muted border border-border">
-                  <div className="flex items-center gap-1.5">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                    <span className="text-[11px] text-muted-foreground">Memikir...</span>
+                >
+                  <div className={cn(
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full overflow-hidden",
+                    msg.role === 'user' ? "bg-primary text-primary-foreground" : "bg-primary/10"
+                  )}>
+                    {msg.role === 'user' ? (
+                      <User className="h-4 w-4" />
+                    ) : (
+                      <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
+                    )}
+                  </div>
+                  <div className={cn(
+                    "rounded-2xl px-3.5 py-2.5 text-sm max-w-[85%] leading-relaxed break-words",
+                    msg.role === 'user'
+                      ? "bg-primary text-primary-foreground rounded-tr-sm"
+                      : "bg-muted border border-border rounded-tl-sm"
+                  )}>
+                    <span className="whitespace-pre-wrap">{msg.content || (msg.isStreaming ? '' : '...')}</span>
+                    {msg.isStreaming && msg.content && (
+                      <span className="inline-block w-1 h-4 bg-primary/60 animate-pulse ml-0.5 align-text-bottom" />
+                    )}
+                    {msg.isStreaming && !msg.content && (
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    )}
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+              ))}
+
+              {/* Loading when waiting for first chunk */}
+              {isStreaming && messages[messages.length - 1]?.content === '' && (
+                <div className="flex gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
+                    <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover animate-pulse" />
+                  </div>
+                  <div className="rounded-2xl rounded-tl-sm px-3.5 py-2.5 bg-muted border border-border">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <span className="text-xs text-muted-foreground">Memikir...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
 
         {/* Scroll to bottom button */}
         {showScrollBtn && (
@@ -283,21 +285,21 @@ export function AiChatPanel() {
           </div>
         )}
 
-        {/* Tool Calls indicator — compact on mobile */}
+        {/* Tool Calls indicator */}
         {toolCalls.length > 0 && (
-          <div className="px-3 pb-1">
-            <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-              <Wrench className="h-2.5 w-2.5" />
+          <div className="px-4 pb-1.5">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Wrench className="h-3 w-3" />
               <span>{toolCalls.length} tool{toolCalls.length > 1 ? 's' : ''}</span>
-              <Badge variant="outline" className="text-[8px] px-1 py-0 h-3 ml-1">
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 ml-1">
                 {toolCalls.filter((tc) => tc.status === 'success').length}/{toolCalls.length}
               </Badge>
             </div>
           </div>
         )}
 
-        {/* Input — mobile-optimized with larger touch targets */}
-        <div className="border-t p-2 sm:p-3 bg-background">
+        {/* Input — consistent sizing */}
+        <div className="border-t p-3 bg-background">
           <form
             onSubmit={(e) => { e.preventDefault(); handleSend() }}
             className="flex gap-2 items-center"
@@ -308,14 +310,14 @@ export function AiChatPanel() {
               onChange={(e) => setInput(e.target.value)}
               onFocus={handleInputFocus}
               placeholder="Tanya Maria Puspa..."
-              className="h-11 sm:h-8 text-[15px] sm:text-xs border-primary/20 focus:border-primary touch-manipulation rounded-full px-4"
+              className="h-10 text-sm border-primary/20 focus:border-primary touch-manipulation rounded-full px-4"
               disabled={isStreaming}
             />
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="h-11 w-11 sm:hidden shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/5 touch-manipulation rounded-full"
+              className="h-10 w-10 md:hidden shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/5 touch-manipulation rounded-full"
               aria-label="Input suara"
             >
               <Mic className="h-5 w-5" />
@@ -323,18 +325,18 @@ export function AiChatPanel() {
             <Button
               type="submit"
               size="icon"
-              className="h-11 w-11 sm:h-8 sm:w-8 shrink-0 bg-primary hover:bg-primary/90 touch-manipulation rounded-full"
+              className="h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 touch-manipulation rounded-full"
               disabled={isStreaming || !input.trim()}
               aria-label="Hantar mesej"
             >
               {isStreaming ? (
-                <Loader2 className="h-5 w-5 sm:h-3.5 sm:w-3.5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Send className="h-5 w-5 sm:h-3.5 sm:w-3.5" />
+                <Send className="h-4 w-4" />
               )}
             </Button>
           </form>
-          <p className="text-[9px] text-muted-foreground/50 mt-1 text-center hidden sm:block">
+          <p className="text-[10px] text-muted-foreground/50 mt-1.5 text-center hidden md:block">
             Maria Puspa — Cerdas. Mesra. Sentiasa di sisi anda.
           </p>
         </div>

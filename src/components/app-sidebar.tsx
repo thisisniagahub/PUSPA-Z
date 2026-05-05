@@ -2,7 +2,6 @@
 
 import { useAppStore, type ViewId } from '@/lib/store'
 import { canAccessView } from '@/lib/access-control'
-// Using puspa-logo-official.png for logo
 import {
   LayoutDashboard,
   Users,
@@ -85,7 +84,7 @@ export function AppSidebar() {
   }, {})
 
   return (
-    <Sidebar collapsible="icon" className="border-r-0 max-w-[260px]">
+    <Sidebar collapsible="icon" className="border-r-0">
       {/* Logo Header */}
       <SidebarHeader className="p-2">
         <SidebarMenu>
@@ -108,7 +107,7 @@ export function AppSidebar() {
                 <img
                   src="/puspa-brand-identity.png"
                   alt="PUSPA — Pertubuhan Urus Peduli Asnaf"
-                  className="h-7 w-auto max-w-[180px] object-contain"
+                  className="h-7 w-auto max-w-[160px] object-contain"
                 />
               </div>
             </SidebarMenuButton>
@@ -171,7 +170,7 @@ export function AppSidebar() {
               </Avatar>
               <div className="flex flex-col gap-0.5 leading-none min-w-0">
                 <span className="text-xs font-medium truncate">{currentUser?.name || 'User'}</span>
-                <span className="text-[10px] text-sidebar-foreground/50 capitalize">{userRole}</span>
+                <span className="text-[11px] text-sidebar-foreground/60 capitalize">{userRole}</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

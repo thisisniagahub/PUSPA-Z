@@ -89,15 +89,15 @@ export default function AiPage() {
   const aiMessages = messages.filter((m) => m.role === 'assistant')
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] lg:h-[calc(100vh-8rem)] gap-3 sm:gap-4">
-      {/* Header — simplified on mobile */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+    <div className="flex flex-col gap-4" style={{ height: 'calc(100vh - 8rem)' }}>
+      {/* Header — consistent sizing */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-primary/10 overflow-hidden">
-            <img src={MARIA_PUSPA_AVATAR_URI} alt="Maria Puspa" className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-cover" />
+          <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-primary/10 overflow-hidden shrink-0">
+            <img src={MARIA_PUSPA_AVATAR_URI} alt="Maria Puspa" className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl object-cover" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-primary">Maria Puspa</h1>
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-primary">Maria Puspa</h1>
             <p className="text-xs sm:text-sm text-muted-foreground">AI Assistant — Cerdas. Mesra. Sentiasa di sisi anda.</p>
           </div>
         </div>
@@ -110,10 +110,10 @@ export default function AiPage() {
             </Badge>
             <Badge variant="outline" className="gap-1">
               <Terminal className="h-3 w-3" />
-              v4.0
+              v5.0
             </Badge>
           </div>
-          <Badge variant="outline" className="gap-1 text-[10px]">
+          <Badge variant="outline" className="gap-1 text-xs">
             {currentUser?.role || 'staff'}
           </Badge>
           <Button variant="outline" size="sm" onClick={handleClear} className="gap-1 touch-manipulation min-h-[36px]">
@@ -125,7 +125,7 @@ export default function AiPage() {
 
       {/* Error Banner */}
       {lastError && (
-        <div className="flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-3 sm:px-4 py-2 text-sm text-destructive">
+        <div className="flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-2 text-sm text-destructive shrink-0">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span className="truncate text-xs sm:text-sm">{lastError}</span>
           <Button variant="ghost" size="sm" className="ml-auto shrink-0" onClick={() => setLastError(null)}>
@@ -135,80 +135,83 @@ export default function AiPage() {
       )}
 
       {/* Main Layout — stack on mobile, side-by-side on desktop */}
-      <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-hidden">
 
         {/* Chat Area */}
         <Card className="flex-1 lg:flex-[7] flex flex-col min-h-0 relative">
-          <ScrollArea className="flex-1 p-3 sm:p-4">
-            <div
-              ref={scrollRef}
-              onScroll={handleScroll}
-              className="space-y-4 max-h-[calc(100vh-22rem)] overflow-y-auto"
-            >
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex gap-2 sm:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
-                >
-                  <div className={`flex h-9 w-9 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full overflow-hidden ${
-                    msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-primary/10'
-                  }`}>
-                    {msg.role === 'user' ? (
-                      <User className="h-4 w-4 sm:h-4 sm:w-4" />
-                    ) : (
-                      <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
-                    )}
-                  </div>
-                  <div className={`max-w-[85%] sm:max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}>
-                    <div className={`inline-block rounded-2xl px-4 py-3 sm:py-2.5 text-sm sm:text-sm whitespace-pre-wrap leading-relaxed ${
+          {/* Messages — single scroll container */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className="p-4 space-y-4"
+              >
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                  >
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full overflow-hidden ${
                       msg.role === 'user'
-                        ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                        : 'bg-muted rounded-tl-sm'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-primary/10'
                     }`}>
-                      {msg.content || (msg.isStreaming ? '' : '...')}
-                      {msg.isStreaming && !msg.content && (
-                        <Loader2 className="h-4 w-4 animate-spin text-primary inline-block" />
-                      )}
-                      {msg.isStreaming && msg.content && (
-                        <span className="inline-block w-1.5 h-4 bg-primary/60 animate-pulse ml-0.5 align-text-bottom" />
+                      {msg.role === 'user' ? (
+                        <User className="h-4 w-4" />
+                      ) : (
+                        <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
                       )}
                     </div>
-                    <div className={`flex items-center gap-2 mt-1 text-[10px] text-muted-foreground ${
-                      msg.role === 'user' ? 'justify-end' : ''
-                    }`}>
-                      <span>{msg.timestamp.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' })}</span>
-                      {msg.model && msg.role === 'assistant' && (
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 hidden sm:inline-flex">Maria Puspa</Badge>
-                      )}
-                      {msg.toolCalls && msg.toolCalls.length > 0 && (
-                        <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 gap-0.5">
-                          <Wrench className="h-2.5 w-2.5" />
-                          {msg.toolCalls.length}
-                        </Badge>
-                      )}
+                    <div className={`max-w-[85%] sm:max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}>
+                      <div className={`inline-block rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap leading-relaxed break-words ${
+                        msg.role === 'user'
+                          ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                          : 'bg-muted rounded-tl-sm'
+                      }`}>
+                        {msg.content || (msg.isStreaming ? '' : '...')}
+                        {msg.isStreaming && !msg.content && (
+                          <Loader2 className="h-4 w-4 animate-spin text-primary inline-block" />
+                        )}
+                        {msg.isStreaming && msg.content && (
+                          <span className="inline-block w-1.5 h-4 bg-primary/60 animate-pulse ml-0.5 align-text-bottom" />
+                        )}
+                      </div>
+                      <div className={`flex items-center gap-2 mt-1 text-[11px] text-muted-foreground ${
+                        msg.role === 'user' ? 'justify-end' : ''
+                      }`}>
+                        <span>{msg.timestamp.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' })}</span>
+                        {msg.model && msg.role === 'assistant' && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 hidden sm:inline-flex">Maria Puspa</Badge>
+                        )}
+                        {msg.toolCalls && msg.toolCalls.length > 0 && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 gap-0.5">
+                            <Wrench className="h-2.5 w-2.5" />
+                            {msg.toolCalls.length}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              {/* Loading indicator when waiting for first chunk */}
-              {isStreaming && messages[messages.length - 1]?.content === '' && (
-                <div className="flex gap-2 sm:gap-3">
-                  <div className="flex h-9 w-9 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
-                    <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover animate-pulse" />
-                  </div>
-                  <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                      <span className="text-sm text-muted-foreground">Maria Puspa sedang berfikir...</span>
+                {/* Loading indicator when waiting for first chunk */}
+                {isStreaming && messages[messages.length - 1]?.content === '' && (
+                  <div className="flex gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
+                      <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover animate-pulse" />
+                    </div>
+                    <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        <span className="text-sm text-muted-foreground">Maria Puspa sedang berfikir...</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
 
           {/* Scroll to bottom button */}
           {showScrollBtn && (
@@ -227,18 +230,18 @@ export default function AiPage() {
 
           {/* Suggested Prompts — compact pills on mobile */}
           {messages.length <= 2 && !isStreaming && (
-            <div className="px-2 sm:px-4 pb-2">
-              <p className="text-[11px] sm:text-xs text-muted-foreground mb-1.5">Cadangan:</p>
-              <div className="flex gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none pb-1">
+            <div className="px-4 pb-2 shrink-0">
+              <p className="text-xs text-muted-foreground mb-1.5">Cadangan:</p>
+              <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
                 {suggestedPrompts.map((prompt) => (
                   <Button
                     key={prompt.label}
                     variant="outline"
                     size="sm"
-                    className="gap-1 text-[12px] sm:text-xs hover:bg-primary/5 hover:border-primary/30 hover:text-primary justify-center min-h-[36px] sm:min-h-0 touch-manipulation whitespace-nowrap shrink-0 rounded-full px-3"
+                    className="gap-1.5 text-xs hover:bg-primary/5 hover:border-primary/30 hover:text-primary justify-center min-h-[36px] touch-manipulation whitespace-nowrap shrink-0 rounded-full px-3"
                     onClick={() => handleSend(prompt.label)}
                   >
-                    <prompt.icon className="h-3.5 w-3.5 sm:h-3 sm:w-3 shrink-0" />
+                    <prompt.icon className="h-3.5 w-3 shrink-0" />
                     <span className="hidden sm:inline">{prompt.label}</span>
                     <span className="sm:hidden">{prompt.label.split(' ').slice(0, 2).join(' ')}</span>
                   </Button>
@@ -247,8 +250,8 @@ export default function AiPage() {
             </div>
           )}
 
-          {/* Input — mobile-optimized with round inputs */}
-          <div className="border-t p-2 sm:p-4 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          {/* Input — consistent sizing */}
+          <div className="border-t p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shrink-0">
             <div className="flex gap-2 items-center">
               <Input
                 ref={inputRef}
@@ -256,14 +259,14 @@ export default function AiPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Tanya Maria Puspa..."
-                className="flex-1 focus-visible:ring-primary h-11 sm:h-9 text-[15px] sm:text-sm touch-manipulation rounded-full px-4 border-primary/20"
+                className="flex-1 focus-visible:ring-primary h-10 text-sm touch-manipulation rounded-full px-4 border-primary/20"
                 disabled={isStreaming}
               />
               {/* Mic button — mobile only */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-11 w-11 sm:hidden shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/5 touch-manipulation rounded-full"
+                className="h-10 w-10 sm:hidden shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/5 touch-manipulation rounded-full"
                 aria-label="Input suara"
               >
                 <Mic className="h-5 w-5" />
@@ -272,17 +275,17 @@ export default function AiPage() {
                 onClick={() => handleSend()}
                 disabled={isStreaming || !input.trim()}
                 size="icon"
-                className="shrink-0 bg-primary hover:bg-primary/90 h-11 w-11 sm:h-9 sm:w-9 touch-manipulation rounded-full"
+                className="shrink-0 bg-primary hover:bg-primary/90 h-10 w-10 touch-manipulation rounded-full"
                 aria-label="Hantar mesej"
               >
-                <Send className="h-5 w-5 sm:h-4 sm:w-4" />
+                <Send className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </Card>
 
         {/* Context Panel — collapsible on mobile, sidebar on desktop */}
-        <div className="lg:flex-[3]">
+        <div className="lg:flex-[3] shrink-0">
           {/* Mobile: collapsible accordion for context */}
           <div className="lg:hidden">
             <Accordion type="single" collapsible defaultValue="character" className="border rounded-lg bg-card">
@@ -293,7 +296,7 @@ export default function AiPage() {
                       <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
                     </div>
                     <span>Maria Puspa</span>
-                    <Badge variant="secondary" className="text-[9px] bg-emerald-100 text-emerald-700 ml-1">Online</Badge>
+                    <Badge variant="secondary" className="text-[10px] bg-emerald-100 text-emerald-700 ml-1">Online</Badge>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-3 pb-3">
@@ -348,7 +351,7 @@ export default function AiPage() {
                                   <Wrench className="h-3 w-3 text-muted-foreground" />
                                   <span className="font-mono text-[10px]">{tc.tool}</span>
                                 </div>
-                                <Badge variant="outline" className={`text-[9px] px-1 py-0 h-4 ${
+                                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 ${
                                   tc.status === 'success' ? 'text-emerald-600' : tc.status === 'error' ? 'text-red-600' : 'text-amber-600'
                                 }`}>
                                   {tc.status}
@@ -386,7 +389,7 @@ export default function AiPage() {
           </div>
 
           {/* Desktop: full sidebar layout */}
-          <div className="hidden lg:block space-y-4">
+          <div className="hidden lg:block space-y-4 max-h-[calc(100vh-10rem)] overflow-y-auto">
             {/* Maria Puspa Character Card */}
             <Card className="overflow-hidden">
               <div className="bg-primary p-3 flex items-center gap-3">
@@ -395,7 +398,7 @@ export default function AiPage() {
                 </div>
                 <div className="text-primary-foreground">
                   <p className="text-sm font-bold">Maria Puspa</p>
-                  <p className="text-[10px] opacity-80">Cerdas. Mesra. Sentiasa di sisi anda.</p>
+                  <p className="text-xs opacity-80">Cerdas. Mesra. Sentiasa di sisi anda.</p>
                 </div>
               </div>
               <CardContent className="p-3 space-y-2">
@@ -504,7 +507,7 @@ export default function AiPage() {
                           <Wrench className="h-3 w-3 text-muted-foreground" />
                           <span className="font-mono">{tc.tool}</span>
                         </div>
-                        <Badge variant="outline" className={`text-[9px] px-1 py-0 h-4 ${
+                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 ${
                           tc.status === 'success' ? 'text-emerald-600' : tc.status === 'error' ? 'text-red-600' : 'text-amber-600'
                         }`}>
                           {tc.status}
