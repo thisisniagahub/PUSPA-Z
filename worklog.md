@@ -94,3 +94,21 @@ Stage Summary:
 - Hermes responds in bilingual BM/English as designed
 - Memory persistence working (Prisma queries confirmed)
 - Default model: qwen/qwen3.6-flash (supports tool calling)
+
+---
+Task ID: 6
+Agent: Main
+Task: Switch Hermes AI model to Tencent Hy3 Preview (free) on OpenRouter
+
+Work Log:
+- Searched OpenRouter for "Hy3 preview (free)" model ID → found `tencent/hy3-preview:free`
+- Updated `.env` file: changed OPENROUTER_MODEL from `qwen/qwen3.6-flash` to `tencent/hy3-preview:free`
+- Restarted dev server to pick up env change
+- Verified lint passes (no errors)
+- Confirmed server is running and ready
+
+Stage Summary:
+- Model switched to tencent/hy3-preview:free (Tencent's MoE model, free tier on OpenRouter)
+- All 4 OpenRouter API keys remain configured with rotation support
+- Hermes runtime picks up model from env automatically via getConfiguredModel()
+- Server restarted and running successfully
