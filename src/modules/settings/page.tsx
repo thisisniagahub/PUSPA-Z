@@ -317,7 +317,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">AI Engine</p>
-              <p className="font-medium">Hermes v4 (z-ai)</p>
+              <p className="font-medium">Hermes v4 (OpenRouter)</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Database</p>
@@ -330,7 +330,7 @@ export default function SettingsPage() {
           </div>
           <Separator className="my-4" />
           <p className="text-xs text-muted-foreground text-center">
-            PUSPA V4 — Pertubuhan Urus Peduli Asnaf. © 2025 Hak cipta terpelihara.
+            PUSPA V4 — PERTUBUHAN URUS PEDULI ASNAF (PPM-024-10-05012022). © 2025 Hak cipta terpelihara.
           </p>
         </CardContent>
       </Card>
