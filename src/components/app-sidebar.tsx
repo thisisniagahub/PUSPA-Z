@@ -87,14 +87,14 @@ export function AppSidebar() {
             <SidebarMenuButton
               size="lg"
               className="hover:bg-sidebar-accent"
-              tooltip="PUSPA V4 — Peduli Asnaf"
+              tooltip="PUSPA V4 — PPM-024-10-05012022"
             >
               <div className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden bg-sidebar-primary/10 shrink-0">
                 <PuspaLogo size={28} className="text-sidebar-primary" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none min-w-0">
                 <span className="font-bold text-sm truncate text-sidebar-primary">PUSPA V4</span>
-                <span className="text-[10px] text-sidebar-foreground/60 truncate">Peduli Asnaf</span>
+                <span className="text-[10px] text-sidebar-foreground/60 truncate">PPM-024-10-05012022</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
