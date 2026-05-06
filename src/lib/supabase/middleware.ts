@@ -58,10 +58,20 @@ export async function updateSession(request: NextRequest) {
   const isApiRoute = request.nextUrl.pathname.startsWith('/api/')
   const isApiV1Route = request.nextUrl.pathname.startsWith('/api/v1/')
   const isTelegramAiRoute = request.nextUrl.pathname === '/api/v1/ai/telegram'
+  /** Web Maria chat: allow anonymous POST unless PUSPA_REQUIRE_AUTH_FOR_AI=true */
+  const isMariaWebAiPost =
+    request.nextUrl.pathname === '/api/v1/ai' && request.method === 'POST'
+  const requireAuthForMariaWebAi =
+    process.env.PUSPA_REQUIRE_AUTH_FOR_AI === 'true'
   const isLoginPage = request.nextUrl.pathname === '/login'
   const isRoot = request.nextUrl.pathname === '/'
 
-  if (!user && isApiV1Route && !isTelegramAiRoute) {
+  if (
+    !user &&
+    isApiV1Route &&
+    !isTelegramAiRoute &&
+    (requireAuthForMariaWebAi || !isMariaWebAiPost)
+  ) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }

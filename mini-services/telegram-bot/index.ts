@@ -180,8 +180,20 @@ async function callMariaPuspa(text: string, userId: string, userRole: string, cu
 
     if (!res.ok) {
       const errorText = await res.text()
-      console.error('[Maria Puspa API] Error:', res.status, errorText)
-      return 'Maaf, Maria Puspa sedang mengalami masalah teknikal. Sila cuba lagi sebentar.'
+      console.error('[Maria Puspa API] Error:', res.status, errorText.slice(0, 500))
+      let fallback =
+        res.status === 401
+          ? 'Ralat 401: token dalaman salah atau tidak dihantar. Semak .env pada bot (PUSPA_INTERNAL_API_TOKEN mesti sama dengan pelayan Next.js).'
+          : res.status === 503
+            ? 'Ralat 503: Maria tidak siap atau kunci/API tidak lengkap pada pelayan (contoh OPENROUTER_* atau token dalaman aplikasi tidak diset).'
+            : 'Maaf, Maria Puspa sedang mengalami masalah teknikal. Sila semak halaman Tetapan Telegram dalam app.'
+      try {
+        const j = JSON.parse(errorText) as { content?: string; error?: string }
+        if (typeof j.content === 'string' && j.content.trim()) fallback = j.content.trim()
+      } catch {
+        /* teks atau HTML; guna fallback */
+      }
+      return fallback
     }
 
     // Check if response is SSE stream

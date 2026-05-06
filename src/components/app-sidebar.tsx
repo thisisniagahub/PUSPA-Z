@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useAppStore, type ViewId } from '@/lib/store'
 import { canAccessView } from '@/lib/access-control'
 import {
@@ -37,8 +38,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
+  useSidebar,
 } from '@/components/ui/sidebar'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/user-avatar'
 
 interface NavItem {
   id: ViewId
@@ -73,8 +75,24 @@ const navItems: NavItem[] = [
 ]
 
 export function AppSidebar() {
-  const { currentView, setView, currentUser } = useAppStore()
+  const { currentView, setView, currentUser, setCurrentUser } = useAppStore()
+  const { isMobile, setOpenMobile } = useSidebar()
   const userRole = currentUser?.role || 'staff'
+
+  /** Sekali sahaja selepas reload: avatar dari puspa-settings jika persist store tak ada imageUrl lagi */
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('puspa-settings')
+      if (!raw) return
+      const u = useAppStore.getState().currentUser
+      if (!u) return
+      const parsed = JSON.parse(raw) as { profileImageUrl?: string }
+      const url = typeof parsed.profileImageUrl === 'string' ? parsed.profileImageUrl.trim() : ''
+      if (url && u.imageUrl !== url) setCurrentUser({ ...u, imageUrl: url })
+    } catch {
+      /* ignore */
+    }
+  }, [setCurrentUser])
 
   const groupedItems = navItems.reduce<Record<string, NavItem[]>>((acc, item) => {
     const group = item.group || 'Other'
@@ -130,7 +148,10 @@ export function AppSidebar() {
                       <SidebarMenuItem key={item.id}>
                         <SidebarMenuButton
                           isActive={isActive}
-                          onClick={() => setView(item.id)}
+                          onClick={() => {
+                            setView(item.id)
+                            if (isMobile) setOpenMobile(false)
+                          }}
                           tooltip={`${item.label} — ${item.labelMs || item.label}`}
                           className={isActive ? 'bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm hover:bg-sidebar-primary/90 hover:text-sidebar-primary-foreground' : ''}
                         >
@@ -158,11 +179,12 @@ export function AppSidebar() {
               className="hover:bg-sidebar-accent"
               tooltip={`${currentUser?.name || 'User'} (${userRole})`}
             >
-              <Avatar className="h-8 w-8 shrink-0">
-                <AvatarFallback className="bg-sidebar-primary/20 text-sidebar-primary text-xs font-semibold">
-                  {currentUser?.name?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                name={currentUser?.name}
+                src={currentUser?.imageUrl}
+                size="sm"
+                className="ring-sidebar-border"
+              />
               <div className="flex flex-col gap-0.5 leading-none min-w-0 group-data-[collapsible=icon]:hidden">
                 <span className="text-xs font-medium truncate">{currentUser?.name || 'User'}</span>
                 <span className="text-[11px] text-sidebar-foreground/60 capitalize">{userRole}</span>

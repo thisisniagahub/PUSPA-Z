@@ -52,7 +52,7 @@ export function MariaCharacterRenderer({
   return (
     <div
       className={cn(
-        'relative inline-flex items-center justify-center rounded-full transition-all',
+        'relative inline-flex items-center justify-center rounded-full transition-all shadow-md',
         'after:absolute after:inset-0 after:rounded-full after:content-[""]',
         glowClass,
         emotionToneClass,
@@ -66,7 +66,7 @@ export function MariaCharacterRenderer({
       <img
         src={MARIA_PUSPA_AVATAR_URI}
         alt="Maria Puspa"
-        className="h-full w-full rounded-full object-cover"
+        className="h-full w-full rounded-full object-cover object-top"
         style={{
           filter: blink ? 'brightness(0.94)' : 'brightness(1)',
           transform: `scale(${mouthScale})`,
