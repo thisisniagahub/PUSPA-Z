@@ -1,5 +1,6 @@
 'use client'
 
+import type { LucideIcon } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle,
@@ -43,7 +44,7 @@ interface Donor {
 const formatRM = (val: number) =>
   new Intl.NumberFormat('ms-MY', { style: 'currency', currency: 'MYR', minimumFractionDigits: 2 }).format(val)
 
-const typeConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+const typeConfig: Record<string, { label: string; icon: LucideIcon; color: string }> = {
   individual: { label: 'Individu', icon: User, color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' },
   corporate: { label: 'Korporat', icon: Building2, color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300' },
   government: { label: 'Kerajaan', icon: Landmark, color: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-300' },

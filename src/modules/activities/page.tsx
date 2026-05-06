@@ -1,5 +1,6 @@
 'use client'
 
+import type { LucideIcon } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import {
   Activity as ActivityIcon,
@@ -47,7 +48,7 @@ interface ActivityItem {
 
 const categoryConfig: Record<string, {
   label: string
-  icon: React.ElementType
+  icon: LucideIcon
   color: string
   dotColor: string
   lineColor: string

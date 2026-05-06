@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import type { LucideIcon } from 'lucide-react'
 import {
   Building2, Users, Search, Crown, Shield, Briefcase, Star,
   ChevronDown, Landmark, UserCheck, Network, LayoutGrid, X,
@@ -44,7 +45,7 @@ const TIER_LABELS: Record<Person['tier'], string> = {
   honorary: 'Kehormat', ops: 'Operasi', bureau: 'Biro',
 }
 
-const TIER_ICONS: Record<Person['tier'], React.ElementType> = {
+const TIER_ICONS: Record<Person['tier'], LucideIcon> = {
   chairman: Crown, deputy: Crown, secretary: Briefcase, treasurer: Briefcase,
   auditor: Shield, advisor: Star, honorary: Landmark, ops: UserCheck, bureau: Briefcase,
 }
@@ -212,7 +213,7 @@ function GridCard({ person, onClick, index }: { person: Person; onClick: () => v
           <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.3 }}>{person.name}</div>
           <div style={{ fontSize: 12, opacity: 0.5, marginTop: 3 }}>{person.title}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
-            <Icon style={{ width: 12, height: 12, opacity: 0.4 }} />
+            <Icon size={12} opacity={0.4} />
             <span style={{ fontSize: 11, opacity: 0.4, fontWeight: 500 }}>{TIER_LABELS[person.tier]}</span>
           </div>
         </div>
@@ -253,7 +254,7 @@ function DetailPanel({ person, onClose }: { person: Person; onClose: () => void 
 
       <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
         <Badge style={{ background: ROLE_COLORS[person.tier], color: 'white', border: 'none', fontSize: 11 }}>
-          <Icon style={{ width: 12, height: 12, marginRight: 4 }} />
+          <Icon size={12} className="mr-1" />
           {TIER_LABELS[person.tier]}
         </Badge>
         <Badge variant="outline" style={{ fontSize: 11 }}>Aktif</Badge>
@@ -293,11 +294,11 @@ function DetailPanel({ person, onClose }: { person: Person; onClose: () => void 
   )
 }
 
-function DetailRow({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
+function DetailRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
       <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(262 60% 60% / 0.1)', flexShrink: 0 }}>
-        <Icon style={{ width: 14, height: 14, opacity: 0.5 }} />
+        <Icon size={14} opacity={0.5} />
       </div>
       <div>
         <div style={{ fontSize: 10, opacity: 0.4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>

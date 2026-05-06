@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useAppStore, type ViewId } from '@/lib/store'
 import { canAccessView } from '@/lib/access-control'
+import type { LucideIcon } from 'lucide-react'
 import {
   LayoutDashboard,
   Users,
@@ -49,7 +50,7 @@ interface NavItem {
   id: ViewId
   label: string
   labelMs?: string
-  icon: React.ElementType
+  icon: LucideIcon
   badge?: string
   group?: string
 }

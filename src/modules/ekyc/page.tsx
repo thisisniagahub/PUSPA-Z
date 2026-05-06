@@ -1,5 +1,6 @@
 'use client'
 
+import type { LucideIcon } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle,
@@ -58,7 +59,7 @@ const riskConfig: Record<string, { label: string; color: string }> = {
   high: { label: 'Tinggi', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' },
 }
 
-const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+const statusConfig: Record<string, { label: string; color: string; icon: LucideIcon }> = {
   pending: { label: 'Menunggu', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300', icon: Clock },
   submitted: { label: 'Dihantar', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300', icon: FileText },
   under_review: { label: 'Sedang Semakan', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300', icon: Eye },
