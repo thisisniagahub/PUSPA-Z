@@ -41,6 +41,7 @@
     "examples/**",
     "skills/**",
     "vendor/**",
+    "prisma/seed.ts",
     "**/*.spec.ts",
     "**/*.test.ts"
   ]
