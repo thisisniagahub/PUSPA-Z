@@ -160,7 +160,7 @@ const get_case_summary: MariaPuspaTool = {
     })
 
     const validated = schema.safeParse(params)
-    if (!validated.success) return { error: validated.error.errors[0].message }
+    if (!validated.success) return { error: validated.error.issues[0].message }
 
     const result = await getCaseSummary(validated.data.caseId)
     if (!result) return { error: 'Kes tidak dijumpai dalam pangkalan data' }
@@ -288,7 +288,7 @@ const update_volunteer_status: MariaPuspaTool = {
 
     const validated = schema.safeParse(params)
     if (!validated.success) {
-      return { error: `Input tidak sah: ${validated.error.errors.map(e => e.message).join(', ')}` }
+      return { error: `Input tidak sah: ${validated.error.issues.map(e => e.message).join(', ')}` }
     }
 
     const { volunteerId: id, status } = validated.data
@@ -579,7 +579,7 @@ const delete_case: MariaPuspaTool = {
     })
 
     const validated = schema.safeParse(params)
-    if (!validated.success) return { error: validated.error.errors[0].message }
+    if (!validated.success) return { error: validated.error.issues[0].message }
 
     const { caseId, reason } = validated.data
 
