@@ -95,37 +95,31 @@
   font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 700; line-height: 1.15; margin-bottom: 1.5rem;
   letter-spacing: -0.02em;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.6); /* Heavy shadow for Aurora */
 }
 .asnafpreneur-root .hero h1 .gradient-text {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan), #a855f7, var(--accent-violet));
-  background-size: 300% 300%;
+  background: linear-gradient(135deg, #fff, var(--accent-cyan), var(--accent-violet));
+  background-size: 200% 200%;
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: shimmer 8s infinite linear;
-}
-@keyframes shimmer {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.3));
 }
 .asnafpreneur-root .hero-subtitle {
-  font-size: clamp(1rem, 2vw, 1.25rem); color: var(--text-secondary);
+  font-size: clamp(1rem, 2vw, 1.25rem); color: #f3f4f6; /* Brighter gray */
   max-width: 600px; margin: 0 auto 2.5rem;
-}
-.asnafpreneur-root .rotating-wrapper {
-  display: block; position: relative; overflow: hidden;
-  height: 1.15em; width: 100%;
+  text-shadow: 0 2px 8px rgba(0,0,0,1); /* Maximum readability */
 }
 
 /* ─── Buttons ─────────────────────────────────────────────────────────────── */
 .asnafpreneur-root .cta-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 .asnafpreneur-root .btn-primary {
   display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.85rem 2rem; border-radius: 12px; font-weight: 600;
+  padding: 0.85rem 2rem; border-radius: 12px; font-weight: 700;
   font-size: 0.95rem; border: none; cursor: pointer;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
-  color: #fff; text-decoration: none; transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(155,89,182,0.3);
+  background: linear-gradient(135deg, #fff, #d8b4fe);
+  color: #000; /* Dark text on very bright background */
+  text-decoration: none; transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(192,132,252,0.4);
   font-family: var(--font-body);
 }
 .asnafpreneur-root .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(155,89,182,0.4); }
@@ -283,21 +277,23 @@
 .asnafpreneur-root .idea-price { font-size: 0.7rem; color: var(--accent-primary); font-family: var(--font-mono); margin-top: 0.25rem; }
 
 /* ─── Income Calculator ───────────────────────────────────────────────────── */
+.asnafpreneur-root .income-calculator {
+  background: rgba(15, 18, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 .asnafpreneur-root .income-calculator input[type="range"] {
   accent-color: var(--accent-primary);
-}
-.asnafpreneur-root .income-calculator .calc-icon-bg {
-  background: rgba(155,89,182,0.2);
-}
-.asnafpreneur-root .income-calculator .calc-icon {
-  color: var(--accent-primary);
+  background: rgba(255, 255, 255, 0.2); /* Visible track */
 }
 .asnafpreneur-root .income-calculator .calc-label {
-  color: #c4b5fd;
+  color: #e9d5ff; /* Brighter purple-tinted white */
+  font-weight: 600;
 }
 .asnafpreneur-root .income-calculator .calc-value {
-  color: var(--accent-primary);
+  color: #fff; /* High contrast white */
+  text-shadow: 0 0 20px rgba(192, 132, 252, 0.4);
 }
+
 .asnafpreneur-root .income-calculator .calc-value-sub {
   color: rgba(155,89,182,0.6);
 }

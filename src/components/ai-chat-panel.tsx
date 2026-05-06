@@ -3,15 +3,18 @@
 import { useAppStore } from '@/lib/store'
 import { useHermesStore } from '@/stores/hermes-store'
 import { cn } from '@/lib/utils'
-import { X, Send, User, Loader2, Sparkles, Wrench, Mic, ChevronDown, ArrowDown } from 'lucide-react'
+import { X, Send, Loader2, Sparkles, Wrench, Mic, ChevronDown, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { UserAvatar } from '@/components/user-avatar'
 import { MariaCharacterRenderer } from '@/components/maria/maria-character-renderer'
 import { useMariaCharacterStore } from '@/stores/maria-character-store'
 import { getMariaEmotionState } from '@/lib/maria-emotion-map'
+import { MARIA_QUICK_PROMPTS } from '@/lib/maria-quick-prompts'
+import { useToast } from '@/components/ui/use-toast'
 
 export function AiChatPanel() {
   const { aiChatOpen, setAiChatOpen, currentView, currentUser } = useAppStore()
@@ -30,6 +33,9 @@ export function AiChatPanel() {
     onRouteContextChange,
     setEmotionState,
   } = useMariaCharacterStore()
+
+  const { toast } = useToast()
+  const prevEmotionRef = useRef(emotionState)
 
   const [input, setInput] = useState('')
   const [showScrollBtn, setShowScrollBtn] = useState(false)
@@ -70,7 +76,12 @@ export function AiChatPanel() {
 
   useEffect(() => {
     if (isStreaming) return
-    const lastAssistant = [...messages].reverse().find((msg) => msg.role === 'assistant' && msg.content?.trim())
+    // Mencari mesej terakhir AI dari belakang tanpa membuat salinan array yang besar
+    const lastAssistant = messages
+      .slice()
+      .reverse()
+      .find((msg) => msg.role === 'assistant' && msg.content?.trim())
+      
     if (!lastAssistant) return
     setEmotionState(
       getMariaEmotionState({
@@ -81,6 +92,24 @@ export function AiChatPanel() {
       })
     )
   }, [messages, isStreaming, currentView, lastError, setEmotionState])
+
+  // Notifikasi toast apabila emosi Maria bertukar mengikut modul
+  useEffect(() => {
+    if (emotionState !== prevEmotionRef.current) {
+      const labels: Record<string, string> = {
+        warm: 'Mesra',
+        focus: 'Fokus',
+        alert: 'Waspada',
+        empathetic: 'Empati',
+      }
+      
+      toast({
+        title: `Maria Puspa: Mod ${labels[emotionState] || emotionState}`,
+        description: `Emosi Maria kini dalam mod ${labels[emotionState]?.toLowerCase() || emotionState} mengikuti konteks modul ${currentView}.`,
+      })
+      prevEmotionRef.current = emotionState
+    }
+  }, [emotionState, currentView, toast])
 
   // Keyboard-aware: when input focuses on mobile, scroll to bottom after a small delay
   const handleInputFocus = useCallback(() => {
@@ -131,14 +160,6 @@ export function AiChatPanel() {
   }
 
   if (!aiChatOpen) return null
-
-  // Quick prompts for mobile (more compact)
-  const quickPrompts = [
-    { label: 'Ringkasan', fullText: 'Ringkasan operasi bulan ini' },
-    { label: 'Kes', fullText: 'Senarai kes aktif' },
-    { label: 'Derma', fullText: 'Stats derma bulan semasa' },
-    { label: 'Sistem', fullText: 'Status sistem' },
-  ]
 
   return (
     <>
@@ -234,24 +255,38 @@ export function AiChatPanel() {
           </div>
         </div>
 
-        {/* Quick Prompts — always visible at top on mobile when chat is new */}
+        {/* Cadangan pantas — sama dengan halaman modul AI */}
         {messages.length <= 1 && !isStreaming && (
           <div className="px-4 pt-2 pb-2 border-b border-border/50 md:border-b-0">
-            <p className="text-xs text-muted-foreground mb-1.5">Cadangan pantas:</p>
+            <p className="text-xs font-medium text-foreground mb-0.5">Cadangan pantas</p>
+            <p className="text-[10px] text-muted-foreground mb-1.5 leading-snug md:hidden">
+              Ketik soalan anda atau pilih cadangan untuk Maria menggunakan data PUSPA.
+            </p>
             <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-              {quickPrompts.map((prompt) => (
-                <button
-                  key={prompt.label}
-                  onClick={() => {
-                    setInput('')
-                    sendMessage(prompt.fullText, currentView, currentUser?.id || 'anonymous', currentUser?.role || 'staff')
-                  }}
-                  className="flex items-center gap-1.5 text-xs rounded-full bg-primary/5 border border-primary/15 px-3 py-2 text-primary hover:bg-primary/10 transition-colors touch-manipulation whitespace-nowrap shrink-0 min-h-[36px]"
-                >
-                  <Sparkles className="h-3 w-3 shrink-0" />
-                  {prompt.label}
-                </button>
-              ))}
+              {MARIA_QUICK_PROMPTS.map((suggestion) => {
+                const Icon = suggestion.icon
+                return (
+                  <button
+                    key={suggestion.id}
+                    type="button"
+                    title={suggestion.title}
+                    aria-label={`Hantar cadangan: ${suggestion.title}`}
+                    onClick={() => {
+                      setInput('')
+                      sendMessage(
+                        suggestion.prompt,
+                        currentView,
+                        currentUser?.id || 'anonymous',
+                        currentUser?.role || 'staff'
+                      )
+                    }}
+                    className="flex items-center gap-1.5 text-xs rounded-full bg-primary/5 border border-primary/15 px-3 py-2 text-primary hover:bg-primary/10 transition-colors touch-manipulation whitespace-nowrap shrink-0 min-h-[36px]"
+                  >
+                    <Icon className="h-3 w-3 shrink-0 opacity-90" aria-hidden />
+                    <span>{suggestion.chipShort}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
@@ -272,12 +307,14 @@ export function AiChatPanel() {
                     msg.role === 'user' && "flex-row-reverse"
                   )}
                 >
-                  <div className={cn(
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full overflow-hidden",
-                    msg.role === 'user' ? "bg-primary text-primary-foreground" : "bg-primary/10"
-                  )}>
+                  <div
+                    className={cn(
+                      'flex shrink-0 items-center justify-center overflow-hidden rounded-full',
+                      msg.role === 'user' ? '' : 'h-8 w-8 bg-primary/10'
+                    )}
+                  >
                     {msg.role === 'user' ? (
-                      <User className="h-4 w-4" />
+                      <UserAvatar name={currentUser?.name} src={currentUser?.imageUrl} size="sm" />
                     ) : (
                       <MariaCharacterRenderer
                         className="h-full w-full rounded-full overflow-hidden"
@@ -298,29 +335,14 @@ export function AiChatPanel() {
                       <span className="inline-block w-1 h-4 bg-primary/60 animate-pulse ml-0.5 align-text-bottom" />
                     )}
                     {msg.isStreaming && !msg.content && (
-                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <span className="inline-flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
+                        <span className="text-xs text-muted-foreground">Memikir...</span>
+                      </span>
                     )}
                   </div>
                 </div>
               ))}
-
-              {/* Loading when waiting for first chunk */}
-              {isStreaming && messages[messages.length - 1]?.content === '' && (
-                <div className="flex gap-2.5">
-                  <MariaCharacterRenderer
-                    className="h-8 w-8 shrink-0 rounded-full overflow-hidden"
-                    presenceState={presenceState}
-                    emotionState={emotionState}
-                    phonemeEnergy={speechState.phonemeEnergy}
-                  />
-                  <div className="rounded-2xl rounded-tl-sm px-3.5 py-2.5 bg-muted border border-border">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                      <span className="text-xs text-muted-foreground">Memikir...</span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </ScrollArea>
         </div>

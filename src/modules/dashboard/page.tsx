@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, BarChart, Bar, Legend 
+  PieChart, Pie, Cell, BarChart, Bar 
 } from 'recharts'
 import { 
   Users, FileText, HandCoins, ShieldCheck, 
-  TrendingUp, ArrowUpRight, ArrowDownRight, Activity
+  ArrowUpRight, ArrowDownRight, Activity
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -105,8 +105,19 @@ export default function DashboardOverview() {
   const caseStatusData = dashboardData?.caseStatus || DEFAULT_CASES
   const stats = dashboardData?.stats || { totalMembers: 1355, activeCases: 174 }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">Memuatkan…</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className={`space-y-8 transition-opacity duration-700 ${loading ? 'opacity-50' : 'opacity-100'}`}>
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Top Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard 
@@ -170,13 +181,13 @@ export default function DashboardOverview() {
                   dataKey="name" 
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} // Reduced font size for mobile
+                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} 
                   dy={10}
                 />
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} // Reduced font size for mobile
+                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} 
                   tickFormatter={(value) => `RM${value/1000}k`}
                 />
                 <Tooltip content={<CustomTooltip />} />
@@ -293,7 +304,7 @@ export default function DashboardOverview() {
                 { user: 'Admin PUSPA', action: 'meluluskan agihan bantuan', target: 'DB-2024-0012', time: '2 minit lepas', color: 'bg-emerald-500' },
                 { user: 'Siti Ops', action: 'mendaftar ahli baru', target: 'Ahmad bin Ali', time: '14 minit lepas', color: 'bg-blue-500' },
                 { user: 'Sistem', action: 'auto-jana laporan', target: 'Audit Q1 2025', time: '1 jam lepas', color: 'bg-purple-500' },
-                { user: 'Zaki Finance', action: 'merekod sumbangan', target: 'RM 5,000 (Zakat)', time: '3 jam lepas', color: 'bg-amber-500' },
+                { user: 'Zaki Finance', action: 'merekod sumbangan', target: 'RM&nbsp;5,000 (Zakat)', time: '3 jam lepas', color: 'bg-amber-500' },
               ].map((item, i) => (
                 <div key={i} className="flex gap-4">
                   <div className="relative">
@@ -310,7 +321,10 @@ export default function DashboardOverview() {
                 </div>
               ))}
             </div>
-            <button className="w-full mt-6 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+            <button 
+              type="button"
+              className="w-full mt-6 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+            >
               Lihat Semua Aktiviti
             </button>
           </CardContent>

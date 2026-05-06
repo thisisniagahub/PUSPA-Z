@@ -11,16 +11,36 @@ import {
 } from '@/agents/runtime/hermes.runtime'
 import { createChatCompletionStream } from '@/lib/openrouter'
 import { getCurrentUser } from '@/lib/auth'
+import { checkMariaAiRateLimit } from '@/lib/ai-rate-limit'
 import type { ToolCall } from '@/agents/runtime/hermes.runtime'
 import type { OpenRouterMessage, OpenRouterTool } from '@/lib/openrouter'
 
 export async function POST(request: NextRequest) {
   try {
+    // ─── Authentication (before body — rate-limit key uses user / IP) ──
+    const authUser = await getCurrentUser()
+    const rl = checkMariaAiRateLimit(request, authUser?.id ?? null)
+    if (!rl.ok) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests',
+          content:
+            'Terlalu banyak permintaan. Sila tunggu seketika dan cuba lagi.',
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rl.retryAfterSec),
+            'X-RateLimit-Limit': String(rl.limit),
+            'X-RateLimit-Remaining': String(rl.remaining),
+          },
+        }
+      )
+    }
+
     const body = await request.json()
     const { messages: clientMessages, currentView } = body
 
-    // ─── Authentication ─────────────────────────────────────
-    const authUser = await getCurrentUser()
     const effectiveUserId = authUser?.id || 'anonymous'
     const effectiveRole = authUser?.role || 'staff'
 

@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
-import { motion, AnimatePresence, useScroll, useSpring, useInView } from 'framer-motion'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
+import { motion, AnimatePresence, useScroll, useSpring, useInView, useMotionValue, useMotionTemplate } from 'framer-motion'
 import {
   Rocket,
   Brain,
@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
+import { cn } from '@/lib/utils'
 import './asnafpreneur.css'
 import Aurora from '@/components/Aurora'
 
@@ -48,15 +49,15 @@ interface IdeaCardProps {
 }
 
 interface StepData {
-  title: string
-  desc: string
-  duration: string
+  title: string;
+  desc: string;
+  duration: string;
 }
 
 // ─── Animations ─────────────────────────────────────────────────────────────
 
 const FadeInView: React.FC<FadeInViewProps> = ({ children, delay = 0, y = 20 }) => {
-  const ref = React.useRef(null)
+  const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
@@ -74,7 +75,7 @@ const FadeInView: React.FC<FadeInViewProps> = ({ children, delay = 0, y = 20 }) 
 const RotatingText: React.FC<RotatingTextProps> = ({ words }) => {
   const [index, setIndex] = useState(0)
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % words.length)
     }, 3000)
@@ -92,6 +93,7 @@ const RotatingText: React.FC<RotatingTextProps> = ({ words }) => {
           transition={{ duration: 0.6, ease: 'circOut' }}
           className="gradient-text"
           style={{ display: 'block', position: 'absolute', width: '100%' }}
+          translate="no"
         >
           {words[index]}
         </motion.span>
@@ -108,26 +110,39 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
   description,
   color = 'primary',
 }) => {
-  const cardRef = React.useRef<HTMLDivElement>(null)
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return
-    const { left, top } = cardRef.current.getBoundingClientRect()
-    cardRef.current.style.setProperty('--mouse-x', `${e.clientX - left}px`)
-    cardRef.current.style.setProperty('--mouse-y', `${e.clientY - top}px`)
+  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect()
+    mouseX.set(clientX - left)
+    mouseY.set(clientY - top)
   }
 
   return (
     <div
-      ref={cardRef}
-      className="spotlight-card"
+      className="spotlight-card group"
       onMouseMove={handleMouseMove}
     >
-      <div className={`card-icon ${color}`}>
-        <Icon size={24} />
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-[24px] opacity-0 transition duration-300 group-hover:opacity-100"
+        style={{
+          background: useMotionTemplate`
+            radial-gradient(
+              600px circle at ${mouseX}px ${mouseY}px,
+              rgba(155, 89, 182, 0.15),
+              transparent 80%
+            )
+          `,
+        }}
+      />
+      <div className="relative z-10">
+        <div className={cn("card-icon", color)}>
+          <Icon size={24} aria-hidden="true" />
+        </div>
+        <h3>{title}</h3>
+        <p>{description}</p>
       </div>
-      <h3>{title}</h3>
-      <p>{description}</p>
     </div>
   )
 }
@@ -137,11 +152,11 @@ const IdeaCard: React.FC<IdeaCardProps> = ({ emoji, title, description, price })
     className="idea-card"
     whileHover={{ x: 5 }}
   >
-    <div className="idea-emoji">{emoji}</div>
+    <div className="idea-emoji" aria-hidden="true">{emoji}</div>
     <div className="idea-info">
       <h4>{title}</h4>
       <p>{description}</p>
-      <div className="idea-price">{price}</div>
+      <div className="idea-price" translate="no">{price}</div>
     </div>
   </motion.div>
 )
@@ -156,16 +171,16 @@ const IncomeCalculator: React.FC = () => {
     <div className="income-calculator backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 shadow-2xl">
       <div className="flex items-center gap-2 mb-6">
         <div className="p-2 calc-icon-bg rounded-lg">
-          <Calculator className="calc-icon" size={20} />
+          <Calculator className="calc-icon" size={20} aria-hidden="true" />
         </div>
-        <h3 className="text-lg font-bold text-white m-0">Kalkulator Income SaaS</h3>
+        <h3 className="text-lg font-bold text-white m-0">Kalkulator Pendapatan SaaS</h3>
       </div>
 
       <div className="space-y-6">
         <div className="space-y-3">
           <div className="flex justify-between text-sm calc-label">
             <span>Jumlah Pelanggan (Subs)</span>
-            <span className="font-mono">{users} orang</span>
+            <span className="font-mono" translate="no">{users} orang</span>
           </div>
           <input
             type="range"
@@ -182,7 +197,7 @@ const IncomeCalculator: React.FC = () => {
         <div className="space-y-3">
           <div className="flex justify-between text-sm calc-label">
             <span>Yuran Langganan / Bulan</span>
-            <span className="font-mono">RM {price}</span>
+            <span className="font-mono" translate="no">RM&nbsp;{price}</span>
           </div>
           <input
             type="range"
@@ -199,7 +214,7 @@ const IncomeCalculator: React.FC = () => {
         <div className="pt-4 border-t border-white/10 mt-6">
           <div className="text-xs text-white/50 uppercase tracking-widest mb-1">Potensi Recurring Revenue</div>
           <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-black calc-value">RM {revenue.toLocaleString()}</span>
+            <span className="text-4xl font-black calc-value" translate="no">RM&nbsp;{revenue.toLocaleString()}</span>
             <span className="calc-value-sub font-medium">/ bulan</span>
           </div>
           <p className="text-[10px] text-white/40 mt-3 leading-relaxed">
@@ -217,17 +232,17 @@ const STEPS: StepData[] = [
   {
     title: 'Fasa 1: AI Foundation',
     desc: 'Belajar Prompt Engineering, Vibe Coding (Next.js/React), dan design thinking. Fokus pada membina MVP (Minimum Viable Product).',
-    duration: 'Bulan 1-4',
+    duration: 'Bulan 1–4',
   },
   {
     title: 'Fasa 2: Builder Sprint',
     desc: 'Membangunkan SaaS yang sebenar. Integrasi Stripe/Billplz untuk payment. Ujian beta kepada pengguna real-world.',
-    duration: 'Bulan 5-8',
+    duration: 'Bulan 5–8',
   },
   {
     title: 'Fasa 3: Scale & Launch',
     desc: 'Marketing menggunakan AI Automation. Pelancaran rasmi dan scaling ke pasaran global. Persediaan untuk Seed Funding.',
-    duration: 'Bulan 9-12',
+    duration: 'Bulan 9–12',
   },
 ]
 
@@ -255,6 +270,7 @@ const SPONSORS = [
 
 export default function AsnafpreneurLanding() {
   const [activeStep, setActiveStep] = useState(0)
+  const [activeSection, setActiveSection] = useState('hero')
   const { scrollYProgress } = useScroll()
   const setView = useAppStore((s) => s.setView)
 
@@ -264,26 +280,34 @@ export default function AsnafpreneurLanding() {
     restDelta: 0.001,
   })
 
+  // Automatic Active Section Tracking
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id)
+          }
+        })
+      },
+      { threshold: 0.5 }
+    )
+
+    const sections = ['hero', 'program', 'cara', 'saas', 'sponsor']
+    sections.forEach((id) => {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
   const scrollToSection = useCallback((id: string) => {
     const el = document.getElementById(id)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [])
-
-  const handleDockNav = useCallback(
-    (target: string) => {
-      // In-page section navigation
-      const sectionIds = ['hero', 'program', 'cara', 'saas', 'sponsor', 'daftar']
-      if (sectionIds.includes(target)) {
-        scrollToSection(target)
-      } else {
-        // Cross-module navigation via setView
-        setView(target as Parameters<typeof setView>[0])
-      }
-    },
-    [scrollToSection, setView]
-  )
 
   return (
     <div className="asnafpreneur-root">
@@ -306,12 +330,23 @@ export default function AsnafpreneurLanding() {
       />
 
       {/* Navigation */}
-      <nav className="pill-nav">
-        <a onClick={() => scrollToSection('hero')} className="active">Mula</a>
-        <a onClick={() => scrollToSection('program')}>Program</a>
-        <a onClick={() => scrollToSection('cara')}>Cara</a>
-        <a onClick={() => scrollToSection('saas')}>SaaS</a>
-        <a onClick={() => scrollToSection('sponsor')}>Sponsor</a>
+      <nav className="pill-nav" aria-label="Main Navigation">
+        {[
+          { id: 'hero', label: 'Mula' },
+          { id: 'program', label: 'Program' },
+          { id: 'cara', label: 'Cara' },
+          { id: 'saas', label: 'SaaS' },
+          { id: 'sponsor', label: 'Sponsor' }
+        ].map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => scrollToSection(item.id)}
+            className={cn(activeSection === item.id && "active")}
+          >
+            {item.label}
+          </button>
+        ))}
       </nav>
 
       {/* Hero Section */}
@@ -323,13 +358,13 @@ export default function AsnafpreneurLanding() {
             amplitude={1.5}
           />
         </div>
-        <div className="hero-grid" />
+        <div className="hero-grid" aria-hidden="true" />
 
         <div className="hero-content">
           <FadeInView delay={0}>
             <div className="hero-badge">
               <span className="dot" />
-              PENDAFTARAN DIBUKA — 2026
+              PENDAFTARAN DIBUKA&nbsp;—&nbsp;2026
             </div>
           </FadeInView>
 
@@ -342,16 +377,16 @@ export default function AsnafpreneurLanding() {
 
           <FadeInView delay={0.2}>
             <p className="hero-subtitle">
-              Program keusahawanan AI pertama di Malaysia. Bina bisnes perisian SaaS — modal RM200/bulan, potensi income RM2,000-10,000/bulan. 100% percuma.
+              Program keusahawanan AI pertama di Malaysia. Bina bisnes perisian SaaS — modal RM200/bulan, potensi pendapatan RM2,000–10,000/bulan. 100% tajaan penuh.
             </p>
           </FadeInView>
 
           <FadeInView delay={0.3}>
             <div className="cta-group">
-              <button className="btn-primary" onClick={() => scrollToSection('daftar')}>
-                Daftar Sekarang <ArrowRight size={18} />
+              <button type="button" className="btn-primary" onClick={() => scrollToSection('daftar')}>
+                Daftar Sekarang <ArrowRight size={18} aria-hidden="true" />
               </button>
-              <button className="btn-secondary" onClick={() => scrollToSection('program')}>
+              <button type="button" className="btn-secondary" onClick={() => scrollToSection('program')}>
                 Bagaimana ia Berfungsi
               </button>
             </div>
@@ -362,26 +397,21 @@ export default function AsnafpreneurLanding() {
       {/* Stats Section */}
       <section className="stats-section">
         <div className="stats-grid">
-          <div className="stat-item">
-            <div className="stat-number">RM0</div>
-            <div className="stat-label">Kos Latihan</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-number">12</div>
-            <div className="stat-label">Bulan Inkubasi</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-number">100%</div>
-            <div className="stat-label">Tajaan Penuh</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-number">AI</div>
-            <div className="stat-label">Fokus Utama</div>
-          </div>
+          {[
+            { value: 'RM0', label: 'Kos Latihan' },
+            { value: '12', label: 'Bulan Inkubasi' },
+            { value: '100%', label: 'Tajaan Penuh' },
+            { value: 'AI', label: 'Fokus Utama' }
+          ].map((stat, i) => (
+            <div key={i} className="stat-item">
+              <div className="stat-number" translate="no">{stat.value}</div>
+              <div className="stat-label">{stat.label}</div>
+            </div>
+          ))}
         </div>
       </section>
 
-      <div className="divider" />
+      <div className="divider" aria-hidden="true" />
 
       {/* Program Features */}
       <section id="program">
@@ -443,7 +473,7 @@ export default function AsnafpreneurLanding() {
         </div>
       </section>
 
-      <div className="divider" />
+      <div className="divider" aria-hidden="true" />
 
       {/* How it works (Stepper) */}
       <section id="cara">
@@ -457,10 +487,10 @@ export default function AsnafpreneurLanding() {
           {STEPS.map((step, i) => (
             <div
               key={i}
-              className={`step ${activeStep >= i ? 'active' : ''}`}
+              className={cn("step", activeStep >= i && "active")}
               onMouseEnter={() => setActiveStep(i)}
             >
-              <div className="step-number">{i + 1}</div>
+              <div className="step-number" translate="no">{i + 1}</div>
               <div className="step-content">
                 <h3>{step.title}</h3>
                 <p>{step.desc}</p>
@@ -471,7 +501,7 @@ export default function AsnafpreneurLanding() {
         </div>
       </section>
 
-      <div className="divider" />
+      <div className="divider" aria-hidden="true" />
 
       {/* SaaS Ideas */}
       <section id="saas">
@@ -483,30 +513,20 @@ export default function AsnafpreneurLanding() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-12">
           <div className="lg:col-span-7 ideas-grid">
-            <IdeaCard
-              emoji="🏪"
-              title="KedaiAI"
-              description="SaaS untuk bantu kedai runcit auto-generate caption & poster marketing harian."
-              price="RM49/bulan"
-            />
-            <IdeaCard
-              emoji="📝"
-              title="TutorBot"
-              description="Platform AI untuk bantu pelajar sekolah buat latihan subjek mengikut silibus KPM."
-              price="RM29/bulan"
-            />
-            <IdeaCard
-              emoji="📋"
-              title="HR-Simple"
-              description="Sistem pengurusan staf & payroll untuk SME yang tak nak guna software mahal."
-              price="RM99/bulan"
-            />
-            <IdeaCard
-              emoji="⚖️"
-              title="Shariah-Check"
-              description="AI tool untuk check status pelaburan atau kontrak mengikut hukum Shariah secara pantas."
-              price="RM59/bulan"
-            />
+            {[
+              { emoji: '🏪', title: 'KedaiAI', desc: 'SaaS untuk bantu kedai runcit auto-generate caption & poster marketing harian.', price: 'RM&nbsp;49/bulan' },
+              { emoji: '📝', title: 'TutorBot', desc: 'Platform AI untuk bantu pelajar sekolah buat latihan subjek mengikut silibus KPM.', price: 'RM&nbsp;29/bulan' },
+              { emoji: '📋', title: 'HR-Simple', desc: 'Sistem pengurusan staf & payroll untuk SME yang tak nak guna software mahal.', price: 'RM&nbsp;99/bulan' },
+              { emoji: '⚖️', title: 'Shariah-Check', desc: 'AI tool untuk check status pelaburan atau kontrak mengikut hukum Shariah secara pantas.', price: 'RM&nbsp;59/bulan' }
+            ].map((idea, i) => (
+              <IdeaCard
+                key={i}
+                emoji={idea.emoji}
+                title={idea.title}
+                description={idea.desc}
+                price={idea.price}
+              />
+            ))}
           </div>
           <div className="lg:col-span-5">
             <FadeInView delay={0.4}>
@@ -516,7 +536,7 @@ export default function AsnafpreneurLanding() {
         </div>
       </section>
 
-      <div className="divider" />
+      <div className="divider" aria-hidden="true" />
 
       {/* Sponsors */}
       <section id="sponsor" className="logo-section">
@@ -526,14 +546,14 @@ export default function AsnafpreneurLanding() {
         <div className="logo-track">
           {SPONSORS.map((logo, i) => (
             <div key={i} className="logo-item">
-              <span className="logo-icon">{logo.icon}</span>
-              <span>{logo.name}</span>
+              <span className="logo-icon" aria-hidden="true">{logo.icon}</span>
+              <span translate="no">{logo.name}</span>
             </div>
           ))}
         </div>
       </section>
 
-      <div className="divider" />
+      <div className="divider" aria-hidden="true" />
 
       {/* CTA Final */}
       <section id="daftar" className="cta-final">
@@ -547,8 +567,8 @@ export default function AsnafpreneurLanding() {
           </FadeInView>
           <FadeInView delay={0.2}>
             <div className="cta-group">
-              <button className="btn-primary" onClick={() => setView('dashboard')}>
-                Login ke PUSPA & Daftar <ArrowRight size={18} />
+              <button type="button" className="btn-primary" onClick={() => setView('dashboard')}>
+                Login ke PUSPA & Daftar <ArrowRight size={18} aria-hidden="true" />
               </button>
             </div>
           </FadeInView>
@@ -556,38 +576,35 @@ export default function AsnafpreneurLanding() {
       </section>
 
       {/* Footer */}
-      <footer>
+      <footer role="contentinfo">
         <p>
           © 2026 ASNAFPRENEUR — Program di bawah naungan{' '}
-          <a href="#">PUSPA KL &amp; Selangor</a>.
+          <button type="button" className="text-accent-primary hover:underline bg-transparent border-none p-0 cursor-pointer">
+            PUSPA KL &amp; Selangor
+          </button>.
         </p>
       </footer>
 
       {/* Mobile Dock */}
       <div className="dock-wrapper">
-        <div className="dock">
+        <div className="dock" role="navigation" aria-label="Mobile Navigation">
+          {[
+            { id: 'hero', icon: Home, label: 'Mula' },
+            { id: 'program', icon: LayoutDashboard, label: 'Program' },
+            { id: 'saas', icon: Bot, label: 'SaaS' }
+          ].map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className="dock-item"
+              aria-label={item.label}
+              onClick={() => scrollToSection(item.id)}
+            >
+              <item.icon size={20} />
+            </button>
+          ))}
           <button
-            className="dock-item"
-            aria-label="Mula"
-            onClick={() => handleDockNav('hero')}
-          >
-            <Home size={20} />
-          </button>
-          <button
-            className="dock-item"
-            aria-label="Program"
-            onClick={() => handleDockNav('program')}
-          >
-            <LayoutDashboard size={20} />
-          </button>
-          <button
-            className="dock-item"
-            aria-label="SaaS"
-            onClick={() => handleDockNav('saas')}
-          >
-            <Bot size={20} />
-          </button>
-          <button
+            type="button"
             className="dock-item"
             aria-label="Daftar"
             onClick={() => setView('dashboard')}

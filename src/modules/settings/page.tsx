@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useMariaCharacterStore } from '@/stores/maria-character-store'
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
-  Button, Badge, Input, Switch, Separator, Avatar, AvatarFallback,
+  Button, Badge, Input, Switch, Separator,
 } from '@/components/ui'
+import { UserAvatar } from '@/components/user-avatar'
 import {
   User, Globe, Moon, PanelLeft, Bell, BellOff, Mail, MailX,
   Info, Save, Check, Camera, Shield, Palette, Bot, MessageCircle,
@@ -14,11 +15,25 @@ import {
 } from 'lucide-react'
 
 /* ─── Types ────────────────────────────────────────────── */
+function migrateProfileImageFromStorage(parsed: Record<string, unknown>): string {
+  const direct = parsed.profileImageUrl
+  if (typeof direct === 'string' && direct.trim()) return direct.trim()
+  const legacy = parsed.avatar
+  if (typeof legacy === 'string' && legacy.trim()) {
+    const s = legacy.trim()
+    if (s.startsWith('data:') || s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/')) {
+      return s
+    }
+  }
+  return ''
+}
+
 interface UserSettings {
   name: string
   email: string
   role: string
-  avatar: string
+  /** Data URL or public image URL — not initials */
+  profileImageUrl: string
   language: 'bm' | 'en'
   theme: 'light' | 'dark' | 'system'
   sidebarDefault: 'expanded' | 'collapsed'
@@ -36,6 +51,7 @@ interface UserSettings {
 import { useToast } from '@/components/ui/use-toast'
 export default function SettingsPage() {
   const { currentUser, setCurrentUser } = useAppStore()
+  const avatarInputRef = useRef<HTMLInputElement>(null)
   const {
     speechState,
     uiState,
@@ -45,11 +61,12 @@ export default function SettingsPage() {
   } = useMariaCharacterStore()
 
   const [settings, setSettings] = useState<UserSettings>(() => {
+    const defaultName = currentUser?.name || 'Admin PUSPA'
     const defaults: UserSettings = {
-      name: currentUser?.name || 'Admin PUSPA',
+      name: defaultName,
       email: currentUser?.email || 'admin@puspa.org',
       role: currentUser?.role || 'admin',
-      avatar: 'AP',
+      profileImageUrl: (currentUser?.imageUrl && String(currentUser.imageUrl)) || '',
       language: 'bm',
       theme: 'system',
       sidebarDefault: 'expanded',
@@ -66,8 +83,13 @@ export default function SettingsPage() {
       const stored = localStorage.getItem('puspa-settings')
       if (stored) {
         try {
-          const parsed = JSON.parse(stored)
-          return { ...defaults, ...parsed }
+          const parsed = JSON.parse(stored) as Record<string, unknown>
+          const migratedImage = migrateProfileImageFromStorage(parsed)
+          const { avatar: _legacyAvatar, ...parsedRest } = parsed
+          const merged = { ...defaults, ...(parsedRest as Partial<UserSettings>) }
+          merged.profileImageUrl =
+            migratedImage || (typeof merged.profileImageUrl === 'string' ? merged.profileImageUrl : '') || defaults.profileImageUrl
+          return merged
         } catch {
           // ignore
         }
@@ -78,17 +100,28 @@ export default function SettingsPage() {
 
   const { toast } = useToast()
 
+  /** If Zustand rehydrates with imageUrl after first paint, keep form in sync */
+  useEffect(() => {
+    const fromStore = currentUser?.imageUrl?.trim()
+    if (!fromStore) return
+    setSettings((prev) => (prev.profileImageUrl ? prev : { ...prev, profileImageUrl: fromStore }))
+  }, [currentUser?.imageUrl])
+
   const handleSave = async () => {
     // TODO: Tambah API Call di sini
     // await fetch('/api/v1/user/settings', { method: 'POST', body: JSON.stringify(settings) })
+
+    const next = { ...settings }
+    localStorage.setItem('puspa-settings', JSON.stringify(next))
     
-    localStorage.setItem('puspa-settings', JSON.stringify(settings))
-    
+    setSettings(next)
+
     setCurrentUser({
       id: currentUser?.id || 'usr_admin_001',
-      name: settings.name,
-      email: settings.email,
-      role: (settings.role as 'staff' | 'admin' | 'developer') || 'admin',
+      name: next.name,
+      email: next.email,
+      role: (next.role as 'staff' | 'admin' | 'developer') || 'admin',
+      imageUrl: next.profileImageUrl?.trim() || null,
     })
     toast({
       title: "Tetapan Disimpan!",
@@ -139,18 +172,66 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           {/* Avatar */}
           <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarFallback className="text-lg bg-primary/10 text-primary">{settings.avatar}</AvatarFallback>
-            </Avatar>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              aria-hidden
+              tabIndex={-1}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const maxBytes = 480 * 1024
+                if (file.size > maxBytes) {
+                  toast({
+                    title: 'Fail terlalu besar',
+                    description: 'Sila pilih imej di bawah 480 KB (JPEG/PNG/WebP).',
+                    variant: 'destructive',
+                  })
+                  e.target.value = ''
+                  return
+                }
+                const reader = new FileReader()
+                reader.onload = () => {
+                  const dataUrl = reader.result
+                  if (typeof dataUrl === 'string') {
+                    setSettings((prev) => ({ ...prev, profileImageUrl: dataUrl }))
+                  }
+                }
+                reader.readAsDataURL(file)
+                e.target.value = ''
+              }}
+            />
+            <UserAvatar name={settings.name} src={settings.profileImageUrl} size="lg" />
             <div>
               <p className="font-medium">{settings.name}</p>
               <p className="text-sm text-muted-foreground">{settings.email}</p>
               <Badge variant="secondary" className="mt-1">{roleLabels[settings.role] || settings.role}</Badge>
             </div>
-            <Button variant="outline" size="sm" className="ml-auto gap-1">
-              <Camera className="h-3 w-3" />
-              Tukar Avatar
-            </Button>
+            <div className="ml-auto flex flex-col gap-1 sm:flex-row sm:items-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => avatarInputRef.current?.click()}
+              >
+                <Camera className="h-3 w-3" />
+                Tukar Avatar
+              </Button>
+              {settings.profileImageUrl ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() => setSettings((prev) => ({ ...prev, profileImageUrl: '' }))}
+                >
+                  Buang foto
+                </Button>
+              ) : null}
+            </div>
           </div>
 
           <Separator />

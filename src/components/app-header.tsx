@@ -1,14 +1,13 @@
 'use client'
 
 import { useAppStore, type ViewId } from '@/lib/store'
-import { Search, Moon, Sun, MessageSquare, Bell } from 'lucide-react'
+import { Search, Moon, Sun, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
 import { useTheme } from 'next-themes'
-import { Badge } from '@/components/ui/badge'
-
+import { toast } from 'sonner'
 const viewTitles: Record<ViewId, { en: string; ms: string }> = {
   dashboard: { en: 'Dashboard', ms: 'Papan Pemuka' },
   members: { en: 'Member Management', ms: 'Pengurusan Ahli' },
@@ -33,7 +32,7 @@ const viewTitles: Record<ViewId, { en: string; ms: string }> = {
 }
 
 export function AppHeader() {
-  const { currentView, toggleAiChat, searchQuery, setSearchQuery } = useAppStore()
+  const { currentView, searchQuery, setSearchQuery } = useAppStore()
   const { theme, setTheme } = useTheme()
   
   const title = viewTitles[currentView] || { en: currentView, ms: currentView }
@@ -52,17 +51,23 @@ export function AppHeader() {
         <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            placeholder="Cari... / Search..."
+            placeholder="Cari… / Search…"
             className="pl-8 h-8 text-xs"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            autoComplete="off"
           />
         </div>
       </div>
 
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Bell className="h-4 w-4" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => toast.info('Tiada pemberitahuan baharu', { description: 'Sistem PUSPA-Z dalam keadaan optimum dan tiada amaran kritikal.' })}
+        >
+          <Bell className="h-4 w-4" aria-hidden="true" />
           <span className="sr-only">Notifications</span>
         </Button>
 
@@ -75,17 +80,6 @@ export function AppHeader() {
           <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span className="sr-only">Toggle theme</span>
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-9 h-8 w-8 text-primary hover:text-primary hover:bg-primary/10 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-          onClick={toggleAiChat}
-          aria-label="Toggle AI chat"
-        >
-          <MessageSquare className="h-4 w-4" aria-hidden="true" />
-          <span className="sr-only">Toggle AI chat</span>
         </Button>
       </div>
     </header>

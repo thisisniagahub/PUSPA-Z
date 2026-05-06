@@ -18,9 +18,26 @@ export async function POST(request: NextRequest) {
     const internalToken = process.env.PUSPA_INTERNAL_API_TOKEN
     const requestToken = request.headers.get('x-puspa-internal-token')
 
-    if (!internalToken || requestToken !== internalToken) {
+    if (!internalToken?.trim()) {
+      console.error(
+        '[Maria Puspa Telegram API] Set PUSPA_INTERNAL_API_TOKEN on the Next.js server (same value as the telegram-bot .env)'
+      )
       return NextResponse.json(
-        { error: 'Unauthorized internal request' },
+        {
+          error: 'server_misconfiguration',
+          content:
+            'Pelayan PUSPA belum set PUSPA_INTERNAL_API_TOKEN. Tetapkan pembolehubah ini pada Vercel/hosting anda dan pada bot Telegram.',
+        },
+        { status: 503 }
+      )
+    }
+    if (requestToken !== internalToken) {
+      return NextResponse.json(
+        {
+          error: 'Unauthorized internal request',
+          content:
+            'Token dalaman salah: pastikan header x-puspa-internal-token sama dengan PUSPA_INTERNAL_API_TOKEN antara bot Telegram dan aplikasi.',
+        },
         { status: 401 }
       )
     }
@@ -37,10 +54,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const hermesCli = await runHermesCliReply(
-      message,
-      currentView || 'dashboard'
-    )
+    let hermesCli: Awaited<ReturnType<typeof runHermesCliReply>> = {
+      enabled: false,
+      model: 'hermes-agent',
+      content: '',
+    }
+    try {
+      hermesCli = await runHermesCliReply(message, currentView || 'dashboard')
+    } catch (cliError) {
+      console.warn(
+        '[Maria Puspa Telegram API] Hermes CLI failed; falling back to OpenRouter if configured:',
+        cliError
+      )
+    }
     if (hermesCli.enabled) {
       await saveAssistantMessage(userId || 'telegram-anonymous', hermesCli.content)
       return NextResponse.json({

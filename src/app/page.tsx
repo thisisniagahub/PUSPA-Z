@@ -52,6 +52,8 @@ export default function Home() {
           <img
             src="/puspa-logo-official.png"
             alt="PUSPA Logo"
+            width={64}
+            height={64}
             className="h-16 w-16 object-contain rounded-full bg-white p-1"
             style={{ animation: 'puspa-spin 4s linear infinite' }}
           />
@@ -66,7 +68,7 @@ export default function Home() {
             <div className="h-2 w-2 rounded-full bg-purple-600 animate-bounce [animation-delay:-0.15s]" />
             <div className="h-2 w-2 rounded-full bg-purple-600 animate-bounce" />
           </div>
-          <p className="text-sm text-muted-foreground">Memuatkan...</p>
+          <p className="text-sm text-muted-foreground">Memuatkan…</p>
         </div>
       </div>
     )

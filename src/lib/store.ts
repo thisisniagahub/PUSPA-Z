@@ -23,6 +23,8 @@ interface AppState {
     name: string
     email: string
     role: 'staff' | 'admin' | 'developer'
+    /** Data URL, https URL, or same-origin path — shown in UserAvatar when set */
+    imageUrl?: string | null
   } | null
   setCurrentUser: (user: AppState['currentUser']) => void
   

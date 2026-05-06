@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { ShieldAlert } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { motion, AnimatePresence } from 'framer-motion'
 
 // Dynamic imports for all modules - lazy loaded
 const moduleMap: Record<ViewId, React.ComponentType> = {
@@ -59,22 +60,44 @@ export function ViewRenderer() {
   const { currentView, currentUser } = useAppStore()
   const userRole = currentUser?.role || 'staff'
 
-  if (!canAccessView(currentView, userRole)) {
-    return <AccessDenied view={currentView} />
-  }
-
   const ModuleComponent = moduleMap[currentView]
-  if (!ModuleComponent) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[50vh]">
-        <p className="text-muted-foreground">Module not found: {currentView}</p>
-      </div>
-    )
-  }
+  const hasAccess = canAccessView(currentView, userRole)
 
   return (
-    <div className="h-full animate-in fade-in-0 duration-200">
-      <ModuleComponent />
-    </div>
+    <AnimatePresence mode="wait">
+      {!hasAccess ? (
+        <motion.div
+          key="access-denied"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+          className="h-full"
+        >
+          <AccessDenied view={currentView} />
+        </motion.div>
+      ) : !ModuleComponent ? (
+        <motion.div
+          key="not-found"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="flex items-center justify-center h-full min-h-[50vh]"
+        >
+          <p className="text-muted-foreground">Module not found: {currentView}</p>
+        </motion.div>
+      ) : (
+        <motion.div
+          key={currentView}
+          initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="h-full"
+        >
+          <ModuleComponent />
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }

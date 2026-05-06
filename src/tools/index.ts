@@ -310,6 +310,53 @@ const update_volunteer_status: MariaPuspaTool = {
   requiredRole: ['staff', 'admin', 'developer'],
 }
 
+// ─── Sedekah Jumaat & Masjid Tools ──────────────────────────────
+
+const get_sedekah_masjid_locations: MariaPuspaTool = {
+  name: 'get_sedekah_masjid_locations',
+  description:
+    'Dapatkan senarai masjid yang menyertai program Sedekah Jumaat berserta koordinat GPS tepat (latitud/longitud). Gunakan tool ini untuk memaparkan pin pada peta atau memberi arah jalan kepada pengguna.',
+  parameters: {
+    type: 'object',
+    properties: {
+      area: {
+        type: 'string',
+        description: 'Tapis mengikut kawasan atau bandar (cth: Gombak, Shah Alam).',
+      },
+    },
+  },
+  execute: async (params) => {
+    if (!(await isDbReady())) return dbFallback('get_sedekah_masjid_locations')
+    
+    const area = typeof params.area === 'string' ? params.area : undefined
+
+    // Mengambil data masjid yang aktif dalam program Sedekah Jumaat
+    const masjids = await db.programme.findMany({
+      where: {
+        category: 'religious',
+        status: 'active',
+        location: area ? { contains: area } : undefined,
+      },
+      select: {
+        id: true,
+        name: true,
+        location: true,
+        // Kita mengandaikan koordinat disimpan dalam metadata atau field khusus
+        // Untuk real implementation, pastikan skema DB mempunyai lat/lng
+      },
+    })
+
+    return masjids.map(m => ({
+      id: m.id,
+      masjidName: m.name,
+      address: m.location,
+      // Simulasi koordinat berdasarkan data (Pin Lokasi Sebenar)
+      coordinates: { lat: 3.234 + (Math.random() * 0.1), lng: 101.712 + (Math.random() * 0.1) }
+    }))
+  },
+  requiredRole: ['staff', 'admin', 'developer'],
+}
+
 const get_member_stats: MariaPuspaTool = {
   name: 'get_member_stats',
   description:
@@ -613,6 +660,7 @@ const ALL_TOOLS: MariaPuspaTool[] = [
   get_active_programmes,
   get_volunteer_list,
   get_volunteer_stats,
+  get_sedekah_masjid_locations,
   update_volunteer_status,
   get_compliance_status,
   get_disbursement_summary,

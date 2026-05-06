@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/lib/store'
 import { useMariaCharacterStore } from '@/stores/maria-character-store'
 import { MariaCharacterRenderer } from './maria-character-renderer'
@@ -18,16 +19,13 @@ export function MariaFloatingWidget() {
   if (aiChatOpen) return null
 
   return (
-    <button
-      data-slot="button"
+    <Button
+      type="button"
+      variant="default"
       onClick={() => setAiChatOpen(true)}
       className={cn(
-        "fixed bottom-6 right-6 z-40 shadow-xl transition-all active:scale-95",
-        "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium",
-        "disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
-        "shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-        "text-primary-foreground relative h-14 w-14 rounded-full bg-primary hover:bg-primary/90",
-        "animate-in fade-in-0 duration-300" // Animasi fade-in apabila muncul
+        'fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full p-0 shadow-xl active:scale-95',
+        'animate-in fade-in-0 duration-300'
       )}
       aria-label="Hubungi Maria Puspa"
     >
@@ -37,6 +35,6 @@ export function MariaFloatingWidget() {
         emotionState={emotionState}
         phonemeEnergy={speechState.phonemeEnergy}
       />
-    </button>
+    </Button>
   )
 }

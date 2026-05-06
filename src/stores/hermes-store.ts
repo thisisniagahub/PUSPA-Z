@@ -180,7 +180,24 @@ export const useMariaPuspaStore = create<MariaPuspaState>()((set, get) => ({
       })
 
       if (!res.ok) {
-        throw new Error(`AI request failed: ${res.status}`)
+        let detail = `AI request failed: ${res.status}`
+        try {
+          const errBody = (await res.json()) as {
+            content?: string
+            error?: string
+            message?: string
+          }
+          if (typeof errBody.content === 'string' && errBody.content.trim()) {
+            detail = errBody.content.trim()
+          } else if (typeof errBody.error === 'string') {
+            detail = `${detail} — ${errBody.error}`
+          } else if (typeof errBody.message === 'string') {
+            detail = `${detail} — ${errBody.message}`
+          }
+        } catch {
+          /* response bukan JSON */
+        }
+        throw new Error(detail)
       }
 
       // Check if response is SSE stream

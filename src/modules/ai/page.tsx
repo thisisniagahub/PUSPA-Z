@@ -10,14 +10,16 @@ import {
 import {
   Accordion, AccordionItem, AccordionTrigger, AccordionContent,
 } from '@/components/ui/accordion'
+import { UserAvatar } from '@/components/user-avatar'
 import {
-  Send, User, Loader2, Sparkles, Cpu, MessageSquare,
+  Send, Loader2, Sparkles, Cpu, MessageSquare,
   Zap, History, ArrowRight, RotateCcw, Terminal,
   AlertCircle, Wrench, ChevronDown, ArrowDown, Mic,
 } from 'lucide-react'
 import { MariaCharacterRenderer } from '@/components/maria/maria-character-renderer'
 import { useMariaCharacterStore } from '@/stores/maria-character-store'
 import { getMariaEmotionState } from '@/lib/maria-emotion-map'
+import { useToast } from '@/components/ui/use-toast'
 
 /* ─── Suggested Prompts ────────────────────────────────── */
 const suggestedPrompts = [
@@ -45,6 +47,9 @@ export default function AiPage() {
     onRouteContextChange,
     setEmotionState,
   } = useMariaCharacterStore()
+
+  const { toast } = useToast()
+  const prevEmotionRef = useRef(emotionState)
 
   const [input, setInput] = useState('')
   const [showScrollBtn, setShowScrollBtn] = useState(false)
@@ -92,6 +97,24 @@ export default function AiPage() {
       })
     )
   }, [messages, isStreaming, currentView, lastError, setEmotionState])
+
+  // Notifikasi toast apabila emosi Maria bertukar
+  useEffect(() => {
+    if (emotionState !== prevEmotionRef.current) {
+      const labels: Record<string, string> = {
+        warm: 'Mesra',
+        focus: 'Fokus',
+        alert: 'Waspada',
+        empathetic: 'Empati',
+      }
+      
+      toast({
+        title: `Maria Puspa: Mod ${labels[emotionState] || emotionState}`,
+        description: `Personaliti Maria kini ${labels[emotionState]?.toLowerCase() || emotionState} selari dengan modul ${currentView}.`,
+      })
+      prevEmotionRef.current = emotionState
+    }
+  }, [emotionState, currentView, toast])
 
   // Detect scroll position for "scroll to bottom" button
   const handleScroll = useCallback(() => {
@@ -197,13 +220,13 @@ export default function AiPage() {
                     key={msg.id}
                     className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                   >
-                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full overflow-hidden ${
-                      msg.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-primary/10'
-                    }`}>
+                    <div
+                      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full ${
+                        msg.role === 'user' ? '' : 'h-9 w-9 bg-primary/10'
+                      }`}
+                    >
                       {msg.role === 'user' ? (
-                        <User className="h-4 w-4" />
+                        <UserAvatar name={currentUser?.name} src={currentUser?.imageUrl} size="chat" />
                       ) : (
                         <MariaCharacterRenderer
                           className="h-full w-full"
@@ -221,7 +244,12 @@ export default function AiPage() {
                       }`}>
                         {msg.content || (msg.isStreaming ? '' : '...')}
                         {msg.isStreaming && !msg.content && (
-                          <Loader2 className="h-4 w-4 animate-spin text-primary inline-block" />
+                          <span className="inline-flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
+                            <span className="text-sm text-muted-foreground">
+                              Maria Puspa sedang berfikir...
+                            </span>
+                          </span>
                         )}
                         {msg.isStreaming && msg.content && (
                           <span className="inline-block w-1.5 h-4 bg-primary/60 animate-pulse ml-0.5 align-text-bottom" />
@@ -244,24 +272,6 @@ export default function AiPage() {
                     </div>
                   </div>
                 ))}
-
-                {/* Loading indicator when waiting for first chunk */}
-                {isStreaming && messages[messages.length - 1]?.content === '' && (
-                  <div className="flex gap-2.5">
-                    <MariaCharacterRenderer
-                      className="h-9 w-9 shrink-0 rounded-full overflow-hidden"
-                      presenceState={presenceState}
-                      emotionState={emotionState}
-                      phonemeEnergy={speechState.phonemeEnergy}
-                    />
-                    <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                        <span className="text-sm text-muted-foreground">Maria Puspa sedang berfikir...</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </ScrollArea>
           </div>
