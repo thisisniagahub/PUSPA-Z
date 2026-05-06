@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build && node -e \"const fs=require('fs');fs.mkdirSync('.next/standalone/.next',{recursive:true});fs.cpSync('.next/static','.next/standalone/.next/static',{recursive:true});fs.cpSync('public','.next/standalone/public',{recursive:true});\"",
+    "build": "prisma generate && next build && node -e \"const fs=require('fs');fs.mkdirSync('.next/standalone/.next',{recursive:true});fs.cpSync('.next/static','.next/standalone/.next/static',{recursive:true});fs.cpSync('public','.next/standalone/public',{recursive:true});\"",
+    "postinstall": "prisma generate",
     "start": "bun .next/standalone/server.js",
     "hermes": "powershell -ExecutionPolicy Bypass -File scripts/hermes-agent.ps1",
     "hermes:setup": "npm run hermes -- setup",
