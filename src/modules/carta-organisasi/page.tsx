@@ -166,6 +166,7 @@ function TreeNode({
           </div>
           {hasChildren && (
             <button
+              aria-label={expanded ? 'Tutup senarai' : 'Buka senarai'}
               onClick={(e) => { e.stopPropagation(); setExpanded(!expanded) }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, opacity: 0.5, transition: 'transform 0.2s', transform: expanded ? 'rotate(180deg)' : 'rotate(0)' }}
             >
@@ -244,7 +245,7 @@ function DetailPanel({ person, onClose }: { person: Person; onClose: () => void 
       >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 20 }}>
         <Avatar person={person} size={56} />
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.4, padding: 4 }}>
+        <button aria-label="Tutup panel" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.4, padding: 4 }}>
           <X style={{ width: 18, height: 18 }} />
         </button>
       </div>
