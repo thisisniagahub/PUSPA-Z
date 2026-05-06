@@ -12,6 +12,51 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
+// ─── Type Definitions ──────────────────────────────────────────
+
+type TrendItem = {
+  name: string
+  sumbangan: number
+  agihan: number
+}
+
+type AsnafItem = {
+  name: string
+  value: number
+  color: string
+}
+
+type CaseStatusItem = {
+  name: string
+  total: number
+}
+
+type DashboardStats = {
+  totalMembers: number
+  activeCases: number
+}
+
+type DashboardData = {
+  trend: TrendItem[]
+  asnaf: AsnafItem[]
+  caseStatus: CaseStatusItem[]
+  stats: DashboardStats
+}
+
+type CustomTooltipProps = {
+  active?: boolean
+  payload?: Array<{ color: string; name: string; value: number }>
+  label?: string
+}
+
+type KpiCardProps = {
+  title: string
+  value: string | number
+  sub: string
+  icon: React.ComponentType<{ size?: number }>
+  trend: number
+}
+
 // ─── Demo Data ──────────────────────────────────────────────────
 
 const DEFAULT_TREND = [
@@ -40,12 +85,12 @@ const DEFAULT_CASES = [
 
 // ─── Sub-Components ─────────────────────────────────────────────
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="rounded-xl border bg-background/95 p-3 shadow-xl backdrop-blur-sm">
         <p className="mb-1 text-xs font-bold text-muted-foreground uppercase">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index: number) => (
           <div key={index} className="flex items-center gap-2 py-0.5">
             <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="text-sm font-medium">{entry.name}:</span>
@@ -58,7 +103,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
-const KpiCard = ({ title, value, sub, icon: Icon, trend }: any) => (
+const KpiCard = ({ title, value, sub, icon: Icon, trend }: KpiCardProps) => (
   <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-muted/30">
     <CardContent className="p-6">
       <div className="flex items-center justify-between">
@@ -82,17 +127,23 @@ const KpiCard = ({ title, value, sub, icon: Icon, trend }: any) => (
 // ─── Main Component ─────────────────────────────────────────────
 
 export default function DashboardOverview() {
-  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const res = await fetch('/api/v1/dashboard')
+        const ct = res.headers.get('content-type') || ''
+        if (!res.ok || !ct.includes('application/json')) {
+          // API returned HTML error page (e.g. DB connection failed) — fall back to defaults
+          console.warn('[Dashboard] API returned non-JSON response, using demo data')
+          return
+        }
         const json = await res.json()
-        if (json.success) setDashboardData(json.data)
+        if (json.success) setDashboardData(json.data as DashboardData)
       } catch (err) {
-        console.error("Gagal memuatkan data dashboard", err)
+        console.warn('[Dashboard] Fetch failed, using demo data', err)
       } finally {
         setLoading(false)
       }
@@ -100,10 +151,10 @@ export default function DashboardOverview() {
     loadData()
   }, [])
 
-  const trendData = dashboardData?.trend || DEFAULT_TREND
-  const asnafData = dashboardData?.asnaf || DEFAULT_ASNAF
-  const caseStatusData = dashboardData?.caseStatus || DEFAULT_CASES
-  const stats = dashboardData?.stats || { totalMembers: 1355, activeCases: 174 }
+  const trendData: TrendItem[] = dashboardData?.trend || DEFAULT_TREND
+  const asnafData: AsnafItem[] = dashboardData?.asnaf || DEFAULT_ASNAF
+  const caseStatusData: CaseStatusItem[] = dashboardData?.caseStatus || DEFAULT_CASES
+  const stats: DashboardStats = dashboardData?.stats || { totalMembers: 1355, activeCases: 174 }
 
   if (loading) {
     return (

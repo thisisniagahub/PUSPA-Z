@@ -78,17 +78,17 @@ export default function LoginPage() {
             
             {/* PUSPA Text Layout */}
             <div className="flex flex-col items-start text-left">
-              <h1 className="text-6xl font-black tracking-tighter text-white leading-none">
+              <h1 className="text-6xl font-black tracking-tighter text-purple-950 dark:text-white leading-none">
                 PUSPA
               </h1>
-              {/* TAGLINE: FORCED WHITE AS REQUESTED */}
-              <p className="text-xs font-bold text-white uppercase tracking-[0.2em] mt-1">
+              {/* TAGLINE: IMPROVED CONTRAST */}
+              <p className="text-xs font-bold text-purple-800 dark:text-purple-300 uppercase tracking-[0.2em] mt-1">
                 Pertubuhan Urus Peduli Asnaf
               </p>
             </div>
           </div>
           
-          <p className="text-xs text-white/40 italic font-medium">
+          <p className="text-xs text-purple-900/60 dark:text-white/40 italic font-medium">
             "Cerdas. Mesra. Sentiasa di sisi anda."
           </p>
         </div>
@@ -187,7 +187,7 @@ export default function LoginPage() {
                 className="w-full h-11 bg-purple-700 hover:bg-purple-800 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-bold"
                 disabled={loading}
               >
-                {loading ? (
+{loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Memproses...

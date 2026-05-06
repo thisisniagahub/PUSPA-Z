@@ -94,7 +94,7 @@ lucide-react         — Icon library
 │  Maria Puspa     │ │    Prisma        │ │   OpenRouter     │
 │  Runtime         │ │    SQLite DB     │ │   API            │
 │                  │ │                  │ │                  │
-│  • Memory        │ │  • 21 Models     │ │  • gpt-4o-mini   │
+│  • Memory        │ │  • 22 Models     │ │  • gpt-4o-mini   │
 │  • Tools (18)    │ │  • PII Masking   │ │  • Key Rotation  │
 │  • RBAC          │ │  • Fallback      │ │  • SSE Streaming  │
 │  • RAG           │ │                  │ │  • Tool Calling   │
@@ -534,7 +534,7 @@ Production deployment uses Postgres-first. SQLite may still be used for local de
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 21 Prisma Models
+### 22 Prisma Models
 
 #### Core (3 models)
 | Model | Purpose | Key Fields |
@@ -572,6 +572,11 @@ Production deployment uses Postgres-first. SQLite may still be used for local de
 | `EKYCVerification` | Identity verification | ocrExtracted (JSON), faceMatchScore, riskLevel |
 | `Document` | Document management | version, tags, polymorphic (member/case/programme) |
 | `Activity` | Audit log | type, category, metadata (JSON) |
+
+#### Asnafpreneur (1 model)
+| Model | Purpose | Key Fields |
+|-------|---------|------------|
+| `Entrepreneur` | Asnafpreneur usahawan | name, category, initialCapital, status |
 
 #### AI (3 models)
 | Model | Purpose | Key Fields |

@@ -10,7 +10,9 @@ const OPENROUTER_APP_URL = process.env.OPENROUTER_APP_URL || 'http://localhost:3
 
 // ─── Key Rotation ────────────────────────────────────────────
 
+// Support multiple key formats: OPENROUTER_API_KEY or OPENROUTER_API_KEY_1, _2, etc.
 const API_KEYS = [
+  process.env.OPENROUTER_API_KEY,  // Single key (preferred)
   process.env.OPENROUTER_API_KEY_1,
   process.env.OPENROUTER_API_KEY_2,
   process.env.OPENROUTER_API_KEY_3,
@@ -21,6 +23,27 @@ if (API_KEYS.length === 0) {
   console.warn('[OpenRouter] WARNING: No API keys configured in .env')
 } else {
   console.log(`[OpenRouter] ${API_KEYS.length} API key(s) loaded`)
+}
+
+// Advanced: Model fallback chain for reliability
+const MODEL_FALLBACK_CHAIN = [
+  process.env.OPENROUTER_MODEL || 'tencent/hy3-preview:free',
+  'openai/gpt-4o-mini',
+  'openai/gpt-3.5-turbo',
+]
+
+let currentModelIndex = 0
+
+function getNextModel(): string {
+  const model = MODEL_FALLBACK_CHAIN[currentModelIndex % MODEL_FALLBACK_CHAIN.length]
+  return model
+}
+
+function rotateModel(): void {
+  if (MODEL_FALLBACK_CHAIN.length > 1) {
+    currentModelIndex = (currentModelIndex + 1) % MODEL_FALLBACK_CHAIN.length
+    console.log(`[OpenRouter] Rotated to model: ${MODEL_FALLBACK_CHAIN[currentModelIndex]}`)
+  }
 }
 
 let currentKeyIndex = 0

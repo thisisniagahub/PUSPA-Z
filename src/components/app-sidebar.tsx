@@ -24,6 +24,9 @@ import {
   Rocket,
   UtensilsCrossed,
   BookOpen,
+  Building2,
+  Building,
+  ClipboardList,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -72,6 +75,9 @@ const navItems: NavItem[] = [
   { id: 'ai', label: 'PUSPA AI', labelMs: 'AI PUSPA', icon: Bot, group: 'AI & Bantuan' },
   { id: 'docs', label: 'Panduan', labelMs: 'Panduan', icon: BookOpen, group: 'AI & Bantuan' },
   { id: 'settings', label: 'Settings', labelMs: 'Tetapan', icon: Settings, group: 'Sistem' },
+  { id: 'carta-organisasi', label: 'Carta Organisasi', labelMs: 'Carta Organisasi', icon: Building2, group: 'Organisasi' },
+  { id: 'institusi', label: 'Institusi', labelMs: 'Institusi & Kawasan', icon: Building, group: 'Organisasi' },
+  { id: 'permohonan-bantuan', label: 'Permohonan Bantuan', labelMs: 'Borang Bantuan', icon: ClipboardList, group: 'Organisasi' },
 ]
 
 export function AppSidebar() {

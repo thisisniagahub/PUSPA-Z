@@ -1,0 +1,328 @@
+/* ─── Fortune 500 Org Chart Styles ─────────────────────────── */
+
+.heroCard {
+  background: linear-gradient(135deg, hsl(262 80% 50% / 0.12), hsl(220 70% 50% / 0.08));
+  border: 1px solid hsl(262 40% 60% / 0.15);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+.heroCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, hsl(262 80% 60% / 0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, hsl(220 80% 60% / 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+.heroResponsive {
+  border-radius: 20px;
+  padding: 28px 32px;
+}
+@media (max-width: 640px) {
+  .heroResponsive { padding: 20px 16px; border-radius: 16px; }
+}
+.heroTitle {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+@media (max-width: 640px) {
+  .heroTitle { font-size: 18px; }
+}
+
+/* ─── Page Layout ──────────────────────────────────────────── */
+.pageLayout {
+  display: flex;
+  gap: 24px;
+  min-height: 100%;
+  position: relative;
+}
+.mainContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── Toolbar ──────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.searchWrap {
+  position: relative;
+  flex: 1;
+  max-width: 320px;
+}
+@media (max-width: 640px) {
+  .searchWrap { max-width: 100%; width: 100%; }
+}
+
+/* ─── Tree Layout ──────────────────────────────────────────── */
+.tree { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.treeChildren {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  position: relative;
+  padding-top: 28px;
+}
+.treeChildren::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(50% - 0.5px);
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(to bottom, hsl(262 60% 60% / 0.5), hsl(262 60% 60% / 0.2));
+}
+
+.treeBranch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 0 12px;
+}
+@media (max-width: 640px) {
+  .treeBranch { padding: 0 4px; }
+}
+.treeBranch::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: hsl(262 60% 60% / 0.25);
+}
+.treeBranch:only-child::before { display: none; }
+.treeBranch:first-child::before { left: 50%; }
+.treeBranch:last-child::before { right: 50%; }
+.treeBranch:first-child:last-child::before { display: none; }
+
+.treeBranch::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(50% - 0.5px);
+  width: 1px;
+  height: 20px;
+  background: hsl(262 60% 60% / 0.25);
+}
+
+/* ─── Node Card ────────────────────────────────────────────── */
+.node {
+  position: relative;
+  min-width: 180px;
+  max-width: 220px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: hsl(0 0% 100% / 0.06);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  margin-top: 20px;
+}
+@media (max-width: 640px) {
+  .node { min-width: 150px; max-width: 180px; padding: 10px 12px; }
+}
+.node:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px hsl(262 60% 50% / 0.15),
+              0 0 0 1px hsl(262 60% 60% / 0.2);
+  border-color: hsl(262 60% 60% / 0.3);
+}
+@media (hover: none) {
+  .node:hover { transform: none; box-shadow: none; }
+}
+.nodeActive {
+  box-shadow: 0 0 0 2px hsl(262 70% 60% / 0.5),
+              0 12px 40px hsl(262 60% 50% / 0.2);
+  border-color: hsl(262 70% 60% / 0.4);
+}
+
+:global(.light) .node,
+:global([data-theme="light"]) .node {
+  background: hsl(0 0% 100% / 0.85);
+  border-color: hsl(0 0% 0% / 0.08);
+}
+:global(.light) .node:hover,
+:global([data-theme="light"]) .node:hover {
+  box-shadow: 0 12px 40px hsl(262 60% 50% / 0.1),
+              0 0 0 1px hsl(262 60% 60% / 0.15);
+}
+
+/* ─── Avatar ───────────────────────────────────────────────── */
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+  flex-shrink: 0;
+  position: relative;
+}
+.avatarRing {
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, hsl(262 80% 60% / 0.4), hsl(220 80% 60% / 0.4)) border-box;
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}
+
+/* ─── Detail Panel ─────────────────────────────────────────── */
+.detailPanel {
+  background: hsl(0 0% 100% / 0.04);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+}
+.detailPanelPos {
+  padding: 28px;
+  width: 100%;
+  max-width: 380px;
+}
+:global(.light) .detailPanel,
+:global([data-theme="light"]) .detailPanel {
+  background: hsl(0 0% 100% / 0.9);
+  border-color: hsl(0 0% 0% / 0.08);
+}
+
+/* Mobile: Detail panel as overlay */
+@media (max-width: 768px) {
+  .detailPanelPos {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    max-width: 100%;
+    width: 100%;
+    z-index: 50;
+    border-radius: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+  .detailPanelPos {
+    position: fixed;
+    top: 56px;
+    right: 0;
+    bottom: 0;
+    max-width: 360px;
+    z-index: 50;
+    border-radius: 16px 0 0 0;
+    overflow-y: auto;
+  }
+}
+
+/* Mobile backdrop */
+.mobileBackdrop {
+  display: none;
+}
+@media (max-width: 1024px) {
+  .mobileBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: hsl(0 0% 0% / 0.5);
+    z-index: 49;
+  }
+}
+
+/* ─── Scroll Container ─────────────────────────────────────── */
+.chartScroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 20px 0 40px;
+  scrollbar-width: thin;
+  scrollbar-color: hsl(262 40% 50% / 0.3) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.chartScroll::-webkit-scrollbar { height: 6px; }
+.chartScroll::-webkit-scrollbar-track { background: transparent; }
+.chartScroll::-webkit-scrollbar-thumb {
+  background: hsl(262 40% 50% / 0.3);
+  border-radius: 3px;
+}
+
+/* ─── View Mode Buttons ────────────────────────────────────── */
+.viewBtn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  background: transparent;
+  color: hsl(0 0% 60%);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.viewBtn:hover { background: hsl(0 0% 50% / 0.1); }
+.viewBtnActive {
+  background: hsl(262 70% 55% / 0.15);
+  color: hsl(262 70% 65%);
+  border-color: hsl(262 70% 55% / 0.2);
+}
+
+/* ─── Grid View ────────────────────────────────────────────── */
+.gridCard {
+  padding: 20px;
+  border-radius: 16px;
+  background: hsl(0 0% 100% / 0.04);
+  border: 1px solid hsl(0 0% 100% / 0.06);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+@media (max-width: 640px) {
+  .gridCard { padding: 16px; border-radius: 12px; }
+}
+.gridCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px hsl(262 60% 50% / 0.12);
+  border-color: hsl(262 60% 60% / 0.2);
+}
+@media (hover: none) {
+  .gridCard:hover { transform: none; box-shadow: none; }
+}
+:global(.light) .gridCard,
+:global([data-theme="light"]) .gridCard {
+  background: white;
+  border-color: hsl(0 0% 0% / 0.06);
+}
+
+/* ─── Stat Pill ────────────────────────────────────────────── */
+.statPill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: hsl(0 0% 100% / 0.05);
+  border: 1px solid hsl(0 0% 100% / 0.06);
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .statPill { padding: 6px 12px; }
+}
+:global(.light) .statPill,
+:global([data-theme="light"]) .statPill {
+  background: white;
+  border-color: hsl(0 0% 0% / 0.06);
+}

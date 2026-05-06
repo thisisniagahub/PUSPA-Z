@@ -86,7 +86,8 @@ export default function AiPage() {
 
   useEffect(() => {
     if (isStreaming) return
-    const lastAssistant = [...messages].reverse().find((msg) => msg.role === 'assistant' && msg.content?.trim())
+    // Optimasi: Menggunakan findLast untuk prestasi yang lebih baik dalam pencarian mesej terakhir
+    const lastAssistant = messages.findLast((msg) => msg.role === 'assistant' && msg.content?.trim())
     if (!lastAssistant) return
     setEmotionState(
       getMariaEmotionState({

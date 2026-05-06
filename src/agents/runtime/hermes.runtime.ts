@@ -162,7 +162,7 @@ export async function executeToolCalls(
       args = {}
     }
 
-    const { result, error } = await executeTool(call.function.name, args, userRole)
+    const { result, error } = await executeTool(call.function.name, args, userRole, 'system')
 
     results.push({
       role: 'tool',

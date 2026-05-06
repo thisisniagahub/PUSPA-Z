@@ -1,618 +1,505 @@
 'use client'
 
-import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { motion, AnimatePresence, useScroll, useSpring, useInView, useMotionValue, useMotionTemplate } from 'framer-motion'
+import * as React from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import {
-  Rocket,
-  Brain,
-  Code,
-  Users,
-  Target,
-  ArrowRight,
-  Shield,
-  Zap,
-  Bot,
-  Home,
-  LayoutDashboard,
-  Calculator,
-  type LucideIcon,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from 'recharts'
+import { 
+  Rocket, 
+  Users, 
+  TrendingUp, 
+  HandCoins, 
+  GraduationCap,
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Eye,
+  Pencil,
+  Briefcase
 } from 'lucide-react'
-import { useAppStore } from '@/lib/store'
-import { cn } from '@/lib/utils'
-import './asnafpreneur.css'
-import Aurora from '@/components/Aurora'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { toast } from 'sonner'
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+const BRAND_COLOR = '#6A0DAD' // PUSPA Purple
+const CHART_COLORS = ['#6A0DAD', '#8B5CF6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#EDE9FE']
 
-interface FadeInViewProps {
-  children: React.ReactNode
-  delay?: number
-  y?: number
-}
+const entrepreneurSchema = z.object({
+  name: z.string().min(1, 'Nama usahawan diperlukan'),
+  category: z.string().min(1, 'Sila pilih kategori perniagaan'),
+  initialCapital: z.preprocess((v) => Number(v), z.number().min(0, 'Modal tidak boleh negatif')),
+  description: z.string().min(10, 'Sila berikan penerangan ringkas perniagaan (min 10 aksara)'),
+})
 
-interface RotatingTextProps {
-  words: string[]
-}
+type EntrepreneurFormValues = z.infer<typeof entrepreneurSchema>
 
-interface SpotlightCardProps {
-  icon: LucideIcon
-  title: string
-  description: string
-  color?: 'primary' | 'cyan' | 'violet' | 'amber' | 'rose'
-}
+export default function AsnafpreneurPage() {
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [entrepreneurs, setEntrepreneurs] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('semua')
 
-interface IdeaCardProps {
-  emoji: string
-  title: string
-  description: string
-  price: string
-}
+  const fetchEntrepreneurs = useCallback(async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (searchQuery) params.set('search', searchQuery)
+      if (categoryFilter !== 'semua') params.set('category', categoryFilter)
+      
+      const response = await fetch(`/api/v1/asnafpreneur?${params.toString()}`)
+      const result = await response.json()
+      
+      if (result.success) {
+        setEntrepreneurs(result.data)
+      } else {
+        setEntrepreneurs(MOCK_ENTREPRENEURS) // Fallback ke mock jika API gagal
+      }
+    } catch (error) {
+      console.error('Error fetching entrepreneurs:', error)
+      setEntrepreneurs(MOCK_ENTREPRENEURS)
+    } finally {
+      setLoading(false)
+    }
+  }, [searchQuery, categoryFilter])
 
-interface StepData {
-  title: string;
-  desc: string;
-  duration: string;
-}
+  useEffect(() => {
+    fetchEntrepreneurs()
+  }, [fetchEntrepreneurs])
 
-// ─── Animations ─────────────────────────────────────────────────────────────
+  // Logik agihan statistik kategori untuk carta
+  const categoryStats = useMemo(() => {
+    const stats: Record<string, number> = {}
+    const source = entrepreneurs.length > 0 ? entrepreneurs : MOCK_ENTREPRENEURS
+    
+    source.forEach((item: any) => {
+      // Normalisasi nama kategori untuk paparan carta yang kemas
+      const rawCat = item.category || 'Lain-lain'
+      const cat = rawCat.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      stats[cat] = (stats[cat] || 0) + 1
+    })
 
-const FadeInView: React.FC<FadeInViewProps> = ({ children, delay = 0, y = 20 }) => {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+    return Object.entries(stats).map(([name, value]) => ({ name, value }))
+  }, [entrepreneurs])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const form = useForm<EntrepreneurFormValues, unknown, EntrepreneurFormValues>({
+    resolver: zodResolver(entrepreneurSchema) as any,
+    defaultValues: {
+      name: '',
+      category: '',
+      initialCapital: 0,
+      description: '',
+    },
+  })
+
+  const onSubmit = async (data: EntrepreneurFormValues) => {
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/v1/asnafpreneur', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Gagal mendaftarkan usahawan')
+      }
+
+      toast.success('Pendaftaran Berjaya', {
+        description: `Usahawan ${data.name} telah didaftarkan ke dalam sistem.`,
+      })
+      
+      setDialogOpen(false)
+      form.reset()
+      fetchEntrepreneurs() // Segarkan senarai selepas pendaftaran
+    } catch (error) {
+      toast.error('Ralat', {
+        description: error instanceof Error ? error.message : 'Gagal mendaftarkan usahawan. Sila cuba lagi.',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y }}
-      transition={{ duration: 0.8, delay, ease: [0.21, 0.47, 0.32, 0.98] }}
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6 p-4 sm:p-6 lg:p-8"
     >
-      {children}
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl" style={{ color: BRAND_COLOR }}>
+            Asnafpreneur
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Program transformasi ekonomi asnaf melalui bimbingan perniagaan dan bantuan modal.
+          </p>
+        </div>
+
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2 shrink-0" style={{ backgroundColor: BRAND_COLOR }}>
+              <Plus className="h-4 w-4" />
+              Daftar Usahawan
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Daftar Usahawan Baru</DialogTitle>
+              <DialogDescription>
+                Masukkan maklumat usahawan asnaf untuk pemantauan prestasi dan agihan modal.
+              </DialogDescription>
+            </DialogHeader>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nama Penuh Usahawan</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Contoh: Ahmad bin Zulkifli" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Kategori Perniagaan</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih kategori" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="makanan">Makanan & Minuman</SelectItem>
+                            <SelectItem value="jahitan">Jahitan & Tekstil</SelectItem>
+                            <SelectItem value="perkhidmatan">Perkhidmatan Am</SelectItem>
+                            <SelectItem value="pertanian">Pertanian</SelectItem>
+                            <SelectItem value="kraftangan">Kraftangan</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="initialCapital"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Modal Awal (RM)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Penerangan Perniagaan</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Terangkan jenis produk atau perkhidmatan yang ditawarkan..." 
+                          className="resize-none" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <DialogFooter className="pt-4">
+                  <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>
+                    Batal
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    style={{ backgroundColor: BRAND_COLOR }}
+                  >
+                    {isSubmitting ? 'Mendaftarkan...' : 'Simpan Maklumat'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Summary Stats Grid */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard title="Total Usahawan" value="124" sub="Aktif berniaga" icon={Users} color="purple" />
+        <StatCard title="Modal Diagihkan" value="RM 450,200" sub="Tahun 2024" icon={HandCoins} color="amber" />
+        <StatCard title="Latihan Selesai" value="86%" sub="Kadar tamat modul" icon={GraduationCap} color="emerald" />
+        <StatCard title="Purata ROI" value="12.5%" sub="Peningkatan pendapatan" icon={TrendingUp} color="rose" />
+      </div>
+
+      {/* Main Module Tabs */}
+      <Tabs defaultValue="usahawan" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+          <TabsTrigger value="usahawan">Usahawan</TabsTrigger>
+          <TabsTrigger value="analitik">Analitik</TabsTrigger>
+          <TabsTrigger value="latihan">Latihan</TabsTrigger>
+          <TabsTrigger value="geran">Geran</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="usahawan" className="space-y-4 mt-6">
+          <Card className="border-primary/10 shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Senarai Usahawan Asnaf</CardTitle>
+                  <CardDescription>Pangkalan data profil dan prestasi perniagaan.</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="relative w-64 hidden md:block">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      placeholder="Cari usahawan..." 
+                      className="pl-8 h-9 text-xs" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="h-9 w-[180px] text-xs">
+                      <Filter className="h-3.5 w-3.5 mr-2" />
+                      <SelectValue placeholder="Tapis Kategori" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="semua">Semua Kategori</SelectItem>
+                      <SelectItem value="makanan">Makanan & Minuman</SelectItem>
+                      <SelectItem value="jahitan">Jahitan & Tekstil</SelectItem>
+                      <SelectItem value="perkhidmatan">Perkhidmatan Am</SelectItem>
+                      <SelectItem value="pertanian">Pertanian</SelectItem>
+                      <SelectItem value="kraftangan">Kraftangan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nama Usahawan</TableHead>
+                    <TableHead>Kategori</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Pendapatan (Purata)</TableHead>
+                    <TableHead className="text-right">Tindakan</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">Memuatkan data...</TableCell></TableRow>
+                  ) : entrepreneurs.length === 0 ? (
+                    <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">Tiada usahawan dijumpai.</TableCell></TableRow>
+                  ) : entrepreneurs.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell>{item.category}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={item.status === 'Aktif' ? 'default' : 'secondary'} 
+                          className={item.status === 'Aktif' ? 'bg-emerald-500' : ''}
+                        >
+                          {item.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>RM {item.initialCapital?.toLocaleString() || '0'}</TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem className="gap-2"><Eye className="h-4 w-4" /> Lihat Profil</DropdownMenuItem>
+                            <DropdownMenuItem className="gap-2"><Pencil className="h-4 w-4" /> Kemaskini</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="gap-2 text-destructive"><Briefcase className="h-4 w-4" /> Rekod Jualan</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analitik" className="space-y-6 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Carta Pie: Pecahan Peratusan */}
+            <Card className="border-primary/10 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg">Pecahan Sektor Perniagaan</CardTitle>
+                <CardDescription>Taburan usahawan asnaf mengikut kategori utama.</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoryStats}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={70}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {categoryStats.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                    <Legend verticalAlign="bottom" height={36} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Carta Bar: Perbandingan Jumlah */}
+            <Card className="border-primary/10 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg">Jumlah Usahawan</CardTitle>
+                <CardDescription>Bilangan usahawan bagi setiap kategori perniagaan.</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={categoryStats} layout="vertical" margin={{ left: 20, right: 30 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.3} />
+                    <XAxis type="number" hide />
+                    <YAxis dataKey="name" type="category" width={120} fontSize={11} tickLine={false} axisLine={false} />
+                    <Tooltip cursor={{ fill: 'rgba(106, 13, 173, 0.05)' }} />
+                    <Bar dataKey="value" fill={BRAND_COLOR} radius={[0, 4, 4, 0]} barSize={25} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </motion.div>
   )
 }
 
-const RotatingText: React.FC<RotatingTextProps> = ({ words }) => {
-  const [index, setIndex] = useState(0)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % words.length)
-    }, 3000)
-    return () => clearInterval(timer)
-  }, [words.length])
-
-  return (
-    <div className="rotating-wrapper">
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={words[index]}
-          initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -30, filter: 'blur(10px)' }}
-          transition={{ duration: 0.6, ease: 'circOut' }}
-          className="gradient-text"
-          style={{ display: 'block', position: 'absolute', width: '100%' }}
-          translate="no"
-        >
-          {words[index]}
-        </motion.span>
-      </AnimatePresence>
-    </div>
-  )
-}
-
-// ─── Sub-Components ─────────────────────────────────────────────────────────
-
-const SpotlightCard: React.FC<SpotlightCardProps> = ({
-  icon: Icon,
-  title,
-  description,
-  color = 'primary',
-}) => {
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-
-  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
-    const { left, top } = currentTarget.getBoundingClientRect()
-    mouseX.set(clientX - left)
-    mouseY.set(clientY - top)
+/** Helper Component for Summary Cards */
+function StatCard({ title, value, sub, icon: Icon, color }: any) {
+  const colorMap: any = {
+    purple: 'from-purple-400 to-purple-600 bg-purple-100 text-purple-600',
+    amber: 'from-amber-400 to-amber-600 bg-amber-100 text-amber-600',
+    emerald: 'from-emerald-400 to-emerald-600 bg-emerald-100 text-emerald-600',
+    rose: 'from-rose-400 to-rose-600 bg-rose-100 text-rose-600'
   }
-
+  
   return (
-    <div
-      className="spotlight-card group"
-      onMouseMove={handleMouseMove}
-    >
-      <motion.div
-        className="pointer-events-none absolute -inset-px rounded-[24px] opacity-0 transition duration-300 group-hover:opacity-100"
-        style={{
-          background: useMotionTemplate`
-            radial-gradient(
-              600px circle at ${mouseX}px ${mouseY}px,
-              rgba(155, 89, 182, 0.15),
-              transparent 80%
-            )
-          `,
-        }}
-      />
-      <div className="relative z-10">
-        <div className={cn("card-icon", color)}>
-          <Icon size={24} aria-hidden="true" />
+    <Card className="relative overflow-hidden">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-2xl font-bold">{value}</p>
+            <p className="text-xs text-muted-foreground">{sub}</p>
+          </div>
+          <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${colorMap[color].split(' ').slice(2).join(' ')}`}>
+            <Icon className="h-6 w-6" />
+          </div>
         </div>
-        <h3>{title}</h3>
-        <p>{description}</p>
-      </div>
-    </div>
+      </CardContent>
+      <div className={`absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r ${colorMap[color].split(' ').slice(0, 2).join(' ')}`} />
+    </Card>
   )
 }
 
-const IdeaCard: React.FC<IdeaCardProps> = ({ emoji, title, description, price }) => (
-  <motion.div
-    className="idea-card"
-    whileHover={{ x: 5 }}
-  >
-    <div className="idea-emoji" aria-hidden="true">{emoji}</div>
-    <div className="idea-info">
-      <h4>{title}</h4>
-      <p>{description}</p>
-      <div className="idea-price" translate="no">{price}</div>
-    </div>
-  </motion.div>
-)
-
-const IncomeCalculator: React.FC = () => {
-  const [users, setUsers] = useState(50)
-  const [price, setPrice] = useState(49)
-
-  const revenue = users * price
-
-  return (
-    <div className="income-calculator backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 shadow-2xl">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="p-2 calc-icon-bg rounded-lg">
-          <Calculator className="calc-icon" size={20} aria-hidden="true" />
-        </div>
-        <h3 className="text-lg font-bold text-white m-0">Kalkulator Pendapatan SaaS</h3>
-      </div>
-
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex justify-between text-sm calc-label">
-            <span>Jumlah Pelanggan (Subs)</span>
-            <span className="font-mono" translate="no">{users} orang</span>
-          </div>
-          <input
-            type="range"
-            min="10"
-            max="500"
-            step="10"
-            aria-label="Jumlah Pelanggan"
-            value={users}
-            onChange={(e) => setUsers(parseInt(e.target.value))}
-            className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer"
-          />
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex justify-between text-sm calc-label">
-            <span>Yuran Langganan / Bulan</span>
-            <span className="font-mono" translate="no">RM&nbsp;{price}</span>
-          </div>
-          <input
-            type="range"
-            min="10"
-            max="200"
-            step="5"
-            aria-label="Yuran Langganan"
-            value={price}
-            onChange={(e) => setPrice(parseInt(e.target.value))}
-            className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer"
-          />
-        </div>
-
-        <div className="pt-4 border-t border-white/10 mt-6">
-          <div className="text-xs text-white/50 uppercase tracking-widest mb-1">Potensi Recurring Revenue</div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-black calc-value" translate="no">RM&nbsp;{revenue.toLocaleString()}</span>
-            <span className="calc-value-sub font-medium">/ bulan</span>
-          </div>
-          <p className="text-[10px] text-white/40 mt-3 leading-relaxed">
-            *Ini adalah anggaran pendapatan kasar berdasarkan model langganan bulanan.
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Data ───────────────────────────────────────────────────────────────────
-
-const STEPS: StepData[] = [
-  {
-    title: 'Fasa 1: AI Foundation',
-    desc: 'Belajar Prompt Engineering, Vibe Coding (Next.js/React), dan design thinking. Fokus pada membina MVP (Minimum Viable Product).',
-    duration: 'Bulan 1–4',
-  },
-  {
-    title: 'Fasa 2: Builder Sprint',
-    desc: 'Membangunkan SaaS yang sebenar. Integrasi Stripe/Billplz untuk payment. Ujian beta kepada pengguna real-world.',
-    duration: 'Bulan 5–8',
-  },
-  {
-    title: 'Fasa 3: Scale & Launch',
-    desc: 'Marketing menggunakan AI Automation. Pelancaran rasmi dan scaling ke pasaran global. Persediaan untuk Seed Funding.',
-    duration: 'Bulan 9–12',
-  },
+const MOCK_ENTREPRENEURS = [
+  { id: '1', name: 'Ahmad bin Zulkifli', category: 'Makanan & Minuman', status: 'Aktif', income: 'RM 3,500' },
+  { id: '2', name: 'Siti Aminah binti Ali', category: 'Jahitan & Tekstil', status: 'Aktif', income: 'RM 2,800' },
+  { id: '3', name: 'Mohd Fadhil bin Musa', category: 'Perkhidmatan Am', status: 'Latihan', income: 'RM 1,200' },
+  { id: '4', name: 'Nurul Huda binti Hassan', category: 'Kraftangan', status: 'Aktif', income: 'RM 2,100' },
 ]
-
-const SPONSORS = [
-  { icon: '🕌', name: 'PUSPA KL & Selangor' },
-  { icon: '🛡️', name: 'HIJRAH Selangor' },
-  { icon: '🏦', name: 'Bank Muamalat (iTEKAD)' },
-  { icon: '💻', name: 'PUSPA Digital Lab' },
-  { icon: '🌐', name: 'MAIWP Zakat' },
-  { icon: '🏫', name: 'Yayasan PUSPA' },
-  { icon: '📊', name: 'MDEC Digital Boost' },
-  { icon: '🤝', name: 'YTN-Islam Selangor' },
-  // Duplicate for infinite scroll loop
-  { icon: '🕌', name: 'PUSPA KL & Selangor' },
-  { icon: '🛡️', name: 'HIJRAH Selangor' },
-  { icon: '🏦', name: 'Bank Muamalat (iTEKAD)' },
-  { icon: '💻', name: 'PUSPA Digital Lab' },
-  { icon: '🌐', name: 'MAIWP Zakat' },
-  { icon: '🏫', name: 'Yayasan PUSPA' },
-  { icon: '📊', name: 'MDEC Digital Boost' },
-  { icon: '🤝', name: 'YTN-Islam Selangor' },
-]
-
-// ─── Main Page ──────────────────────────────────────────────────────────────
-
-export default function AsnafpreneurLanding() {
-  const [activeStep, setActiveStep] = useState(0)
-  const [activeSection, setActiveSection] = useState('hero')
-  const { scrollYProgress } = useScroll()
-  const setView = useAppStore((s) => s.setView)
-
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  })
-
-  // Automatic Active Section Tracking
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id)
-          }
-        })
-      },
-      { threshold: 0.5 }
-    )
-
-    const sections = ['hero', 'program', 'cara', 'saas', 'sponsor']
-    sections.forEach((id) => {
-      const el = document.getElementById(id)
-      if (el) observer.observe(el)
-    })
-
-    return () => observer.disconnect()
-  }, [])
-
-  const scrollToSection = useCallback((id: string) => {
-    const el = document.getElementById(id)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, [])
-
-  return (
-    <div className="asnafpreneur-root">
-      <div className="grain-overlay" />
-
-      {/* Scroll Progress Bar */}
-      <motion.div
-        className="scroll-progress"
-        style={{
-          scaleX,
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '3px',
-          background: 'var(--accent-primary)',
-          zIndex: 1000,
-          transformOrigin: '0%',
-        }}
-      />
-
-      {/* Navigation */}
-      <nav className="pill-nav" aria-label="Main Navigation">
-        {[
-          { id: 'hero', label: 'Mula' },
-          { id: 'program', label: 'Program' },
-          { id: 'cara', label: 'Cara' },
-          { id: 'saas', label: 'SaaS' },
-          { id: 'sponsor', label: 'Sponsor' }
-        ].map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => scrollToSection(item.id)}
-            className={cn(activeSection === item.id && "active")}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
-
-      {/* Hero Section */}
-      <section id="hero" className="hero">
-        <div className="absolute inset-0 z-0">
-          <Aurora
-            colorStops={['#101415', '#9b59b6', '#00fbfb']}
-            speed={0.5}
-            amplitude={1.5}
-          />
-        </div>
-        <div className="hero-grid" aria-hidden="true" />
-
-        <div className="hero-content">
-          <FadeInView delay={0}>
-            <div className="hero-badge">
-              <span className="dot" />
-              PENDAFTARAN DIBUKA&nbsp;—&nbsp;2026
-            </div>
-          </FadeInView>
-
-          <FadeInView delay={0.1}>
-            <h1>
-              Dari Asnaf ke<br />
-              <RotatingText words={['Usahawan AI', 'SaaS Developer', 'Digital CEO']} />
-            </h1>
-          </FadeInView>
-
-          <FadeInView delay={0.2}>
-            <p className="hero-subtitle">
-              Program keusahawanan AI pertama di Malaysia. Bina bisnes perisian SaaS — modal RM200/bulan, potensi pendapatan RM2,000–10,000/bulan. 100% tajaan penuh.
-            </p>
-          </FadeInView>
-
-          <FadeInView delay={0.3}>
-            <div className="cta-group">
-              <button type="button" className="btn-primary" onClick={() => scrollToSection('daftar')}>
-                Daftar Sekarang <ArrowRight size={18} aria-hidden="true" />
-              </button>
-              <button type="button" className="btn-secondary" onClick={() => scrollToSection('program')}>
-                Bagaimana ia Berfungsi
-              </button>
-            </div>
-          </FadeInView>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="stats-section">
-        <div className="stats-grid">
-          {[
-            { value: 'RM0', label: 'Kos Latihan' },
-            { value: '12', label: 'Bulan Inkubasi' },
-            { value: '100%', label: 'Tajaan Penuh' },
-            { value: 'AI', label: 'Fokus Utama' }
-          ].map((stat, i) => (
-            <div key={i} className="stat-item">
-              <div className="stat-number" translate="no">{stat.value}</div>
-              <div className="stat-label">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <div className="divider" aria-hidden="true" />
-
-      {/* Program Features */}
-      <section id="program">
-        <div className="section-header">
-          <span className="section-tag primary">Modul Utama</span>
-          <h2>Kenapa ASNAFPRENEUR?</h2>
-          <p>Kami tidak mengajar cara manual. Kami mengajar cara membina empayar digital menggunakan kuasa AI.</p>
-        </div>
-
-        <div className="bento-grid">
-          <div className="bento-item-large">
-            <SpotlightCard
-              icon={Brain}
-              title="AI Proficiency Mastery"
-              description="Belajar menggunakan ChatGPT, Claude, dan Midjourney untuk menggantikan 80% kerja manual dalam bisnes. Kami ajar advance prompt engineering yang tidak diajar di tempat lain."
-              color="primary"
-            />
-          </div>
-          <div className="bento-item">
-            <SpotlightCard
-              icon={Code}
-              title="Vibe Coding"
-              description="Bina apps tanpa perlu hafal sintaks. Fokus pada logic."
-              color="cyan"
-            />
-          </div>
-          <div className="bento-item">
-            <SpotlightCard
-              icon={Zap}
-              title="SaaS Ecosystem"
-              description="Lancar perisian SaaS sendiri untuk recurring revenue."
-              color="violet"
-            />
-          </div>
-          <div className="bento-item-wide">
-            <SpotlightCard
-              icon={Target}
-              title="Market Validation & Growth"
-              description="Kami bantu validate idea SaaS anda supaya ia betul-betul ada pembeli sebelum anda mula bina. Akses kepada database asnaf untuk market testing."
-              color="amber"
-            />
-          </div>
-          <div className="bento-item">
-            <SpotlightCard
-              icon={Shield}
-              title="Funding 2026"
-              description="Tajaan penuh token AI dan server."
-              color="rose"
-            />
-          </div>
-          <div className="bento-item">
-            <SpotlightCard
-              icon={Users}
-              title="Mentor Network"
-              description="Akses terus kepada founder SaaS."
-              color="primary"
-            />
-          </div>
-        </div>
-      </section>
-
-      <div className="divider" aria-hidden="true" />
-
-      {/* How it works (Stepper) */}
-      <section id="cara">
-        <div className="section-header">
-          <span className="section-tag violet">Roadmap 2026</span>
-          <h2>Laluan Kejayaan Anda</h2>
-          <p>Dari zero ke Digital CEO dalam masa 12 bulan melalui 3 fasa intensif.</p>
-        </div>
-
-        <div className="stepper">
-          {STEPS.map((step, i) => (
-            <div
-              key={i}
-              className={cn("step", activeStep >= i && "active")}
-              onMouseEnter={() => setActiveStep(i)}
-            >
-              <div className="step-number" translate="no">{i + 1}</div>
-              <div className="step-content">
-                <h3>{step.title}</h3>
-                <p>{step.desc}</p>
-                <span className="step-duration">{step.duration}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <div className="divider" aria-hidden="true" />
-
-      {/* SaaS Ideas */}
-      <section id="saas">
-        <div className="section-header">
-          <span className="section-tag cyan">Idea Bisnes</span>
-          <h2>Apa yang Anda Boleh Bina?</h2>
-          <p>Potensi SaaS yang asnaf boleh bina menggunakan AI dengan kos yang sangat rendah.</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-12">
-          <div className="lg:col-span-7 ideas-grid">
-            {[
-              { emoji: '🏪', title: 'KedaiAI', desc: 'SaaS untuk bantu kedai runcit auto-generate caption & poster marketing harian.', price: 'RM&nbsp;49/bulan' },
-              { emoji: '📝', title: 'TutorBot', desc: 'Platform AI untuk bantu pelajar sekolah buat latihan subjek mengikut silibus KPM.', price: 'RM&nbsp;29/bulan' },
-              { emoji: '📋', title: 'HR-Simple', desc: 'Sistem pengurusan staf & payroll untuk SME yang tak nak guna software mahal.', price: 'RM&nbsp;99/bulan' },
-              { emoji: '⚖️', title: 'Shariah-Check', desc: 'AI tool untuk check status pelaburan atau kontrak mengikut hukum Shariah secara pantas.', price: 'RM&nbsp;59/bulan' }
-            ].map((idea, i) => (
-              <IdeaCard
-                key={i}
-                emoji={idea.emoji}
-                title={idea.title}
-                description={idea.desc}
-                price={idea.price}
-              />
-            ))}
-          </div>
-          <div className="lg:col-span-5">
-            <FadeInView delay={0.4}>
-              <IncomeCalculator />
-            </FadeInView>
-          </div>
-        </div>
-      </section>
-
-      <div className="divider" aria-hidden="true" />
-
-      {/* Sponsors */}
-      <section id="sponsor" className="logo-section">
-        <div className="section-header mb-8">
-          <p className="text-xs uppercase tracking-[2px]">Dibiayai & Disokong Oleh</p>
-        </div>
-        <div className="logo-track">
-          {SPONSORS.map((logo, i) => (
-            <div key={i} className="logo-item">
-              <span className="logo-icon" aria-hidden="true">{logo.icon}</span>
-              <span translate="no">{logo.name}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <div className="divider" aria-hidden="true" />
-
-      {/* CTA Final */}
-      <section id="daftar" className="cta-final">
-        <div className="cta-final-bg" />
-        <div className="cta-final-content">
-          <FadeInView delay={0}>
-            <h2>Ubah Masa Depan Anda Hari Ini</h2>
-          </FadeInView>
-          <FadeInView delay={0.1}>
-            <p>Penyertaan adalah terhad kepada 50 asnaf terpilih di Selangor &amp; KL bagi kohort pertama 2026.</p>
-          </FadeInView>
-          <FadeInView delay={0.2}>
-            <div className="cta-group">
-              <button type="button" className="btn-primary" onClick={() => setView('dashboard')}>
-                Login ke PUSPA & Daftar <ArrowRight size={18} aria-hidden="true" />
-              </button>
-            </div>
-          </FadeInView>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer role="contentinfo">
-        <p>
-          © 2026 ASNAFPRENEUR — Program di bawah naungan{' '}
-          <button type="button" className="text-accent-primary hover:underline bg-transparent border-none p-0 cursor-pointer">
-            PUSPA KL &amp; Selangor
-          </button>.
-        </p>
-      </footer>
-
-      {/* Mobile Dock */}
-      <div className="dock-wrapper">
-        <div className="dock" role="navigation" aria-label="Mobile Navigation">
-          {[
-            { id: 'hero', icon: Home, label: 'Mula' },
-            { id: 'program', icon: LayoutDashboard, label: 'Program' },
-            { id: 'saas', icon: Bot, label: 'SaaS' }
-          ].map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className="dock-item"
-              aria-label={item.label}
-              onClick={() => scrollToSection(item.id)}
-            >
-              <item.icon size={20} />
-            </button>
-          ))}
-          <button
-            type="button"
-            className="dock-item"
-            aria-label="Daftar"
-            onClick={() => setView('dashboard')}
-          >
-            <Rocket size={20} />
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}

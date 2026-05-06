@@ -1,9 +1,20 @@
 // PUSPA V5 — Sentry Error Tracking Setup
-import * as Sentry from "@sentry/nextjs";
+// @sentry/nextjs is an optional dependency — only enabled when installed and DSN is configured
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Sentry: any = null;
+
+try {
+  // Dynamic import to avoid build failure when @sentry/nextjs is not installed
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Sentry = require("@sentry/nextjs");
+} catch {
+  // @sentry/nextjs not installed — Sentry will be disabled
+}
 
 const SENTRY_DSN = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
 
-if (SENTRY_DSN && process.env.NODE_ENV === 'production') {
+if (Sentry && SENTRY_DSN && process.env.NODE_ENV === 'production') {
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: process.env.NODE_ENV || 'development',
@@ -39,7 +50,7 @@ if (SENTRY_DSN && process.env.NODE_ENV === 'production') {
 
   console.log('[Sentry] Error tracking initialized');
 } else {
-  console.log('[Sentry] Disabled (no DSN or not production)');
+  console.log('[Sentry] Disabled (package not installed, no DSN, or not production)');
 }
 
 export { Sentry };

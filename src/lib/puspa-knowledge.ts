@@ -18,12 +18,17 @@ export const PUSPA_KNOWLEDGE_BASE = `
 - Donation Account: Maybank 562209677503
 - Facebook: Pertubuhan Urus Peduli Asnaf KL & Selangor
 
-### Leadership (Publicly Observed 2023)
-- Chairman: Datuk Dr Narimah Awin
-- Deputy Chairman: Datin Noor Khayatee Mohd Adnan
-- Treasurer: YM Raja Nuraini Raja Hassan
-- Deputy Secretary: Pn Shahidah @ Fauziah Hashim
-- Adviser: Prof. Emeritus Datuk Ismail Hassan
+### Leadership (Carta Administrasi 2025)
+- Chairman (Pengerusi): Dato' Dr Narimah Awin
+- Deputy Chairman (Timbalan Pengerusi): Datin Noor Khayatee Mohd Adnan
+- Secretary 1 (Setiausaha 1): Puan Faeza Arashah
+- Secretary 2 (Setiausaha 2): Tuan HJ Mohamad Zaki MD Zakaria
+- Treasurer (Bendahari): Puan HJH Shahidah Hashim
+- Auditor 1 (Pemeriksa Kira-Kira): Puan HJH Mahidah Ibrahim
+- Auditor 2: Puan HJH Fariza Hashim
+- Religious Adviser (Penasihat Agama): Ustaz HJ Mohammad Yodi Tohir
+- General Adviser (Penasihat Umum): Datuk Profesor Emeritus HJ Ismail Hassan
+NOTE: Updated from 2025 official admin chart. Previous 2023 data listed Treasurer as YM Raja Nuraini Raja Hassan — role may have changed.
 
 ### Verified Partners & Funders
 - Perumahan Kinrara Berhad (PKB) — Major funder via zakat

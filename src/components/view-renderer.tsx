@@ -30,6 +30,9 @@ const moduleMap: Record<ViewId, React.ComponentType> = {
   settings: dynamic(() => import('@/modules/settings/page'), { ssr: false }),
   tapsecure: dynamic(() => import('@/modules/tapsecure/page'), { ssr: false }),
   admin: dynamic(() => import('@/modules/admin/page'), { ssr: false }),
+  'carta-organisasi': dynamic(() => import('@/modules/carta-organisasi/page'), { ssr: false }),
+  institusi: dynamic(() => import('@/modules/institusi/page'), { ssr: false }),
+  'permohonan-bantuan': dynamic(() => import('@/modules/permohonan-bantuan/page'), { ssr: false }),
 }
 
 function AccessDenied({ view }: { view: ViewId }) {

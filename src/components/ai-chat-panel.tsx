@@ -3,7 +3,7 @@
 import { useAppStore } from '@/lib/store'
 import { useHermesStore } from '@/stores/hermes-store'
 import { cn } from '@/lib/utils'
-import { X, Send, Loader2, Sparkles, Wrench, Mic, ChevronDown, ArrowDown } from 'lucide-react'
+import { X, Send, Loader2, Sparkles, Wrench, Mic, ChevronDown, ArrowDown, Cpu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -40,11 +40,26 @@ export function AiChatPanel() {
   const [input, setInput] = useState('')
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [debugMode, setDebugMode] = useState(false)
+
   const scrollRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const dragStartY = useRef<number | null>(null)
   const dragCurrentY = useRef<number | null>(null)
+
+  // Memuatkan tetapan Debug Mode daripada localStorage apabila panel dibuka
+  useEffect(() => {
+    if (aiChatOpen) {
+      try {
+        const stored = localStorage.getItem('puspa-settings')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          setDebugMode(!!parsed.agent?.debugMode)
+        }
+      } catch (e) { /* Abaikan jika ralat parse */ }
+    }
+  }, [aiChatOpen])
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = useCallback((smooth = true) => {
@@ -76,11 +91,8 @@ export function AiChatPanel() {
 
   useEffect(() => {
     if (isStreaming) return
-    // Mencari mesej terakhir AI dari belakang tanpa membuat salinan array yang besar
-    const lastAssistant = messages
-      .slice()
-      .reverse()
-      .find((msg) => msg.role === 'assistant' && msg.content?.trim())
+    // Optimasi: findLast mencari dari belakang tanpa perlu membuat salinan array (slice/reverse)
+    const lastAssistant = messages.findLast((msg) => msg.role === 'assistant' && msg.content?.trim())
       
     if (!lastAssistant) return
     setEmotionState(
@@ -363,14 +375,38 @@ export function AiChatPanel() {
         )}
 
         {/* Tool Calls indicator */}
-        {toolCalls.length > 0 && (
+        {toolCalls.length > 0 && !debugMode && (
           <div className="px-4 pb-1.5">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Wrench className="h-3 w-3" />
-              <span>{toolCalls.length} tool{toolCalls.length > 1 ? 's' : ''}</span>
+              <span>{toolCalls.length} alatan digunakan</span>
               <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 ml-1">
                 {toolCalls.filter((tc) => tc.status === 'success').length}/{toolCalls.length}
               </Badge>
+            </div>
+          </div>
+        )}
+
+        {/* Hermes Debug Logs (Hanya muncul jika Debug Mode diaktifkan) */}
+        {toolCalls.length > 0 && debugMode && (
+          <div className="px-4 py-2 bg-muted/50 border-t border-b border-border/30 max-h-32 overflow-y-auto">
+            <div className="flex items-center gap-2 mb-2 text-primary">
+              <Cpu className="h-3 w-3" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Hermes v5 Debug Logs</span>
+            </div>
+            <div className="space-y-1.5">
+              {toolCalls.map((tc) => (
+                <div key={tc.id} className="flex items-center justify-between text-[10px] font-mono leading-none">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="text-muted-foreground opacity-50">#</span>
+                    <span className="truncate">{tc.tool}</span>
+                  </div>
+                  <span className={cn(
+                    "font-bold uppercase text-[9px]",
+                    tc.status === 'success' ? 'text-emerald-500' : tc.status === 'error' ? 'text-destructive' : 'text-amber-500'
+                  )}>{tc.status}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}

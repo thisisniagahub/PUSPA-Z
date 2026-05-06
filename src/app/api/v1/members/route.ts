@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireAuth, requireRole } from '@/lib/auth'
+import { createMemberSchema, validateRequest } from '@/lib/validation'
 
 // GET /api/v1/members — List members with pagination, search, and filters
 export async function GET(request: NextRequest) {
   try {
+    // Auth check: any logged-in user can view members
+    await requireAuth()
+
     const { searchParams } = new URL(request.url)
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10')))
@@ -60,11 +65,11 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching members:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch members' },
-      { status: 500 }
+      { error: error.message || 'Failed to fetch members' },
+      { status: error.message?.includes('Sesi') ? 401 : 500 }
     )
   }
 }
@@ -72,22 +77,25 @@ export async function GET(request: NextRequest) {
 // POST /api/v1/members — Create a new member
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    // Auth check: staff and above can create members
+    await requireRole('staff')
 
-    // Validation
-    const requiredFields = ['name', 'icNumber']
-    for (const field of requiredFields) {
-      if (!body[field]) {
-        return NextResponse.json(
-          { error: `Field '${field}' is required` },
-          { status: 400 }
-        )
-      }
+    const body = await request.json()
+    
+    // Validate with Zod
+    const validation = validateRequest(createMemberSchema, body)
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.errors },
+        { status: 400 }
+      )
     }
+
+    const data = validation.data
 
     // Check for duplicate IC number
     const existing = await db.member.findUnique({
-      where: { icNumber: body.icNumber },
+      where: { icNumber: data.icNumber },
     })
 
     if (existing) {
@@ -97,52 +105,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate asnafCategory
-    const validCategories = ['fakir', 'miskin', 'amil', 'gharim', 'riqab', 'ibn_sabil', 'muallaf', 'fisabilillah']
-    if (body.asnafCategory && !validCategories.includes(body.asnafCategory)) {
-      return NextResponse.json(
-        { error: `Invalid asnafCategory. Must be one of: ${validCategories.join(', ')}` },
-        { status: 400 }
-      )
-    }
-
-    // Validate status
-    const validStatuses = ['active', 'inactive', 'pending']
-    if (body.status && !validStatuses.includes(body.status)) {
-      return NextResponse.json(
-        { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
-        { status: 400 }
-      )
-    }
-
-    // Validate gender
-    const validGenders = ['male', 'female']
-    if (body.gender && !validGenders.includes(body.gender)) {
-      return NextResponse.json(
-        { error: `Invalid gender. Must be one of: ${validGenders.join(', ')}` },
-        { status: 400 }
-      )
-    }
-
     const member = await db.member.create({
       data: {
-        name: body.name,
-        icNumber: body.icNumber,
-        phone: body.phone || null,
-        email: body.email || null,
-        address: body.address || null,
-        city: body.city || null,
-        state: body.state || null,
-        postcode: body.postcode || null,
-        gender: body.gender || null,
-        dateOfBirth: body.dateOfBirth || null,
-        occupation: body.occupation || null,
-        monthlyIncome: body.monthlyIncome ? parseFloat(body.monthlyIncome) : 0,
-        householdSize: body.householdSize ? parseInt(body.householdSize) : 1,
-        asnafCategory: body.asnafCategory || 'fakir',
-        status: body.status || 'active',
+        name: data.name,
+        icNumber: data.icNumber,
+        phone: data.phone || null,
+        email: data.email || null,
+        address: data.address || null,
+        city: data.city || null,
+        state: data.state || null,
+        postcode: data.postcode || null,
+        gender: data.gender || null,
+        dateOfBirth: data.dateOfBirth || null,
+        occupation: data.occupation || null,
+        monthlyIncome: data.monthlyIncome || 0,
+        householdSize: data.householdSize || 1,
+        asnafCategory: data.asnafCategory || 'fakir',
+        status: data.status || 'active',
         ekycStatus: 'pending',
-        notes: body.notes || null,
+        notes: data.notes || null,
       },
       include: {
         householdMembers: true,
@@ -150,11 +131,11 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ data: member }, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating member:', error)
     return NextResponse.json(
-      { error: 'Failed to create member' },
-      { status: 500 }
+      { error: error.message || 'Failed to create member' },
+      { status: error.message?.includes('Akses') || error.message?.includes('Sesi') ? 403 : 500 }
     )
   }
 }

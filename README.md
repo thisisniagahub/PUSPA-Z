@@ -44,7 +44,7 @@ PUSPA V5 ialah platform pengurusan NGO sepenuhnya yang dibina untuk Pertubuhan U
 - **Role-Based Access Control** (Staff, Admin, Developer) across all modules and AI tools
 - **eKYC Verification** pipeline with risk assessment
 - **Compliance Tracking** for ROSM, LHDN, PDPA, and internal audits
-- **20+ Prisma models** with full relational data integrity
+- **22 Prisma models** with full relational data integrity
 - **Key rotation** for OpenRouter API with automatic failover
 
 ---
@@ -394,7 +394,7 @@ Higher roles inherit all permissions of lower roles. AI tools are also filtered 
 
 ## Database Schema / Skema Pangkalan Data
 
-PUSPA V5 uses **20+ Prisma models** with full relational integrity on SQLite:
+PUSPA V5 uses **22 Prisma models** with full relational integrity:
 
 ### Entity Overview
 
@@ -436,6 +436,9 @@ PUSPA V5 uses **20+ Prisma models** with full relational integrity on SQLite:
 │  AiConversation ── AiMessage                                 │
 │  OpsWorkItem                                                 │
 │  AutomationJob                                               │
+├──────────────────────────────────────────────────────────────┤
+│  Asnafpreneur                                                │
+│  Entrepreneur (name, category, initialCapital, status)        │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -459,7 +462,7 @@ PUSPA V5 uses **20+ Prisma models** with full relational integrity on SQLite:
 ```
 PUSPA-Z/
 ├── prisma/
-│   └── schema.prisma           # Database schema (20+ models)
+│   └── schema.prisma           # Database schema (22 models)
 ├── src/
 │   ├── agents/
 │   │   └── runtime/

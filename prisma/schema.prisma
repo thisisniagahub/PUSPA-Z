@@ -435,6 +435,20 @@ model AutomationJob {
 }
 
 
+// ─── Asnafpreneur (Entrepreneur Module) ─────────────────────────
+model Entrepreneur {
+  id              String   @id @default(cuid())
+  name            String
+  category        String   // makanan, jahitan, perkhidmatan, pertanian, kraftangan
+  initialCapital  Float    @default(0)
+  description     String?
+  status          String   @default("Aktif") // Aktif, Latihan, Tidak Aktif
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category, status])
+}
+
 // ─── Organization Chart (Carta Admin & Operasi) ─────────────────
 model OrganizationMember {
   id          String   @id @default(cuid())
@@ -485,10 +499,14 @@ model AidApplication {
   appliedAt       DateTime @default(now())
   approvedAt      DateTime?
   approvedBy      String?
+  rejectionReason String?
   dependents      Json?
   otherAgencyHelp Boolean  @default(false)
   agencyDetails   String?
   careAidReceived Boolean  @default(false)
+  // PDPA compliance — digital equivalent of physical form signature
+  applicantConsent Boolean  @default(false)
+  signedAt         DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   

@@ -53,3 +53,36 @@ server.log
 # Skills directory
 /skills/
 .venv-hermes/
+
+# AI Agent Config Directories
+.adal/
+.agents/
+.augment/
+.bob/
+.codebuddy/
+.commandcode/
+.continue/
+.crush/
+.factory/
+.goose/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.qwen/
+.roo/
+.trae/
+.windsurf/
+.zencoder/
+.zscripts/
+
+# Temp files
+*.tmp
+file.tmp

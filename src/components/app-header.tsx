@@ -29,6 +29,9 @@ const viewTitles: Record<ViewId, { en: string; ms: string }> = {
   asnafpreneur: { en: 'Asnafpreneur', ms: 'Asnafpreneur' },
   'sedekah-jumaat': { en: 'Sedekah Jumaat', ms: 'Sedekah Jumaat' },
   docs: { en: 'Panduan', ms: 'Panduan Pengguna' },
+  'carta-organisasi': { en: 'Organization Chart', ms: 'Carta Organisasi' },
+  institusi: { en: 'Institutions & Areas', ms: 'Institusi & Kawasan Bantuan' },
+  'permohonan-bantuan': { en: 'Aid Application', ms: 'Borang Permohonan Bantuan' },
 }
 
 export function AppHeader() {

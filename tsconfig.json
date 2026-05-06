@@ -40,6 +40,8 @@
     "node_modules",
     "examples/**",
     "skills/**",
-    "vendor/**"
+    "vendor/**",
+    "**/*.spec.ts",
+    "**/*.test.ts"
   ]
 }

@@ -29,6 +29,9 @@ const viewAccess: Record<ViewId, Role> = {
   admin: 'admin',
   ai: 'developer',
   settings: 'staff',
+  'carta-organisasi': 'staff',
+  institusi: 'staff',
+  'permohonan-bantuan': 'staff',
 }
 
 export function canAccessView(view: ViewId, userRole: Role): boolean {
