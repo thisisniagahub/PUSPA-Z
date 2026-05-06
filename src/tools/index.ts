@@ -7,7 +7,9 @@ import { z } from 'zod'
 import { getRecentDonations, getDonationStats } from './donations'
 import { getActiveCases, getCaseSummary } from './cases'
 import { extendedTools } from './web-tools'
+import { isConfigured as isAiConfigured } from '@/lib/openrouter'
 import { db } from '@/lib/db'
+import { roleHierarchy, type Role } from '@/lib/access-control'
 
 // ─── DB Availability Check ───────────────────────────────────
 
@@ -67,9 +69,11 @@ const ping_system: MariaPuspaTool = {
   },
   execute: async () => {
     const dbReady = await isDbReady()
+    const aiReady = isAiConfigured()
     return {
       status: 'System is online',
       database: dbReady ? 'connected' : 'unavailable (running in memory-only mode)',
+      ai_service: aiReady ? 'ready' : 'not_configured',
       timestamp: new Date().toISOString(),
     }
   },
@@ -150,10 +154,16 @@ const get_case_summary: MariaPuspaTool = {
   },
   execute: async (params) => {
     if (!(await isDbReady())) return dbFallback('get_case_summary')
-    const caseId = params.caseId
-    if (typeof caseId !== 'string') return { error: 'caseId must be a string' }
-    const result = await getCaseSummary(caseId)
-    if (!result) return { error: 'Case not found' }
+
+    const schema = z.object({
+      caseId: z.string().min(1, 'ID kes diperlukan'),
+    })
+
+    const validated = schema.safeParse(params)
+    if (!validated.success) return { error: validated.error.errors[0].message }
+
+    const result = await getCaseSummary(validated.data.caseId)
+    if (!result) return { error: 'Kes tidak dijumpai dalam pangkalan data' }
     return result
   },
   requiredRole: ['staff', 'admin', 'developer'],
@@ -204,6 +214,98 @@ const get_member_list: MariaPuspaTool = {
       ekyc: m.ekycStatus,
       joined: m.createdAt.toISOString().split('T')[0],
     }))
+  },
+  requiredRole: ['staff', 'admin', 'developer'],
+}
+
+// ─── Volunteer Tools ────────────────────────────────────────────
+
+const get_volunteer_list: MariaPuspaTool = {
+  name: 'get_volunteer_list',
+  description:
+    'Dapatkan senarai sukarelawan berdaftar. Mengembalikan nama, status, dan kemahiran. Gunakan ini untuk menjawab soalan tentang siapa sukarelawan yang tersedia.',
+  parameters: {
+    type: 'object',
+    properties: {
+      status: {
+        type: 'string',
+        description: 'Tapis mengikut status: active, inactive, suspended',
+      },
+      limit: {
+        type: 'number',
+        description: 'Bilangan rekod untuk dipaparkan (lalai 20)',
+      },
+    },
+  },
+  execute: async (params) => {
+    if (!(await isDbReady())) return dbFallback('get_volunteer_list')
+    const status = typeof params.status === 'string' ? params.status : undefined
+    const limit = typeof params.limit === 'number' ? Math.min(params.limit, 50) : 20
+
+    const where = status ? { status } : {}
+    const volunteers = await db.volunteer.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        skills: true,
+        createdAt: true,
+      },
+      take: limit,
+    })
+    return volunteers
+  },
+  requiredRole: ['staff', 'admin', 'developer'],
+}
+
+const update_volunteer_status: MariaPuspaTool = {
+  name: 'update_volunteer_status',
+  description:
+    'Mengemaskini status sukarelawan (cth: aktifkan, nyahaktifkan, atau gantung). Gunakan tool ini apabila pengguna meminta untuk menukar status seseorang sukarelawan berdasarkan ID mereka.',
+  parameters: {
+    type: 'object',
+    properties: {
+      volunteerId: {
+        type: 'string',
+        description: 'ID unik sukarelawan yang ingin dikemaskini.',
+      },
+      status: {
+        type: 'string',
+        enum: ['active', 'inactive', 'suspended'],
+        description: 'Status baru: active (aktif), inactive (tidak aktif), atau suspended (digantung).',
+      },
+    },
+    required: ['volunteerId', 'status'],
+  },
+  execute: async (params) => {
+    if (!(await isDbReady())) return dbFallback('update_volunteer_status')
+
+    const schema = z.object({
+      volunteerId: z.string().min(1, 'ID sukarelawan diperlukan'),
+      status: z.enum(['active', 'inactive', 'suspended']),
+    })
+
+    const validated = schema.safeParse(params)
+    if (!validated.success) {
+      return { error: `Input tidak sah: ${validated.error.errors.map(e => e.message).join(', ')}` }
+    }
+
+    const { volunteerId: id, status } = validated.data
+
+    try {
+      const updated = await db.volunteer.update({
+        where: { id },
+        data: { status },
+      })
+      return {
+        success: true,
+        message: `Status sukarelawan ${updated.name} berjaya ditukar kepada ${status}.`,
+        data: updated,
+      }
+    } catch (err) {
+      return { error: 'Gagal mengemaskini status. Sila pastikan ID sukarelawan adalah tepat.' }
+    }
   },
   requiredRole: ['staff', 'admin', 'developer'],
 }
@@ -320,7 +422,7 @@ const get_compliance_status: MariaPuspaTool = {
       db.complianceRecord.count({
         where: {
           status: 'pending',
-          dueDate: { lt: new Date() },
+          dueDate: { lt: new Date().toISOString() },
         },
       }),
     ])
@@ -405,7 +507,7 @@ const get_dashboard_overview: MariaPuspaTool = {
       db.programme.count({ where: { status: 'active' } }),
       db.volunteer.count({ where: { status: 'active' } }),
       db.complianceRecord.count({ where: { status: 'pending' } }),
-      db.complianceRecord.count({ where: { status: 'pending', dueDate: { lt: new Date() } } }),
+      db.complianceRecord.count({ where: { status: 'pending', dueDate: { lt: new Date().toISOString() } } }),
     ])
 
     return {
@@ -471,10 +573,21 @@ const delete_case: MariaPuspaTool = {
     required: ['caseId', 'reason'],
   },
   execute: async (params) => {
-    const caseId = params.caseId
-    const reason = params.reason
-    if (typeof caseId !== 'string' || typeof reason !== 'string')
-      return { error: 'caseId and reason must be strings' }
+    const schema = z.object({
+      caseId: z.string().min(1),
+      reason: z.string().min(5, 'Sila berikan alasan yang lebih terperinci'),
+    })
+
+    const validated = schema.safeParse(params)
+    if (!validated.success) return { error: validated.error.errors[0].message }
+
+    const { caseId, reason } = validated.data
+
+    // Semak kewujudan kes sebelum melakukan simulasi pemadaman
+    if (!(await isDbReady())) return dbFallback('delete_case')
+    const existing = await db.case.findUnique({ where: { id: caseId }, select: { id: true } })
+    if (!existing) return { error: 'Gagal memadam: Kes tidak dijumpai' }
+
     // Simulated — in production this would soft-delete in the DB
     return {
       action: 'delete_case',
@@ -498,7 +611,9 @@ const ALL_TOOLS: MariaPuspaTool[] = [
   get_member_list,
   get_member_stats,
   get_active_programmes,
+  get_volunteer_list,
   get_volunteer_stats,
+  update_volunteer_status,
   get_compliance_status,
   get_disbursement_summary,
   get_dashboard_overview,
@@ -551,8 +666,15 @@ export async function executeTool(
   const tool = ALL_TOOLS.find((t) => t.name === name)
   if (!tool) return { result: null, error: `Tool "${name}" not found` }
 
-  // RBAC check
-  if (!tool.requiredRole.includes(userRole as 'staff' | 'admin' | 'developer')) {
+  // Logik RBAC yang lebih selamat menggunakan hirarki peranan.
+  // Memastikan pengguna dengan tahap lebih tinggi (cth: developer) boleh menjalankan tool tahap rendah.
+  const userLevel = roleHierarchy[userRole as Role] || 0
+  const minRequiredLevel = tool.requiredRole.length > 0
+    ? Math.min(...tool.requiredRole.map(r => roleHierarchy[r as Role] || 1))
+    : 1
+
+  if (userLevel < minRequiredLevel) {
+    console.warn(`[RBAC Audit] Akses ditolak: Pengguna "${userRole}" (Level ${userLevel}) cuba menjalankan tool "${name}" (Level Min: ${minRequiredLevel})`)
     return {
       result: null,
       error: `Access denied: Role "${userRole}" cannot execute tool "${name}"`,

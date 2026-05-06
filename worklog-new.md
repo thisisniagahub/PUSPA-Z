@@ -16,3 +16,17 @@ Work Log:
 
 Stage Summary:
 - 3 modules successfully merged with improvements
+
+---
+Task ID: docs-sync-maria-supabase
+Agent: Main
+Task: Update all core project `.md` documentation to latest implementation
+
+Work Log:
+- README refreshed for `.env.local`, Maria Level 3 runtime, and smoke script docs
+- ARCHITECTURE updated with Maria character subsystem files and env flags
+- DESIGN aligned with official Maria reference avatar usage
+- PRD updated with May 2026 revision date and AI character runtime requirements
+
+Stage Summary:
+- Documentation now reflects live code behavior for Maria avatar and voice flow

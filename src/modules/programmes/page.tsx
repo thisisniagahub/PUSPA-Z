@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
+import { useToast } from '@/components/ui/use-toast'
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -204,6 +205,7 @@ export default function ProgrammesPage() {
   const [showNewDialog, setShowNewDialog] = useState(false)
   const [selectedProgramme, setSelectedProgramme] = useState<ProgrammeItem | null>(null)
   const [loading, setLoading] = useState(false)
+  const { toast } = useToast()
 
   // New programme form
   const [newForm, setNewForm] = useState({
@@ -237,6 +239,10 @@ export default function ProgrammesPage() {
         if (json.data && json.data.length > 0) {
           setProgrammes(json.data)
         }
+      } else {
+        toast({
+          title: "Ralat", description: "Gagal memuatkan program.", variant: "destructive"
+        })
       }
     } catch {
       // Keep demo data
@@ -260,9 +266,17 @@ export default function ProgrammesPage() {
         const json = await res.json()
         setProgrammes((prev) => [json.data, ...prev])
         setShowNewDialog(false)
+        toast({
+          title: "Program berjaya dicipta!",
+          description: `Program "${json.data.name}" telah berjaya didaftarkan.`,
+        })
         resetForm()
       }
-    } catch {
+    } catch (error) {
+      console.error("Error creating programme:", error)
+      toast({
+        title: "Ralat", description: "Gagal mencipta program.", variant: "destructive"
+      })
       // Error handling
     }
   }
@@ -457,24 +471,24 @@ export default function ProgrammesPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-700">
-                <TrendingUp className="h-5 w-5" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-green-100 text-green-700 shrink-0">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.active}</p>
+                <p className="text-lg sm:text-2xl font-bold leading-none">{stats.active}</p>
                 <p className="text-xs text-muted-foreground">Program Aktif</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="hidden sm:block"> {/* Sembunyikan stat kurang penting di mobile jika sempit */}
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 shrink-0">
                 <Banknote className="h-5 w-5" />
               </div>
               <div>
@@ -660,6 +674,14 @@ export default function ProgrammesPage() {
           })}
         </div>
       )}
+
+      {/* Floating Action Button (Mobile Only) */}
+      <Button 
+        onClick={() => setShowNewDialog(true)} 
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl md:hidden z-50 flex items-center justify-center p-0"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
 
       {/* Programme Detail Dialog */}
       <Dialog open={!!selectedProgramme} onOpenChange={(open) => !open && setSelectedProgramme(null)}>

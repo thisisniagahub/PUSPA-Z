@@ -85,34 +85,29 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
-      {/* Logo Header */}
-      <SidebarHeader className="p-2">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              className="hover:bg-sidebar-accent"
-              tooltip="PUSPA V5 — PPM-024-10-05012022"
-            >
-              {/* Collapsed: Show just the logo icon on white bg */}
-              <div className="flex h-8 w-8 items-center justify-center shrink-0 rounded bg-white">
-                <img
-                  src="/puspa-logo-official.png"
-                  alt="PUSPA"
-                  className="h-7 w-7 object-contain"
-                />
-              </div>
-              {/* Expanded: Show brand identity image */}
-              <div className="flex items-center min-w-0 overflow-hidden group-data-[collapsible=icon]:hidden">
-                <img
-                  src="/puspa-brand-identity.png"
-                  alt="PUSPA — Pertubuhan Urus Peduli Asnaf"
-                  className="h-7 w-auto max-w-[160px] object-contain"
-                />
-              </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      {/* Logo Header — Exact Layout from puspa-brand-identity.png */}
+      <SidebarHeader className="p-4 pb-2">
+        <div className="flex items-center gap-3 min-w-0 overflow-hidden group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">
+          {/* Icon: Always visible on white background for best contrast with purple logo */}
+          <div className="flex h-10 w-10 items-center justify-center shrink-0 rounded-lg bg-white shadow-md ring-1 ring-black/5">
+            <img
+              src="/puspa-logo-transparent.png"
+              alt="PUSPA"
+              className="h-8 w-8 object-contain"
+            />
+          </div>
+          
+          {/* Text: Exact stacking from identity image */}
+          <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
+            <span className="text-2xl font-black leading-none tracking-tighter text-sidebar-foreground">
+              PUSPA
+            </span>
+            {/* TAGLINE: FORCED WHITE AS REQUESTED */}
+            <span className="text-[10px] font-semibold leading-tight text-white uppercase tracking-tight mt-0.5 truncate">
+              Pertubuhan Urus Peduli Asnaf
+            </span>
+          </div>
+        </div>
       </SidebarHeader>
 
       <SidebarSeparator />
@@ -168,7 +163,7 @@ export function AppSidebar() {
                   {currentUser?.name?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col gap-0.5 leading-none min-w-0">
+              <div className="flex flex-col gap-0.5 leading-none min-w-0 group-data-[collapsible=icon]:hidden">
                 <span className="text-xs font-medium truncate">{currentUser?.name || 'User'}</span>
                 <span className="text-[11px] text-sidebar-foreground/60 capitalize">{userRole}</span>
               </div>

@@ -23,8 +23,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/components/ui/use-toast'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { MobileCard } from '@/components/mobile-card'
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -275,6 +277,7 @@ export default function CasesPage() {
   const [memberSearchLoading, setMemberSearchLoading] = useState(false)
 
   // Form
+  const { toast } = useToast()
   const form = useForm<CaseFormData>({
     resolver: zodResolver(caseFormSchema),
     defaultValues: {
@@ -409,15 +412,27 @@ export default function CasesPage() {
       const json = await res.json()
 
       if (!res.ok) {
-        alert(json.error || 'Failed to create case')
+        toast({
+          title: "Gagal mencipta kes",
+          description: json.error || 'Sila cuba sebentar lagi.',
+          variant: "destructive",
+        })
         return
       }
 
       setNewCaseOpen(false)
       fetchCases()
+      toast({
+        title: "Kes berjaya dicipta!",
+        description: `Kes ${json.caseNumber || 'baru'} telah berjaya didaftarkan.`,
+      })
     } catch (error) {
       console.error('Error creating case:', error)
-      alert('Failed to create case')
+      toast({
+        title: "Ralat Sistem",
+        description: 'Gagal mencipta kes. Sila cuba sebentar lagi.',
+        variant: "destructive",
+      })
     } finally {
       setSubmitting(false)
     }
@@ -570,8 +585,8 @@ export default function CasesPage() {
 
       {/* Cases Table */}
       <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
+        <CardContent className="p-0 sm:p-0">
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/50">
@@ -606,7 +621,7 @@ export default function CasesPage() {
                   cases.map((caseRecord) => (
                     <tr
                       key={caseRecord.id}
-                      className="border-b hover:bg-muted/30 cursor-pointer transition-colors"
+                      className="border-b hover:bg-primary/[0.04] cursor-pointer transition-all duration-200 group active:scale-[0.995]"
                       onClick={() => viewCase(caseRecord)}
                     >
                       <td className="p-3 font-mono text-xs font-medium">{caseRecord.caseNumber}</td>
@@ -644,7 +659,7 @@ export default function CasesPage() {
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0" onClick={() => viewCase(caseRecord)}>
+                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 group-hover:bg-primary group-hover:text-white rounded-xl transition-all shadow-sm" onClick={() => viewCase(caseRecord)}>
                             <Eye className="h-4 w-4" />
                           </Button>
                         </div>
@@ -654,6 +669,34 @@ export default function CasesPage() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile View: Card List */}
+          <div className="md:hidden">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => <MobileCard key={i} id="" title="" loading />)
+            ) : cases.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground text-sm">Tiada kes dijumpai.</div>
+            ) : (
+              cases.map((caseRecord) => (
+                <MobileCard 
+                  key={caseRecord.id} 
+                  id={caseRecord.caseNumber}
+                  title={caseRecord.member?.name || 'Tiada Nama'}
+                  subtitle={caseRecord.description}
+                  status={{
+                    label: STATUS_LABELS[caseRecord.status],
+                    className: STATUS_COLORS[caseRecord.status]
+                  }}
+                  rightElement={
+                    <span className="font-mono text-xs font-bold text-primary whitespace-nowrap">
+                      {caseRecord.requestedAmount ? formatCurrency(caseRecord.requestedAmount) : '—'}
+                    </span>
+                  }
+                  onClick={() => viewCase(caseRecord)}
+                />
+              ))
+            )}
           </div>
 
           {/* Pagination */}
@@ -683,6 +726,14 @@ export default function CasesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Floating Action Button (Mobile Only) */}
+      <Button 
+        onClick={openNewCase} 
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl md:hidden z-50 flex items-center justify-center p-0"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
 
       {/* New Case Dialog */}
       <Dialog open={newCaseOpen} onOpenChange={setNewCaseOpen}>

@@ -30,7 +30,7 @@
 | **Framework** | Next.js (App Router, Turbopack) | 16.1.x | Standalone output for serverless |
 | **Language** | TypeScript | 5.x | Strict mode, ES2022 target |
 | **Styling** | Tailwind CSS + shadcn/ui | 4.x / New York style | Radix UI primitives, CSS variables |
-| **Database** | Prisma ORM + SQLite | 6.x | Migratable to PostgreSQL |
+| **Database** | Prisma ORM + managed Postgres (production) | 6.x | SQLite for local dev only |
 | **State Management** | Zustand + persist middleware | 5.x | localStorage persistence |
 | **AI Engine** | OpenRouter API (OpenAI-compatible) | — | Key rotation, SSE streaming |
 | **AI SDK** | z-ai-web-dev-sdk | 0.0.17+ | Web search & page reading tools |
@@ -38,15 +38,15 @@
 | **Charts** | Recharts | 2.15.x | Dashboard visualisations |
 | **Tables** | TanStack React Table | 8.21.x | Data grid with sorting/filtering |
 | **Forms** | React Hook Form + Zod | 7.x / 4.x | Schema validation |
-| **Deployment** | Vercel (primary), Alibaba Cloud FC | — | Serverless + standalone |
-| **Telegram Bot** | Standalone Bun service | — | Long-polling, allowlist-based |
+| **Deployment** | Vercel (primary, no VPS) | — | Serverless web/API |
+| **Telegram Bot** | Hosted worker (Render/Railway/Fly.io) | — | Long-polling, allowlist-based |
 
 ### Key Dependencies
 
 ```
 @prisma/client       — ORM & database access
 zustand              — Client-side state (app + AI chat)
-openrouter           — AI chat completions (OpenAI-compatible)
+src/lib/openrouter.ts — Internal OpenRouter client (OpenAI-compatible)
 z-ai-web-dev-sdk     — Web search & page reader for RAG tools
 recharts             — Charting library
 @tanstack/react-table — Advanced data tables
@@ -302,7 +302,7 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
 
 ## AI Agent Architecture (Maria Puspa)
 
-Maria Puspa is the AI assistant powering the PUSPA platform. It uses an agent-style architecture with tool calling, memory management, and role-based access control.
+Maria Puspa is the AI assistant powering the PUSPA platform. It uses an agent-style architecture with tool calling, memory management, role-based access control, and a shared live-character layer (global widget + TTS + lip-sync state).
 
 ### High-Level Flow
 
@@ -313,7 +313,7 @@ User Input
 hermes-store.ts (Zustand, client-side)
     │
     │  fetch POST /api/v1/ai
-    │  Body: { messages, currentView, userId, userRole }
+    │  Body: { messages, currentView }
     ▼
 api/v1/ai/route.ts (Next.js server route)
     │
@@ -480,12 +480,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")  // Default: file:./db/custom.db
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 ```
 
-**Migration Path to PostgreSQL**: Change `provider` to `"postgresql"` and update `DATABASE_URL`. All Prisma queries are provider-agnostic.
+Production deployment uses Postgres-first. SQLite may still be used for local development only.
 
 ### Entity Relationship Diagram
 
@@ -662,7 +662,7 @@ When the database is unavailable (common on Vercel serverless):
 - **API routes**: JSON body parsing with type guards (`typeof` checks)
 - **AI endpoint**: Validates message existence and type before processing
 - **Tool parameters**: Type-checked via `typeof` guards in `execute()` functions
-- **Telegram bot**: Allowlist-based access control via `ALLOWED_CHAT_IDS`
+- **Telegram bot**: Allowlist + admin-role guard + internal-token authentication
 
 ---
 
@@ -685,7 +685,8 @@ When the database is unavailable (common on Vercel serverless):
 │  │  /start   → Welcome message (Bahasa Melayu)          │  │
 │  │  /help    → Command list                              │  │
 │  │  /reset   → Clear session & conversation memory       │  │
-│  │  /role    → Switch role (staff/admin/developer)       │  │
+│  │  /role    → staff for all; admin/developer limited to  │  │
+│  │             TELEGRAM_ADMIN_CHAT_IDS                    │  │
 │  │  /status  → Session info + system status              │  │
 │  └──────────────────────────────────────────────────────┘  │
 │         │                                                   │
@@ -730,18 +731,18 @@ interface UserSession {
 
 ## Deployment Architecture
 
-### Vercel (Primary)
+### Zero-VPS Reference Architecture (Primary)
 
 ```
 ┌──────────────────────────────────────────────────┐
-│  Vercel Deployment                                │
+│  Vercel Deployment (No VPS)                       │
 │                                                   │
 │  Build: next build                                │
 │  ├─ Static: main page HTML/CSS/JS                 │
 │  └─ Serverless: API routes as functions           │
 │                                                   │
 │  Limitations:                                     │
-│  ├─ No persistent filesystem → SQLite unavailable  │
+│  ├─ No persistent filesystem → SQLite not suitable │
 │  ├─ AI memory → in-memory fallback                │
 │  ├─ Dashboard → demo data fallback                │
 │  └─ Tools → Bahasa Melayu fallback messages       │
@@ -749,28 +750,29 @@ interface UserSession {
 │  Environment Variables (via Dashboard):           │
 │  ├─ OPENROUTER_API_KEY_1..4                       │
 │  ├─ OPENROUTER_MODEL                              │
-│  ├─ DATABASE_URL (if external DB configured)      │
+│  ├─ DATABASE_URL (managed Postgres)               │
 │  └─ OPENROUTER_APP_NAME / OPENROUTER_APP_URL      │
 └──────────────────────────────────────────────────┘
 ```
 
-### Alibaba Cloud Function Compute
+### Telegram Bot Worker (No VPS)
 
 ```
 ┌──────────────────────────────────────────────────┐
-│  Alibaba Cloud FC Deployment                      │
+│  Managed Worker Deployment                        │
 │                                                   │
-│  Build: next build → standalone output            │
-│  ├─ Copied: .next/static → .next/standalone/      │
-│  ├─ Copied: public → .next/standalone/            │
-│  └─ Start: NODE_ENV=production bun server.js      │
+│  Runtime: bun --hot index.ts / bun index.ts       │
+│  Host: Render / Railway / Fly.io                  │
 │                                                   │
-│  Known Issue:                                     │
-│  ├─ 403 errors for public/ static assets          │
-│  └─ Workaround: base64 inline assets in code      │
+│  Required env:                                    │
+│  ├─ TELEGRAM_BOT_TOKEN                            │
+│  ├─ PUSPA_API_URL (Vercel URL)                    │
+│  ├─ ALLOWED_CHAT_IDS                              │
+│  ├─ TELEGRAM_ADMIN_CHAT_IDS                       │
+│  └─ PUSPA_INTERNAL_API_TOKEN                      │
 │                                                   │
-│  Reverse Proxy: Caddy (Caddyfile)                 │
-│  └─ Handles TLS, routing to FC endpoints          │
+│  Security:                                        │
+│  └─ Sends x-puspa-internal-token to API           │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -784,7 +786,7 @@ interface UserSession {
 │  ├─ bun run dev       → Next.js dev server :3000  │
 │  ├─ bun run db:push   → Push schema to SQLite     │
 │  ├─ bun run db:generate → Generate Prisma client  │
-│  └─ bun run telegram  → Start Telegram bot        │
+│  └─ cd mini-services/telegram-bot && bun run dev  │
 │                                                   │
 │  Database: db/custom.db (SQLite)                  │
 │  Telegram: Separate Bun process                   │
@@ -798,7 +800,7 @@ interface UserSession {
 // next.config.ts
 const nextConfig: NextConfig = {
   output: "standalone",           // Self-contained server bundle
-  typescript: { ignoreBuildErrors: true },  // Faster builds
+  // Keep type errors blocking for safer production releases
   reactStrictMode: false,         // Relaxed for compatibility
 }
 ```
@@ -872,7 +874,7 @@ my-project/
 ├── public/                        # Static assets (logos, avatars)
 │   ├── puspa-logo.png
 │   ├── puspa-logo-transparent.png
-│   ├── maria-puspa-avatar.png
+│   ├── maria-puspa-reference.png
 │   └── ...
 ├── mini-services/
 │   └── telegram-bot/
@@ -908,9 +910,11 @@ my-project/
 │   │   ├── app-header.tsx         # Top bar with search/user
 │   │   ├── view-renderer.tsx      # Dynamic module loader
 │   │   ├── ai-chat-panel.tsx      # Maria Puspa chat panel
+│   │   ├── maria/                 # Maria character UI components
+│   │   │   ├── maria-character-renderer.tsx
+│   │   │   └── maria-floating-widget.tsx
 │   │   ├── puspa-logo.tsx         # Animated logo component
 │   │   ├── puspa-loading-spinner.tsx
-│   │   ├── maria-avatar.tsx       # AI avatar component
 │   │   ├── theme-provider.tsx     # Dark/light mode provider
 │   │   └── ui/                    # shadcn/ui components (30+)
 │   ├── hooks/
@@ -924,10 +928,14 @@ my-project/
 │   │   ├── openrouter.ts          # OpenRouter client + key rotation
 │   │   ├── puspa-knowledge.ts     # RAG knowledge base
 │   │   ├── puspa-brand-assets.ts  # Brand identity constants
-│   │   ├── maria-avatar.ts        # Avatar utilities
+│   │   ├── maria-avatar.ts        # Maria avatar path constants
+│   │   ├── maria-emotion-map.ts   # Context-to-emotion mapper
+│   │   ├── maria-lipsync.ts       # Lip-sync controller
+│   │   ├── maria-tts.ts           # Browser TTS engine (female-voice priority)
 │   │   └── utils.ts               # cn() + helpers
 │   ├── stores/
-│   │   └── hermes-store.ts        # AI chat Zustand store (session-only)
+│   │   ├── hermes-store.ts        # AI chat Zustand store (session-only)
+│   │   └── maria-character-store.ts # Shared live character state
 │   ├── modules/                   # Lazy-loaded view modules
 │   │   ├── dashboard/page.tsx
 │   │   ├── members/page.tsx
@@ -953,7 +961,7 @@ my-project/
 │   │   └── web-tools.ts           # web_search, web_read, delegate_task, system_health
 │   └── types/
 │       └── index.ts               # Shared TypeScript types
-├── next.config.ts                  # Standalone output, relaxed TS
+├── next.config.ts                  # Next.js runtime/build configuration
 ├── tailwind.config.ts              # Tailwind CSS 4 config
 ├── tsconfig.json                   # TypeScript configuration
 ├── package.json                    # Dependencies & scripts
@@ -969,21 +977,28 @@ my-project/
 
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
-| `DATABASE_URL` | Yes | `file:./db/custom.db` | Prisma SQLite connection |
+| `DATABASE_URL` | Yes | — | Managed Postgres connection string |
 | `OPENROUTER_API_KEY_1` | Yes | — | Primary OpenRouter API key |
 | `OPENROUTER_API_KEY_2` | No | — | Secondary key (rotation) |
 | `OPENROUTER_API_KEY_3` | No | — | Tertiary key (rotation) |
 | `OPENROUTER_API_KEY_4` | No | — | Quaternary key (rotation) |
 | `OPENROUTER_MODEL` | No | `openai/gpt-4o-mini` | AI model identifier |
 | `OPENROUTER_BASE_URL` | No | `https://openrouter.ai/api/v1` | API base URL |
-| `OPENROUTER_APP_NAME` | No | `PUSPA V4` | App attribution header |
+| `OPENROUTER_APP_NAME` | No | `PUSPA V5` | App attribution header |
 | `OPENROUTER_APP_URL` | No | `http://localhost:3000` | App URL header |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase only | — | Supabase project URL for browser + SSR client |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase only | — | Supabase publishable API key |
+| `NEXT_PUBLIC_MARIA_WIDGET_ENABLED` | No | `true` | Toggle global Maria floating widget |
+| `NEXT_PUBLIC_MARIA_TTS_ENABLED` | No | `true` | Toggle Maria auto-voice playback |
+| `NEXT_PUBLIC_MARIA_LIPSYNC_ENABLED` | No | `true` | Toggle lip-sync animation engine |
 | `TELEGRAM_BOT_TOKEN` | Telegram only | — | Telegram Bot API token |
 | `PUSPA_API_URL` | Telegram only | `http://localhost:3000` | PUSPA API base URL |
 | `ALLOWED_CHAT_IDS` | Telegram only | (empty = open) | Comma-separated allowed chat IDs |
+| `TELEGRAM_ADMIN_CHAT_IDS` | Telegram only | (empty) | Chat IDs allowed to set admin/developer role |
+| `PUSPA_INTERNAL_API_TOKEN` | Telegram + API | — | Shared secret for `/api/v1/ai/telegram` |
 | `NODE_ENV` | Auto | `development` | Environment mode |
 
 ---
 
 *Document generated for PUSPA V5 — Pertubuhan Urus Peduli Asnaf (PPM-024-10-05012022)*
-*Last updated: 2026-03-05*
+*Last updated: 2026-05-05*

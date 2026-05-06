@@ -1,6 +1,10 @@
 import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
+function maskIcNumber(icNumber: string | null): string | null {
+  return icNumber ? `****${icNumber.slice(-4)}` : null
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -54,8 +58,18 @@ export async function GET(request: NextRequest) {
     const rejectedCount = allVerifications.filter((v) => v.status === 'rejected').length
     const highRiskCount = allVerifications.filter((v) => v.riskLevel === 'high').length
 
+    const maskedVerifications = verifications.map((verification) => ({
+      ...verification,
+      member: verification.member
+        ? {
+            ...verification.member,
+            icNumber: maskIcNumber(verification.member.icNumber),
+          }
+        : verification.member,
+    }))
+
     return NextResponse.json({
-      verifications,
+      verifications: maskedVerifications,
       pagination: {
         page,
         limit,
@@ -122,7 +136,17 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ verification }, { status: 201 })
+    const maskedVerification = {
+      ...verification,
+      member: verification.member
+        ? {
+            ...verification.member,
+            icNumber: maskIcNumber(verification.member.icNumber),
+          }
+        : verification.member,
+    }
+
+    return NextResponse.json({ verification: maskedVerification }, { status: 201 })
   } catch (error) {
     console.error('eKYC POST error:', error)
     return NextResponse.json({ error: 'Failed to create eKYC verification' }, { status: 500 })

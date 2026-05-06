@@ -15,7 +15,9 @@ import {
   Zap, History, ArrowRight, RotateCcw, Terminal,
   AlertCircle, Wrench, ChevronDown, ArrowDown, Mic,
 } from 'lucide-react'
-import { MARIA_PUSPA_AVATAR_URI } from '@/lib/maria-avatar'
+import { MariaCharacterRenderer } from '@/components/maria/maria-character-renderer'
+import { useMariaCharacterStore } from '@/stores/maria-character-store'
+import { getMariaEmotionState } from '@/lib/maria-emotion-map'
 
 /* ─── Suggested Prompts ────────────────────────────────── */
 const suggestedPrompts = [
@@ -32,6 +34,17 @@ export default function AiPage() {
     messages, isStreaming, modelName, toolCalls, lastError,
     sendMessage, clearMessages, setLastError,
   } = useHermesStore()
+  const {
+    presenceState,
+    emotionState,
+    speechState,
+    onUserStartInput,
+    onAiStreamStart,
+    onAiStreamChunk,
+    onAiStreamDone,
+    onRouteContextChange,
+    setEmotionState,
+  } = useMariaCharacterStore()
 
   const [input, setInput] = useState('')
   const [showScrollBtn, setShowScrollBtn] = useState(false)
@@ -52,6 +65,34 @@ export default function AiPage() {
     scrollToBottom()
   }, [messages, scrollToBottom])
 
+  useEffect(() => {
+    onRouteContextChange(currentView)
+  }, [currentView, onRouteContextChange])
+
+  useEffect(() => {
+    if (isStreaming) onAiStreamStart()
+    else onAiStreamDone()
+  }, [isStreaming, onAiStreamStart, onAiStreamDone])
+
+  useEffect(() => {
+    if (!isStreaming) return
+    onAiStreamChunk()
+  }, [messages, isStreaming, onAiStreamChunk])
+
+  useEffect(() => {
+    if (isStreaming) return
+    const lastAssistant = [...messages].reverse().find((msg) => msg.role === 'assistant' && msg.content?.trim())
+    if (!lastAssistant) return
+    setEmotionState(
+      getMariaEmotionState({
+        route: currentView,
+        replyText: lastAssistant.content,
+        hasToolCalls: Boolean(lastAssistant.toolCalls?.length),
+        hasError: Boolean(lastError),
+      })
+    )
+  }, [messages, isStreaming, currentView, lastError, setEmotionState])
+
   // Detect scroll position for "scroll to bottom" button
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return
@@ -64,6 +105,7 @@ export default function AiPage() {
     const text = overrideInput || input.trim()
     if (!text || isStreaming) return
 
+    onUserStartInput()
     setInput('')
     await sendMessage(
       text,
@@ -71,7 +113,7 @@ export default function AiPage() {
       currentUser?.id || 'anonymous',
       currentUser?.role || 'staff'
     )
-  }, [input, currentView, currentUser, isStreaming, sendMessage])
+  }, [input, currentView, currentUser, isStreaming, onUserStartInput, sendMessage])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -93,9 +135,12 @@ export default function AiPage() {
       {/* Header — consistent sizing */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-primary/10 overflow-hidden shrink-0">
-            <img src={MARIA_PUSPA_AVATAR_URI} alt="Maria Puspa" className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl object-cover" />
-          </div>
+          <MariaCharacterRenderer
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl overflow-hidden shrink-0"
+            presenceState={presenceState}
+            emotionState={emotionState}
+            phonemeEnergy={speechState.phonemeEnergy}
+          />
           <div>
             <h1 className="text-lg sm:text-xl font-bold tracking-tight text-primary">Maria Puspa</h1>
             <p className="text-xs sm:text-sm text-muted-foreground">AI Assistant — Cerdas. Mesra. Sentiasa di sisi anda.</p>
@@ -160,7 +205,12 @@ export default function AiPage() {
                       {msg.role === 'user' ? (
                         <User className="h-4 w-4" />
                       ) : (
-                        <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
+                        <MariaCharacterRenderer
+                          className="h-full w-full"
+                          presenceState={presenceState}
+                          emotionState={emotionState}
+                          phonemeEnergy={speechState.phonemeEnergy}
+                        />
                       )}
                     </div>
                     <div className={`max-w-[85%] sm:max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}>
@@ -198,9 +248,12 @@ export default function AiPage() {
                 {/* Loading indicator when waiting for first chunk */}
                 {isStreaming && messages[messages.length - 1]?.content === '' && (
                   <div className="flex gap-2.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
-                      <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover animate-pulse" />
-                    </div>
+                    <MariaCharacterRenderer
+                      className="h-9 w-9 shrink-0 rounded-full overflow-hidden"
+                      presenceState={presenceState}
+                      emotionState={emotionState}
+                      phonemeEnergy={speechState.phonemeEnergy}
+                    />
                     <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -293,7 +346,12 @@ export default function AiPage() {
                 <AccordionTrigger className="px-3 py-2.5 text-sm font-medium hover:no-underline">
                   <div className="flex items-center gap-2">
                     <div className="relative h-6 w-6 rounded-full overflow-hidden bg-primary/10 shrink-0">
-                      <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
+                      <MariaCharacterRenderer
+                        className="h-6 w-6 rounded-full overflow-hidden"
+                        presenceState={presenceState}
+                        emotionState={emotionState}
+                        phonemeEnergy={speechState.phonemeEnergy}
+                      />
                     </div>
                     <span>Maria Puspa</span>
                     <Badge variant="secondary" className="text-[10px] bg-emerald-100 text-emerald-700 ml-1">Online</Badge>
@@ -394,7 +452,12 @@ export default function AiPage() {
             <Card className="overflow-hidden">
               <div className="bg-primary p-3 flex items-center gap-3">
                 <div className="relative h-10 w-10 rounded-full overflow-hidden bg-white/20 shrink-0">
-                  <img src={MARIA_PUSPA_AVATAR_URI} alt="Maria Puspa" className="h-10 w-10 rounded-full object-cover" />
+                  <MariaCharacterRenderer
+                    className="h-10 w-10 rounded-full overflow-hidden"
+                    presenceState={presenceState}
+                    emotionState={emotionState}
+                    phonemeEnergy={speechState.phonemeEnergy}
+                  />
                 </div>
                 <div className="text-primary-foreground">
                   <p className="text-sm font-bold">Maria Puspa</p>

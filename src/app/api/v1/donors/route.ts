@@ -87,16 +87,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid donor category' }, { status: 400 })
     }
 
-    // Check for duplicate email
-    if (email) {
-      const existing = await db.donor.findFirst({ where: { email } })
-      if (existing) {
-        return NextResponse.json({ error: 'Donor with this email already exists' }, { status: 409 })
-      }
+    // Semakan kewujudan penderma (Duplicate Check)
+    const existingDonor = await db.donor.findFirst({
+      where: {
+        OR: [
+          ...(email ? [{ email: email.trim() }] : []),
+          ...(phone ? [{ phone: phone.trim() }] : []),
+        ].filter(Boolean),
+      },
+    })
+
+    if (existingDonor) {
+      const duplicateField = existingDonor.email === email?.trim() ? 'emel' : 'nombor telefon'
+      return NextResponse.json(
+        { error: `Penderma dengan ${duplicateField} ini sudah pun berdaftar.` },
+        { status: 409 }
+      )
     }
 
     const donor = await db.donor.create({
       data: {
+        donorNumber: `DNR-${Date.now()}`,
         name: name.trim(),
         email: email?.trim() || null,
         phone: phone?.trim() || null,

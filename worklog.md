@@ -22,3 +22,20 @@ Stage Summary:
 - AI chat panel widened for desktop readability
 - Missing view titles added for asnafpreneur, sedekah-jumaat, docs
 - Lint passes clean, dev server compiles successfully
+
+---
+Task ID: docs-sync-maria-supabase
+Agent: Main
+Task: Sync all core Markdown docs with latest Maria + Supabase updates
+
+Work Log:
+- Updated README quickstart to use `.env.local`
+- Documented Maria Level 3 character runtime (global widget, official avatar, female-priority TTS, lip-sync)
+- Added `npm run smoke:maria` script usage in docs
+- Updated ARCHITECTURE.md directory structure, env appendix, and last-updated stamp
+- Updated DESIGN.md asset reference from legacy avatar to official `maria-puspa-reference.png`
+- Updated PRD.md last-updated field and added character runtime requirements block
+
+Stage Summary:
+- Core project documentation is aligned with current implementation state
+- Legacy base64/avatar notes replaced with canonical public-asset usage

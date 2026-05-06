@@ -7,6 +7,11 @@ export interface AuthUser {
   role: 'staff' | 'admin' | 'developer'
 }
 
+function normalizeRole(role: unknown): 'staff' | 'admin' | 'developer' {
+  if (role === 'admin' || role === 'developer') return role
+  return 'staff'
+}
+
 export async function getCurrentUser(): Promise<AuthUser | null> {
   try {
     const supabase = await createClient()
@@ -15,14 +20,14 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     if (!user) return null
 
     // Extract role from user metadata or default to staff
-    const role = (user.user_metadata?.role as string) || 'staff'
+    const role = normalizeRole(user.user_metadata?.role)
     const name = user.user_metadata?.name || user.email?.split('@')[0] || 'User'
 
     return {
       id: user.id,
       email: user.email || '',
       name,
-      role: role as 'staff' | 'admin' | 'developer',
+      role,
     }
   } catch {
     return null

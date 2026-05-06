@@ -10,6 +10,10 @@ import {
 } from '@/lib/openrouter'
 import type { OpenRouterMessage, OpenRouterToolCall } from '@/lib/openrouter'
 import { getPuspaKnowledgeContext } from '@/lib/puspa-knowledge'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
+
+const execFileAsync = promisify(execFile)
 
 // ─── System Prompt ───────────────────────────────────────────
 
@@ -79,6 +83,12 @@ export interface MariaPuspaPayload {
   userId: string
   userRole: string
   model: string
+}
+
+export interface HermesCliResult {
+  enabled: boolean
+  model: string
+  content: string
 }
 
 // ─── Main Runtime ────────────────────────────────────────────
@@ -180,6 +190,55 @@ export async function saveAssistantMessage(
  */
 export function isMariaPuspaConfigured(): boolean {
   return isConfigured()
+}
+
+function isHermesCliModeEnabled(): boolean {
+  return process.env.HERMES_RUNTIME_MODE === 'cli'
+}
+
+function getHermesCommand(): { file: string; argsPrefix: string[] } {
+  const custom = process.env.HERMES_CLI_COMMAND?.trim()
+  if (custom) {
+    return { file: custom, argsPrefix: [] }
+  }
+  if (process.platform === 'win32') {
+    return {
+      file: 'powershell',
+      argsPrefix: [
+        '-ExecutionPolicy',
+        'Bypass',
+        '-File',
+        'scripts/hermes-agent.ps1',
+      ],
+    }
+  }
+  return { file: 'python', argsPrefix: ['scripts/hermes-agent.py'] }
+}
+
+export async function runHermesCliReply(
+  prompt: string,
+  currentView: string = 'dashboard'
+): Promise<HermesCliResult> {
+  if (!isHermesCliModeEnabled()) {
+    return { enabled: false, model: 'hermes-agent', content: '' }
+  }
+
+  const { file, argsPrefix } = getHermesCommand()
+  const instruction = `Current module: ${currentView}\nUser prompt: ${prompt}`
+  const args = [...argsPrefix, '--oneshot', instruction]
+
+  const { stdout } = await execFileAsync(file, args, {
+    cwd: process.cwd(),
+    timeout: Number(process.env.HERMES_CLI_TIMEOUT_MS || 45000),
+    maxBuffer: 1024 * 1024 * 8,
+  })
+
+  const content = stdout?.trim()
+  if (!content) {
+    throw new Error('Hermes CLI returned empty response')
+  }
+
+  return { enabled: true, model: 'hermes-agent-cli', content }
 }
 
 // Keep backward-compatible aliases

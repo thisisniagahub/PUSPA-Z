@@ -4,12 +4,14 @@ import { useAppStore } from '@/lib/store'
 import { useHermesStore } from '@/stores/hermes-store'
 import { cn } from '@/lib/utils'
 import { X, Send, User, Loader2, Sparkles, Wrench, Mic, ChevronDown, ArrowDown } from 'lucide-react'
-import { MARIA_PUSPA_AVATAR_URI } from '@/lib/maria-avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { MariaCharacterRenderer } from '@/components/maria/maria-character-renderer'
+import { useMariaCharacterStore } from '@/stores/maria-character-store'
+import { getMariaEmotionState } from '@/lib/maria-emotion-map'
 
 export function AiChatPanel() {
   const { aiChatOpen, setAiChatOpen, currentView, currentUser } = useAppStore()
@@ -17,6 +19,17 @@ export function AiChatPanel() {
     messages, isStreaming, modelName, toolCalls, lastError,
     sendMessage, setLastError, clearMessages,
   } = useHermesStore()
+  const {
+    presenceState,
+    emotionState,
+    speechState,
+    onUserStartInput,
+    onAiStreamStart,
+    onAiStreamChunk,
+    onAiStreamDone,
+    onRouteContextChange,
+    setEmotionState,
+  } = useMariaCharacterStore()
 
   const [input, setInput] = useState('')
   const [showScrollBtn, setShowScrollBtn] = useState(false)
@@ -40,6 +53,34 @@ export function AiChatPanel() {
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
+
+  useEffect(() => {
+    onRouteContextChange(currentView)
+  }, [currentView, onRouteContextChange])
+
+  useEffect(() => {
+    if (isStreaming) onAiStreamStart()
+    else onAiStreamDone()
+  }, [isStreaming, onAiStreamStart, onAiStreamDone])
+
+  useEffect(() => {
+    if (!isStreaming) return
+    onAiStreamChunk()
+  }, [messages, isStreaming, onAiStreamChunk])
+
+  useEffect(() => {
+    if (isStreaming) return
+    const lastAssistant = [...messages].reverse().find((msg) => msg.role === 'assistant' && msg.content?.trim())
+    if (!lastAssistant) return
+    setEmotionState(
+      getMariaEmotionState({
+        route: currentView,
+        replyText: lastAssistant.content,
+        hasToolCalls: Boolean(lastAssistant.toolCalls?.length),
+        hasError: Boolean(lastError),
+      })
+    )
+  }, [messages, isStreaming, currentView, lastError, setEmotionState])
 
   // Keyboard-aware: when input focuses on mobile, scroll to bottom after a small delay
   const handleInputFocus = useCallback(() => {
@@ -79,6 +120,7 @@ export function AiChatPanel() {
   const handleSend = async () => {
     if (!input.trim() || isStreaming) return
     const text = input.trim()
+    onUserStartInput()
     setInput('')
     await sendMessage(
       text,
@@ -130,7 +172,12 @@ export function AiChatPanel() {
         <div className="flex items-center justify-between px-4 py-3 border-b bg-primary text-primary-foreground rounded-t-2xl md:rounded-none">
           <div className="flex items-center gap-3">
             <div className="relative h-9 w-9 rounded-full overflow-hidden shrink-0">
-              <img src={MARIA_PUSPA_AVATAR_URI} alt="Maria Puspa" className="h-full w-full object-cover" />
+              <MariaCharacterRenderer
+                className="h-9 w-9 rounded-full overflow-hidden"
+                presenceState={presenceState}
+                emotionState={emotionState}
+                phonemeEnergy={speechState.phonemeEnergy}
+              />
             </div>
             <div className="min-w-0">
               <h3 className="text-sm font-bold leading-tight">Maria Puspa</h3>
@@ -232,7 +279,12 @@ export function AiChatPanel() {
                     {msg.role === 'user' ? (
                       <User className="h-4 w-4" />
                     ) : (
-                      <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover" />
+                      <MariaCharacterRenderer
+                        className="h-full w-full rounded-full overflow-hidden"
+                        presenceState={presenceState}
+                        emotionState={emotionState}
+                        phonemeEnergy={speechState.phonemeEnergy}
+                      />
                     )}
                   </div>
                   <div className={cn(
@@ -255,9 +307,12 @@ export function AiChatPanel() {
               {/* Loading when waiting for first chunk */}
               {isStreaming && messages[messages.length - 1]?.content === '' && (
                 <div className="flex gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
-                    <img src={MARIA_PUSPA_AVATAR_URI} alt="MP" className="h-full w-full rounded-full object-cover animate-pulse" />
-                  </div>
+                  <MariaCharacterRenderer
+                    className="h-8 w-8 shrink-0 rounded-full overflow-hidden"
+                    presenceState={presenceState}
+                    emotionState={emotionState}
+                    phonemeEnergy={speechState.phonemeEnergy}
+                  />
                   <div className="rounded-2xl rounded-tl-sm px-3.5 py-2.5 bg-muted border border-border">
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />

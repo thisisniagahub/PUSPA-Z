@@ -6,7 +6,7 @@
 | Field | Value |
 |---|---|
 | Document Version | 5.0 |
-| Last Updated | March 2026 |
+| Last Updated | May 2026 |
 | Status | Active Development |
 | Author | PUSPA Engineering Team |
 | Classification | Internal — Confidential |
@@ -577,6 +577,16 @@ The PUSPA Knowledge Base is injected into every Maria Puspa system prompt, conta
 | Temperature | 0.7 | No (hardcoded) |
 | Max tokens | 2048 | No (hardcoded) |
 | API keys | Up to 4 keys with round-robin rotation | Yes (OPENROUTER_API_KEY_1–4 env vars) |
+
+### 8.9 Character Runtime Requirements (Level 3)
+
+| Requirement ID | Requirement | Priority |
+|---|---|---|
+| AI-CHAR-001 | Maria must be available via a global floating widget across the app shell | P1 |
+| AI-CHAR-002 | Avatar rendering must use official Maria visual reference asset (`/public/maria-puspa-reference.png`) | P1 |
+| AI-CHAR-003 | TTS playback should prioritize female voice profiles for persona consistency | P1 |
+| AI-CHAR-004 | Lip-sync animation must react to speech playback boundary/amplitude events | P2 |
+| AI-CHAR-005 | Character runtime must be controllable via feature flags (`NEXT_PUBLIC_MARIA_*`) | P1 |
 | Tool choice | `auto` | No (always auto) |
 
 ---

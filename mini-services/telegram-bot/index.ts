@@ -6,6 +6,7 @@
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
 const PUSPA_API_URL = process.env.PUSPA_API_URL || 'http://localhost:3000'
 const PUSPA_AI_ENDPOINT = `${PUSPA_API_URL}/api/v1/ai/telegram`
+const PUSPA_INTERNAL_API_TOKEN = process.env.PUSPA_INTERNAL_API_TOKEN || ''
 
 // ─── Allowlist Configuration ──────────────────────────────
 // Comma-separated chat IDs that are allowed to interact with the bot
@@ -14,8 +15,14 @@ const ALLOWED_CHAT_IDS = (process.env.ALLOWED_CHAT_IDS || '')
   .map(id => Number(id.trim()))
   .filter(id => !isNaN(id))
 
+const TELEGRAM_ADMIN_CHAT_IDS = (process.env.TELEGRAM_ADMIN_CHAT_IDS || '')
+  .split(',')
+  .map(id => Number(id.trim()))
+  .filter(id => !isNaN(id))
+
 // If no allowlist configured, allow all (open mode)
 const ALLOWLIST_ENABLED = ALLOWED_CHAT_IDS.length > 0
+const ADMIN_LIST_ENABLED = TELEGRAM_ADMIN_CHAT_IDS.length > 0
 
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
 
@@ -48,7 +55,7 @@ function createSession(msg: any): UserSession {
     lastActivity: new Date(),
     messageCount: 0,
   }
-  sessions.set(chatId, session)
+  sessions.set(msg.chat.id, session)
   return session
 }
 
@@ -57,6 +64,12 @@ function createSession(msg: any): UserSession {
 function isChatAllowed(chatId: number): boolean {
   if (!ALLOWLIST_ENABLED) return true
   return ALLOWED_CHAT_IDS.includes(chatId)
+}
+
+function canAssignRole(chatId: number, role: string): boolean {
+  if (role === 'staff') return true
+  if (!ADMIN_LIST_ENABLED) return false
+  return TELEGRAM_ADMIN_CHAT_IDS.includes(chatId)
 }
 
 // ─── Telegram API helpers ─────────────────────────────────
@@ -152,7 +165,10 @@ async function callMariaPuspa(text: string, userId: string, userRole: string, cu
     
     const res = await fetch(PUSPA_AI_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-puspa-internal-token': PUSPA_INTERNAL_API_TOKEN,
+      },
       body: JSON.stringify({
         message: text,
         userId,
@@ -269,7 +285,7 @@ async function handleMessage(msg: any) {
       `/start — Mesej aluan\n` +
       `/help — Senarai arahan\n` +
       `/reset — Reset perbualan\n` +
-      `/role \\[staff\\|admin\\|developer\\] — Tukar peranan akses\n` +
+      `/role \\[staff\\|admin\\|developer\\] — Tukar peranan akses (admin sahaja untuk role tinggi)\n` +
       `/status — Status sistem\n\n` +
       `Atau taip soalan dalam BM/English\\.`
     )
@@ -286,6 +302,13 @@ async function handleMessage(msg: any) {
   if (text.startsWith('/role ')) {
     const role = text.split(' ')[1]
     if (['staff', 'admin', 'developer'].includes(role)) {
+      if (!canAssignRole(chatId, role)) {
+        await sendMessage(
+          chatId,
+          'Anda tidak dibenarkan menetapkan role ini. Hubungi pentadbir.'
+        )
+        return
+      }
       session.role = role
       await sendMessage(chatId, `Peranan ditukar ke: *${role}*. Akses tools dikemaskini.`)
     } else {
@@ -412,6 +435,11 @@ async function main() {
     process.exit(1)
   }
 
+  if (!PUSPA_INTERNAL_API_TOKEN) {
+    console.error('❌ PUSPA_INTERNAL_API_TOKEN not set!')
+    process.exit(1)
+  }
+
   // Verify bot token
   try {
     const meRes = await fetch(`${TELEGRAM_API}/getMe`)
@@ -437,6 +465,12 @@ async function main() {
     ALLOWED_CHAT_IDS.forEach(id => console.log(`   ✅ Chat ID: ${id}`))
   } else {
     console.log('⚠️  Allowlist DISABLED — all chats allowed')
+  }
+
+  if (ADMIN_LIST_ENABLED) {
+    console.log(`👮 Admin role assignment ENABLED: ${TELEGRAM_ADMIN_CHAT_IDS.length} admin chat IDs`)
+  } else {
+    console.log('🔐 Admin role assignment DISABLED — only /role staff is allowed')
   }
 
   // Get pending updates and skip them (to avoid processing old messages)

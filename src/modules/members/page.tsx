@@ -232,7 +232,7 @@ export default function MembersPage() {
   const [editingMember, setEditingMember] = useState<Member | null>(null)
 
   // Debounce timer ref
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Form
   const form = useForm<MemberFormData>({

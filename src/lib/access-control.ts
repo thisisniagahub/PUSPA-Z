@@ -1,8 +1,8 @@
 import type { ViewId } from './store'
 
-type Role = 'staff' | 'admin' | 'developer'
+export type Role = 'staff' | 'admin' | 'developer'
 
-const roleHierarchy: Record<Role, number> = {
+export const roleHierarchy: Record<Role, number> = {
   staff: 1,
   admin: 2,
   developer: 3,

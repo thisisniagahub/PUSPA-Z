@@ -3,21 +3,62 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import {
-  runMariaPuspa,
+  runHermes,
   executeToolCalls,
   saveAssistantMessage,
-  isMariaPuspaConfigured,
+  isHermesConfigured,
+  runHermesCliReply,
 } from '@/agents/runtime/hermes.runtime'
 import { createChatCompletionStream } from '@/lib/openrouter'
+import { getCurrentUser } from '@/lib/auth'
 import type { ToolCall } from '@/agents/runtime/hermes.runtime'
+import type { OpenRouterMessage, OpenRouterTool } from '@/lib/openrouter'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { messages: clientMessages, currentView, userId, userRole } = body
+    const { messages: clientMessages, currentView } = body
 
-    // ─── Check OpenRouter Configuration ─────────────────────
-    if (!isMariaPuspaConfigured()) {
+    // ─── Authentication ─────────────────────────────────────
+    const authUser = await getCurrentUser()
+    const effectiveUserId = authUser?.id || 'anonymous'
+    const effectiveRole = authUser?.role || 'staff'
+
+    // ─── Get the last user message ──────────────────────────
+    const lastUserMessage = clientMessages?.[clientMessages.length - 1]?.content
+    if (!lastUserMessage || typeof lastUserMessage !== 'string') {
+      return NextResponse.json(
+        { error: 'No valid user message provided' },
+        { status: 400 }
+      )
+    }
+
+    // ─── Hermes CLI mode (direct Hermes-Agent engine) ──────
+    // If CLI is enabled in env but the local Hermes install/script fails (missing
+    // .venv-hermes, keys, etc.), fall through to OpenRouter instead of failing the whole request.
+    let hermesCli: Awaited<ReturnType<typeof runHermesCliReply>> = {
+      enabled: false,
+      model: 'hermes-agent',
+      content: '',
+    }
+    try {
+      hermesCli = await runHermesCliReply(
+        lastUserMessage,
+        currentView || 'dashboard'
+      )
+    } catch (cliError) {
+      console.warn(
+        '[Maria Puspa API] Hermes CLI failed; falling back to OpenRouter if configured:',
+        cliError
+      )
+    }
+    if (hermesCli.enabled) {
+      await saveAssistantMessage(effectiveUserId, hermesCli.content)
+      return createDirectSseResponse(hermesCli.content, hermesCli.model)
+    }
+
+    // ─── Check OpenRouter Configuration (fallback runtime) ──
+    if (!isHermesConfigured()) {
       return NextResponse.json(
         {
           content: 'Maaf, Maria Puspa tidak dikonfigurasi. OpenRouter API keys belum disetup. Sila tambah OPENROUTER_API_KEY_1 dalam .env',
@@ -29,21 +70,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ─── Authentication ─────────────────────────────────────
-    const effectiveUserId = userId || 'anonymous'
-    const effectiveRole = userRole || 'staff'
-
-    // ─── Get the last user message ──────────────────────────
-    const lastUserMessage = clientMessages?.[clientMessages.length - 1]?.content
-    if (!lastUserMessage || typeof lastUserMessage !== 'string') {
-      return NextResponse.json(
-        { error: 'No valid user message provided' },
-        { status: 400 }
-      )
-    }
-
     // ─── Run Maria Puspa Runtime ────────────────────────────
-    const payload = await runMariaPuspa(
+    const payload = await runHermes(
       lastUserMessage,
       effectiveUserId,
       effectiveRole,
@@ -86,14 +114,41 @@ export async function POST(request: NextRequest) {
   }
 }
 
+function createDirectSseResponse(content: string, model: string) {
+  const encoder = new TextEncoder()
+  const readable = new ReadableStream({
+    start(controller) {
+      controller.enqueue(
+        encoder.encode(
+          `data: ${JSON.stringify({ type: 'content', content })}\n\n`
+        )
+      )
+      controller.enqueue(
+        encoder.encode(
+          `data: ${JSON.stringify({ type: 'done', model, toolCalls: [] })}\n\n`
+        )
+      )
+      controller.close()
+    },
+  })
+
+  return new Response(readable, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    },
+  })
+}
+
 // ─── SSE Stream Handler ──────────────────────────────────────
 
 function handleSSEStream(
   stream: ReadableStream<Uint8Array>,
   userId: string,
   userRole: string,
-  originalMessages: Array<{ role: string; content: string; tool_call_id?: string; name?: string; tool_calls?: unknown }>,
-  tools: Array<{ type: string; function: { name: string; description: string; parameters: unknown } }>,
+  originalMessages: OpenRouterMessage[],
+  tools: OpenRouterTool[],
   model: string
 ) {
   const encoder = new TextEncoder()
@@ -272,7 +327,7 @@ function handleSSEStream(
           encoder.encode(
             `data: ${JSON.stringify({
               type: 'done',
-              model: 'maria-puspa',
+              model: 'hermes-agent',
               toolCalls: toolCallsBuffer.map((tc) => tc.function.name),
             })}\n\n`
           )

@@ -31,12 +31,13 @@ const web_search: MariaPuspaTool = {
       const zai = await ZAI.create()
       const result = await zai.functions.invoke('web_search', { query })
 
-      if (!result?.data?.results) {
+      const rows = Array.isArray(result) ? result : []
+      if (rows.length === 0) {
         return { results: [], message: 'Tiada hasil carian ditemui' }
       }
 
       return {
-        results: result.data.results.slice(0, 5).map((r: { title?: string; url?: string; snippet?: string }) => ({
+        results: rows.slice(0, 5).map((r: { title?: string; url?: string; snippet?: string }) => ({
           title: r.title || '',
           url: r.url || '',
           snippet: r.snippet || '',

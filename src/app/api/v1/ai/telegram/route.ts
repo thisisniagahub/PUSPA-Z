@@ -4,18 +4,31 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import {
-  runMariaPuspa,
+  runHermes,
   executeToolCalls,
   saveAssistantMessage,
-  isMariaPuspaConfigured,
+  isHermesConfigured,
+  runHermesCliReply,
 } from '@/agents/runtime/hermes.runtime'
 import { createChatCompletion } from '@/lib/openrouter'
 import type { ToolCall } from '@/agents/runtime/hermes.runtime'
 
 export async function POST(request: NextRequest) {
   try {
+    const internalToken = process.env.PUSPA_INTERNAL_API_TOKEN
+    const requestToken = request.headers.get('x-puspa-internal-token')
+
+    if (!internalToken || requestToken !== internalToken) {
+      return NextResponse.json(
+        { error: 'Unauthorized internal request' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     const { message, userId, userRole, currentView } = body
+    const effectiveRole =
+      userRole === 'admin' || userRole === 'developer' ? userRole : 'staff'
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
@@ -24,8 +37,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ─── Check OpenRouter Configuration ─────────────────────
-    if (!isMariaPuspaConfigured()) {
+    const hermesCli = await runHermesCliReply(
+      message,
+      currentView || 'dashboard'
+    )
+    if (hermesCli.enabled) {
+      await saveAssistantMessage(userId || 'telegram-anonymous', hermesCli.content)
+      return NextResponse.json({
+        content: hermesCli.content,
+        model: hermesCli.model,
+        toolCalls: [],
+        success: true,
+      })
+    }
+
+    // ─── Check OpenRouter Configuration (fallback runtime) ──
+    if (!isHermesConfigured()) {
       return NextResponse.json({
         content: 'Maaf, Maria Puspa tidak dikonfigurasi. Sila hubungi pentadbir.',
         model: 'fallback',
@@ -34,10 +61,10 @@ export async function POST(request: NextRequest) {
     }
 
     // ─── Run Maria Puspa Runtime ────────────────────────────
-    const payload = await runMariaPuspa(
+    const payload = await runHermes(
       message,
       userId || 'telegram-anonymous',
-      userRole || 'staff',
+      effectiveRole,
       currentView || 'dashboard'
     )
 
@@ -54,7 +81,7 @@ export async function POST(request: NextRequest) {
     if (!choice) {
       return NextResponse.json({
         content: 'Maaf, tiada respons diterima.',
-        model: 'maria-puspa',
+        model: 'hermes-agent',
       })
     }
 
@@ -66,7 +93,7 @@ export async function POST(request: NextRequest) {
       toolCallsBuffer = choice.message.tool_calls
 
       // Execute tool calls
-      const toolResults = await executeToolCalls(toolCallsBuffer, userRole || 'staff')
+      const toolResults = await executeToolCalls(toolCallsBuffer, effectiveRole)
 
       // Second AI call with tool results
       const secondMessages = [
@@ -95,7 +122,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       content: fullContent,
-      model: 'maria-puspa',
+      model: 'hermes-agent',
       toolCalls: toolCallsBuffer.map((tc) => tc.function.name),
       success: true,
     })

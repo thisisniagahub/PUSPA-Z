@@ -8,6 +8,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
   Label, Tabs, TabsList, TabsTrigger, TabsContent, Progress,
 } from '@/components/ui'
+import { useToast } from '@/components/ui/use-toast'
 import {
   Shield, Plus, Search, Filter, Clock, CheckCircle2,
   XCircle, AlertTriangle, Eye, FileCheck, Calendar,
@@ -103,7 +104,7 @@ function CircularProgress({ value, size = 120, strokeWidth = 10 }: { value: numb
 
   return (
     <div className="relative inline-flex items-center justify-center">
-      <svg width={size} height={size} className="-rotate-90">
+      <svg width={size} height={size} className="-rotate-90 drop-shadow-sm">
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -123,7 +124,7 @@ function CircularProgress({ value, size = 120, strokeWidth = 10 }: { value: numb
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className={`${getColor(value)} transition-all duration-1000`}
+          className={`${getColor(value)} transition-all duration-1000 cubic-bezier(0.4, 0, 0.2, 1)`}
         />
       </svg>
       <div className="absolute flex flex-col items-center">
@@ -154,6 +155,7 @@ export default function CompliancePage() {
   const [formEvidenceUrl, setFormEvidenceUrl] = useState('')
   const [formNotes, setFormNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const { toast } = useToast()
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -175,6 +177,9 @@ export default function CompliancePage() {
       } else {
         setRecords(demoRecords)
         setStats(demoStats)
+        toast({
+          title: "Mod Demo", description: "Gagal menyambung ke server. Memaparkan data simulasi.", variant: "default"
+        })
       }
     } catch {
       setRecords(demoRecords)
@@ -182,7 +187,7 @@ export default function CompliancePage() {
     } finally {
       setLoading(false)
     }
-  }, [categoryFilter, statusFilter])
+  }, [categoryFilter, statusFilter, toast])
 
   useEffect(() => { fetchData() }, [fetchData])
 
@@ -207,9 +212,17 @@ export default function CompliancePage() {
       if (res.ok) {
         setDialogOpen(false)
         resetForm()
+        toast({
+          title: "Rekod Pematuhan Berjaya Ditambah",
+          description: `Rekod "${formTitle}" telah berjaya disimpan.`,
+        })
         fetchData()
       }
-    } catch {
+    } catch (error) {
+      console.error("Error submitting compliance record:", error)
+      toast({
+        title: "Ralat", description: "Gagal menyimpan rekod pematuhan.", variant: "destructive"
+      })
       // silently fail
     } finally {
       setSubmitting(false)
@@ -436,7 +449,7 @@ export default function CompliancePage() {
                     const StatusIcon = statConf.icon
                     const overdue = isOverdue(r.dueDate, r.status)
                     return (
-                      <TableRow key={r.id} className={overdue ? 'bg-red-50 dark:bg-red-950/30' : ''}>
+                      <TableRow key={r.id} className={overdue ? 'bg-red-50/50 dark:bg-red-950/20' : ''}>
                         <TableCell>
                           <div>
                             <p className="font-medium">{r.title}</p>

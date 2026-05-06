@@ -8,7 +8,9 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { AppHeader } from '@/components/app-header'
 import { ViewRenderer } from '@/components/view-renderer'
 import { AiChatPanel } from '@/components/ai-chat-panel'
+import { MariaFloatingWidget } from '@/components/maria/maria-floating-widget'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
 
 // Check if Supabase is configured
 const isSupabaseConfigured = !!(
@@ -19,7 +21,7 @@ const isSupabaseConfigured = !!(
 export default function Home() {
   const router = useRouter()
   const { user, loading } = useAuth()
-  const { currentUser, setCurrentUser } = useAppStore()
+  const { currentUser, setCurrentUser, aiChatOpen } = useAppStore()
 
   // Sync Supabase auth user with app store
   useEffect(() => {
@@ -80,15 +82,16 @@ export default function Home() {
     <SidebarProvider>
       <AppSidebar />
 
-      <SidebarInset>
+      <SidebarInset className={cn("transition-all duration-300 ease-in-out", aiChatOpen ? "md:pr-96" : "")}>
         <AppHeader />
         <main className="p-4 lg:p-6">
           <ViewRenderer />
         </main>
       </SidebarInset>
 
-      {/* AI Chat Panel — fixed positioned, no margin shift needed */}
+      {/* AI Chat Panel — fixed positioned */}
       <AiChatPanel />
+      <MariaFloatingWidget />
     </SidebarProvider>
   )
 }

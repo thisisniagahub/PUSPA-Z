@@ -80,10 +80,11 @@ export function AppHeader() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+          className="size-9 h-8 w-8 text-primary hover:text-primary hover:bg-primary/10 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
           onClick={toggleAiChat}
+          aria-label="Toggle AI chat"
         >
-          <MessageSquare className="h-4 w-4" />
+          <MessageSquare className="h-4 w-4" aria-hidden="true" />
           <span className="sr-only">Toggle AI chat</span>
         </Button>
       </div>

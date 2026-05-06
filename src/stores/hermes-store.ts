@@ -62,7 +62,7 @@ const WELCOME_MESSAGE: MariaPuspaMessage = {
   content:
     'Hai, saya Maria Puspa. AI Assistant PUSPA. Apa yang boleh saya bantu?',
   timestamp: new Date(),
-  model: 'maria-puspa',
+  model: 'hermes-agent',
 }
 
 // Keep backward-compatible type alias
@@ -113,7 +113,7 @@ export const useMariaPuspaStore = create<MariaPuspaState>()((set, get) => ({
   setIsStreaming: (streaming) => set({ isStreaming: streaming }),
 
   // ─── Model ───────────────────────────────────────────────
-  modelName: 'maria-puspa',
+  modelName: 'hermes-agent',
   setModelName: (name) => set({ modelName: name }),
 
   // ─── Tool Calls ──────────────────────────────────────────
@@ -156,7 +156,7 @@ export const useMariaPuspaStore = create<MariaPuspaState>()((set, get) => ({
       role: 'assistant',
       content: '',
       timestamp: new Date(),
-      model: 'maria-puspa',
+      model: 'hermes-agent',
       isStreaming: true,
     }
     set((state) => ({
@@ -246,7 +246,7 @@ export const useMariaPuspaStore = create<MariaPuspaState>()((set, get) => ({
                     parsed.model,
                     parsed.toolCalls
                   )
-                  get().setModelName(parsed.model || 'maria-puspa')
+                  get().setModelName(parsed.model || 'hermes-agent')
                   break
 
                 case 'error':
@@ -270,11 +270,11 @@ export const useMariaPuspaStore = create<MariaPuspaState>()((set, get) => ({
               ...messages[lastIdx],
               content: data.content || 'Maaf, saya tidak dapat memproses permintaan anda.',
               isStreaming: false,
-              model: data.model || 'maria-puspa',
+              model: data.model || 'hermes-agent',
               toolCalls: data.toolCalls,
             }
           }
-          return { messages, modelName: data.model || 'maria-puspa' }
+          return { messages, modelName: data.model || 'hermes-agent' }
         })
 
         // Log tool calls from non-streaming response

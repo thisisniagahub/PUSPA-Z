@@ -47,11 +47,11 @@
 | Brand Identity (wide)     | `/public/puspa-brand-identity.png`    | Sidebar expanded header                  |
 | Brand Identity (small)    | `/public/puspa-brand-identity-sm.png` | Compact contexts                         |
 | Official Logo             | `/public/puspa-logo-official.png`     | Print / formal contexts                  |
-| Maria Puspa Avatar        | `/public/maria-puspa-avatar.png`      | AI chat panel avatar                     |
+| Maria Puspa Avatar        | `/public/maria-puspa-reference.png`   | Official Maria character reference       |
 | Maria Puspa Face (128px)  | `/public/maria-puspa-face-128.png`    | Thumbnail avatar                         |
 | SVG Logo                  | `/public/logo.svg`                    | Scalable contexts                        |
 
-All brand images are also inlined as base64 URIs via `@/lib/puspa-brand-assets` and `@/lib/maria-avatar` for zero-dependency rendering.
+Brand assets are managed via `@/lib/puspa-brand-assets` and `@/lib/maria-avatar`. Maria avatar now resolves to a canonical public asset path for consistency across chat panel, AI page, and floating widget.
 
 ### Brand Color Palette
 
@@ -426,6 +426,12 @@ const viewTitles: Record<ViewId, { en: string; ms: string }> = {
 ---
 
 ## 7. AI Chat Panel — Maria Puspa
+
+### 7.0 Character Runtime Notes
+
+- Avatar source is standardized to `public/maria-puspa-reference.png`
+- TTS playback prioritizes female voice profiles for Maria persona
+- Lip-sync animation uses phoneme/amplitude events from speech playback
 
 ### 7.1 Panel Layout
 
@@ -1147,7 +1153,7 @@ src/
 │   ├── access-control.ts        ← Role-based view access
 │   ├── utils.ts                 ← cn() utility
 │   ├── puspa-brand-assets.ts    ← Base64 brand image URIs
-│   ├── maria-avatar.ts          ← Base64 Maria avatar URI
+│   ├── maria-avatar.ts          ← Canonical Maria avatar path constant
 │   ├── puspa-knowledge.ts       ← Organization knowledge base
 │   ├── db.ts                    ← Prisma client
 │   ├── memory.ts                ← AI memory store
@@ -1167,5 +1173,5 @@ src/
 ---
 
 *Document version: PUSPA V5 Design System*
-*Last updated: 2026-03-05*
+*Last updated: 2026-05-05*
 *Color space: oklch | Theme: Purple brand | Language: Bahasa Melayu + English*

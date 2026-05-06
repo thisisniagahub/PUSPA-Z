@@ -3,7 +3,6 @@
 import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth-provider'
-// Using puspa-logo-official.png image instead of SVG logo
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -33,7 +32,6 @@ export default function LoginPage() {
       if (isSignUp) {
         const { error: signUpError } = await signUp(email, password, name)
         if (signUpError) {
-          // Translate common Supabase errors to Bahasa Melayu
           const translated = translateError(signUpError)
           setError(translated)
         } else {
@@ -66,24 +64,32 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        {/* Brand header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white dark:bg-gray-900 shadow-lg shadow-purple-200/50 dark:shadow-purple-900/30 mb-4 border border-purple-100 dark:border-purple-900/50">
-            <img
-              src="/puspa-logo-official.png"
-              alt="PUSPA Logo"
-              className="h-11 w-11 object-contain"
-            />
+        {/* Brand header — Exact Mirror of Identity Image Layout */}
+        <div className="text-center mb-12 flex flex-col items-center">
+          <div className="flex items-center gap-4 mb-6">
+            {/* Logo Icon on White */}
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white shadow-2xl shadow-white/10 ring-4 ring-white/5 transition-all hover:scale-105">
+              <img
+                src="/puspa-logo-transparent.png"
+                alt="PUSPA Icon"
+                className="h-14 w-14 object-contain"
+              />
+            </div>
+            
+            {/* PUSPA Text Layout */}
+            <div className="flex flex-col items-start text-left">
+              <h1 className="text-6xl font-black tracking-tighter text-white leading-none">
+                PUSPA
+              </h1>
+              {/* TAGLINE: FORCED WHITE AS REQUESTED */}
+              <p className="text-xs font-bold text-white uppercase tracking-[0.2em] mt-1">
+                Pertubuhan Urus Peduli Asnaf
+              </p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            <span className="text-purple-700 dark:text-purple-400">PUSPA</span>
-            <span className="text-gray-400 dark:text-gray-600 font-light ml-1">V5</span>
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Pertubuhan Urus Peduli Asnaf
-          </p>
-          <p className="text-xs text-purple-600/70 dark:text-purple-400/70 mt-0.5 italic">
-            Cerdas. Mesra. Sentiasa di sisi anda.
+          
+          <p className="text-xs text-white/40 italic font-medium">
+            "Cerdas. Mesra. Sentiasa di sisi anda."
           </p>
         </div>
 
@@ -115,7 +121,6 @@ export default function LoginPage() {
                     required={isSignUp}
                     disabled={loading}
                     className="h-11"
-                    autoComplete="name"
                   />
                 </div>
               )}
@@ -132,7 +137,6 @@ export default function LoginPage() {
                   required
                   disabled={loading}
                   className="h-11"
-                  autoComplete="email"
                 />
               </div>
 
@@ -149,7 +153,6 @@ export default function LoginPage() {
                     required
                     disabled={loading}
                     className="h-11 pr-10"
-                    autoComplete={isSignUp ? 'new-password' : 'current-password'}
                     minLength={6}
                   />
                   <button
@@ -157,7 +160,6 @@ export default function LoginPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     tabIndex={-1}
-                    aria-label={showPassword ? 'Sembunyikan kata laluan' : 'Tunjukkan kata laluan'}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -166,53 +168,44 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
-                {isSignUp && (
-                  <p className="text-xs text-muted-foreground">
-                    Minimum 6 aksara
-                  </p>
-                )}
               </div>
 
-              {/* Error message */}
               {error && (
                 <div className="rounded-lg bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900/50 p-3">
                   <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
                 </div>
               )}
 
-              {/* Success message */}
               {success && (
                 <div className="rounded-lg bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-900/50 p-3">
                   <p className="text-sm text-green-700 dark:text-green-400">{success}</p>
                 </div>
               )}
 
-              {/* Submit button */}
               <Button
                 type="submit"
-                className="w-full h-11 bg-purple-700 hover:bg-purple-800 dark:bg-purple-600 dark:hover:bg-purple-700 text-white"
+                className="w-full h-11 bg-purple-700 hover:bg-purple-800 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-bold"
                 disabled={loading}
               >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {isSignUp ? 'Mendaftar...' : 'Memproses...'}
+                    Memproses...
                   </>
                 ) : isSignUp ? (
                   <>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Daftar
+                    Daftar Sekarang
                   </>
                 ) : (
                   <>
                     <LogIn className="mr-2 h-4 w-4" />
-                    Log Masuk
+                    Log Masuk Sistem
                   </>
                 )}
               </Button>
             </form>
 
-            {/* Toggle sign up / sign in */}
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 {isSignUp ? 'Sudah mempunyai akaun?' : 'Belum mempunyai akaun?'}
@@ -224,19 +217,19 @@ export default function LoginPage() {
                   setError(null)
                   setSuccess(null)
                 }}
-                className="mt-1 text-sm font-medium text-purple-700 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                className="mt-1 text-sm font-bold text-purple-700 hover:underline dark:text-purple-400 transition-colors"
                 disabled={loading}
               >
-                {isSignUp ? 'Log masuk di sini' : 'Daftar akaun baru'}
+                {isSignUp ? 'Log masuk di sini' : 'Cipta akaun baru'}
               </button>
             </div>
           </CardContent>
         </Card>
 
         {/* Footer */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-muted-foreground">
-            PPM-024-10-05012022 &middot; Platform Pengurusan Asnaf
+        <div className="mt-8 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
+            PPM-024-10-05012022 &bull; NGO Management Platform
           </p>
         </div>
       </div>
@@ -244,29 +237,12 @@ export default function LoginPage() {
   )
 }
 
-/**
- * Translate common Supabase auth error messages to Bahasa Melayu
- */
 function translateError(error: string): string {
   const translations: Record<string, string> = {
     'Invalid login credentials': 'E-mel atau kata laluan tidak sah.',
-    'Email not confirmed': 'E-mel belum disahkan. Sila semak peti masuk e-mel anda.',
-    'User already registered': 'E-mel ini sudah didaftarkan. Sila log masuk.',
-    'Password should be at least 6 characters': 'Kata laluan mestilah sekurang-kurangnya 6 aksara.',
-    'Signup is disabled': 'Pendaftaran akaun baru dilumpuhkan buat masa ini.',
-    'Email rate limit exceeded': 'Terlalu banyak percubaan. Sila cuba lagi kemudian.',
-    'Too many requests': 'Terlalu banyak permintaan. Sila cuba lagi kemudian.',
-    'Network request failed': 'Ralat rangkaian. Sila semak sambungan internet anda.',
+    'Email not confirmed': 'E-mel belum disahkan.',
+    'User already registered': 'E-mel ini sudah didaftarkan.',
+    'Password should be at least 6 characters': 'Kata laluan terlalu pendek.',
   }
-
-  // Check for exact match first
-  if (translations[error]) return translations[error]
-
-  // Check for partial matches
-  for (const [eng, bm] of Object.entries(translations)) {
-    if (error.toLowerCase().includes(eng.toLowerCase())) return bm
-  }
-
-  // Return original error if no translation found
-  return error
+  return translations[error] || error
 }

@@ -2,6 +2,16 @@
 // Allows the AI to query case data securely (PII masked)
 
 import { db } from '@/lib/db'
+import { z } from 'zod'
+
+/**
+ * Mask IC number to show only the last 4 digits as per PDPA requirements.
+ * Format: ****XXXX
+ */
+function maskIC(ic: string | null | undefined): string | null {
+  if (!ic) return null
+  return `****${ic.slice(-4)}`
+}
 
 /**
  * Fetch cases that are currently pending or in-progress.
@@ -60,9 +70,7 @@ export async function getActiveCases(status?: string) {
       name: c.member.name,
       asnafCategory: c.member.asnafCategory,
       // Mask IC: show only last 4 digits
-      icMasked: c.member.icNumber
-        ? `****${c.member.icNumber.slice(-4)}`
-        : null,
+      icMasked: maskIC(c.member.icNumber),
     },
   }))
 }
@@ -72,6 +80,10 @@ export async function getActiveCases(status?: string) {
  * Sensitive PII is masked.
  */
 export async function getCaseSummary(caseId: string) {
+  // Validasi parameter menggunakan Zod
+  const schema = z.string().min(1, 'Format ID kes tidak sah atau kosong');
+  schema.parse(caseId);
+
   const caseData = await db.case.findUnique({
     where: { id: caseId },
     include: {
@@ -129,9 +141,7 @@ export async function getCaseSummary(caseId: string) {
       id: caseData.member.id,
       name: caseData.member.name,
       asnafCategory: caseData.member.asnafCategory,
-      icMasked: caseData.member.icNumber
-        ? `****${caseData.member.icNumber.slice(-4)}`
-        : null,
+      icMasked: maskIC(caseData.member.icNumber),
       monthlyIncome: caseData.member.monthlyIncome,
       householdSize: caseData.member.householdSize,
       status: caseData.member.status,

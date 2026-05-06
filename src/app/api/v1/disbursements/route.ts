@@ -1,6 +1,10 @@
 import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
+function maskIcNumber(icNumber: string | null): string | null {
+  return icNumber ? `****${icNumber.slice(-4)}` : null
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -53,8 +57,18 @@ export async function GET(request: NextRequest) {
     const scheduledCount = allDisbursements.filter((d) => d.status === 'disbursed').length
     const verifiedCount = allDisbursements.filter((d) => d.status === 'verified').length
 
+    const maskedDisbursements = disbursements.map((disbursement) => ({
+      ...disbursement,
+      member: disbursement.member
+        ? {
+            ...disbursement.member,
+            icNumber: maskIcNumber(disbursement.member.icNumber),
+          }
+        : disbursement.member,
+    }))
+
     return NextResponse.json({
-      disbursements,
+      disbursements: maskedDisbursements,
       pagination: {
         page,
         limit,
@@ -141,7 +155,17 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ disbursement }, { status: 201 })
+    const maskedDisbursement = {
+      ...disbursement,
+      member: disbursement.member
+        ? {
+            ...disbursement.member,
+            icNumber: maskIcNumber(disbursement.member.icNumber),
+          }
+        : disbursement.member,
+    }
+
+    return NextResponse.json({ disbursement: maskedDisbursement }, { status: 201 })
   } catch (error) {
     console.error('Disbursements POST error:', error)
     return NextResponse.json({ error: 'Failed to create disbursement' }, { status: 500 })

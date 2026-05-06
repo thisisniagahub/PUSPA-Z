@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useAppStore } from '@/lib/store'
+import { useMariaCharacterStore } from '@/stores/maria-character-store'
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
   Button, Badge, Input, Switch, Separator, Avatar, AvatarFallback,
@@ -9,6 +10,7 @@ import {
 import {
   User, Globe, Moon, PanelLeft, Bell, BellOff, Mail, MailX,
   Info, Save, Check, Camera, Shield, Palette, Bot, MessageCircle,
+  BellRing, FileText, HandCoins, AlertTriangle, Calendar,
 } from 'lucide-react'
 
 /* ─── Types ────────────────────────────────────────────── */
@@ -31,8 +33,16 @@ interface UserSettings {
 }
 
 /* ─── Component ────────────────────────────────────────── */
+import { useToast } from '@/components/ui/use-toast'
 export default function SettingsPage() {
   const { currentUser, setCurrentUser } = useAppStore()
+  const {
+    speechState,
+    uiState,
+    setTTSOn,
+    setAutoReadLatest,
+    setPinned,
+  } = useMariaCharacterStore()
 
   const [settings, setSettings] = useState<UserSettings>(() => {
     const defaults: UserSettings = {
@@ -66,18 +76,25 @@ export default function SettingsPage() {
     return defaults
   })
 
-  const [saved, setSaved] = useState(false)
+  const { toast } = useToast()
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // TODO: Tambah API Call di sini
+    // await fetch('/api/v1/user/settings', { method: 'POST', body: JSON.stringify(settings) })
+    
     localStorage.setItem('puspa-settings', JSON.stringify(settings))
+    
     setCurrentUser({
       id: currentUser?.id || 'usr_admin_001',
       name: settings.name,
       email: settings.email,
       role: (settings.role as 'staff' | 'admin' | 'developer') || 'admin',
     })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    toast({
+      title: "Tetapan Disimpan!",
+      description: "Perubahan anda telah berjaya disimpan.",
+      duration: 2000,
+    })
   }
 
   const updateNotification = (key: keyof UserSettings['notifications'], value: boolean) => {
@@ -92,6 +109,9 @@ export default function SettingsPage() {
     admin: 'Pentadbir',
     developer: 'Pembangun',
   }
+  const mariaWidgetEnabled = process.env.NEXT_PUBLIC_MARIA_WIDGET_ENABLED !== 'false'
+  const mariaTtsEnabled = process.env.NEXT_PUBLIC_MARIA_TTS_ENABLED !== 'false'
+  const mariaLipSyncEnabled = process.env.NEXT_PUBLIC_MARIA_LIPSYNC_ENABLED !== 'false'
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -102,8 +122,8 @@ export default function SettingsPage() {
           <p className="text-sm text-muted-foreground">Settings — Urus profil dan keutamaan anda</p>
         </div>
         <Button className="gap-2" onClick={handleSave}>
-          {saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-          {saved ? 'Disimpan!' : 'Simpan Tetapan'}
+          <Save className="h-4 w-4" />
+          Simpan Tetapan
         </Button>
       </div>
 
@@ -267,11 +287,11 @@ export default function SettingsPage() {
         <CardContent className="space-y-1">
           {[
             { key: 'email' as const, label: 'Pemberitahuan Emel', desc: 'Terima pemberitahuan melalui emel', icon: Mail },
-            { key: 'push' as const, label: 'Pemberitahuan Push', desc: 'Pemberitahuan pelayar desktop', icon: Bell },
-            { key: 'caseUpdates' as const, label: 'Kemas Kini Kes', desc: 'Pemberitahuan apabila kes dikemas kini', icon: Bell },
-            { key: 'donationAlerts' as const, label: 'Amaran Sumbangan', desc: 'Pemberitahuan sumbangan baru masuk', icon: Bell },
-            { key: 'systemAlerts' as const, label: 'Amaran Sistem', desc: 'Pemberitahuan penyelenggaraan dan kemas kini', icon: BellOff },
-            { key: 'weeklyReport' as const, label: 'Laporan Mingguan', desc: 'Hantar ringkasan mingguan melalui emel', icon: MailX },
+            { key: 'push' as const, label: 'Pemberitahuan Push', desc: 'Pemberitahuan pelayar desktop', icon: BellRing },
+            { key: 'caseUpdates' as const, label: 'Kemas Kini Kes', desc: 'Pemberitahuan apabila kes dikemas kini', icon: FileText },
+            { key: 'donationAlerts' as const, label: 'Amaran Sumbangan', desc: 'Pemberitahuan sumbangan baru masuk', icon: HandCoins },
+            { key: 'systemAlerts' as const, label: 'Amaran Sistem', desc: 'Pemberitahuan penyelenggaraan dan kemas kini', icon: AlertTriangle },
+            { key: 'weeklyReport' as const, label: 'Laporan Mingguan', desc: 'Hantar ringkasan mingguan melalui emel', icon: Calendar },
           ].map((item, idx) => (
             <div key={item.key}>
               <div className="flex items-center justify-between py-3">
@@ -368,19 +388,83 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Maria Character Controls */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Bot className="h-4 w-4" />
+            Maria Puspa Character (Global)
+          </CardTitle>
+          <CardDescription>Kawal mod karakter hidup, suara, dan widget global</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between py-1.5">
+            <div>
+              <p className="text-sm font-medium">Global Widget</p>
+              <p className="text-xs text-muted-foreground">Status dari env: {mariaWidgetEnabled ? 'Enabled' : 'Disabled'}</p>
+            </div>
+            <Badge variant={mariaWidgetEnabled ? 'secondary' : 'outline'}>
+              {mariaWidgetEnabled ? 'On' : 'Off'}
+            </Badge>
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between py-1.5">
+            <div>
+              <p className="text-sm font-medium">Maria Voice (TTS)</p>
+              <p className="text-xs text-muted-foreground">Baca respon AI secara automatik</p>
+            </div>
+            <Switch
+              checked={speechState.isTTSOn}
+              onCheckedChange={setTTSOn}
+              disabled={!mariaTtsEnabled}
+            />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between py-1.5">
+            <div>
+              <p className="text-sm font-medium">Auto Read Latest Reply</p>
+              <p className="text-xs text-muted-foreground">Auto bacakan mesej terakhir Maria</p>
+            </div>
+            <Switch
+              checked={speechState.autoReadLatest}
+              onCheckedChange={setAutoReadLatest}
+              disabled={!speechState.isTTSOn || !mariaTtsEnabled}
+            />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between py-1.5">
+            <div>
+              <p className="text-sm font-medium">Pin Widget Position</p>
+              <p className="text-xs text-muted-foreground">Kekalkan posisi widget global</p>
+            </div>
+            <Switch checked={uiState.isPinned} onCheckedChange={setPinned} />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between py-1.5">
+            <div>
+              <p className="text-sm font-medium">Lip Sync Engine</p>
+              <p className="text-xs text-muted-foreground">Status dari env: {mariaLipSyncEnabled ? 'Enabled' : 'Disabled'}</p>
+            </div>
+            <Badge variant={mariaLipSyncEnabled ? 'secondary' : 'outline'}>
+              {mariaLipSyncEnabled ? 'On' : 'Off'}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* About Section */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Info className="h-4 w-4" />
-            Tentang PUSPA V4
+            Tentang PUSPA-Z
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-xs text-muted-foreground">Versi</p>
-              <p className="font-medium">4.0.0</p>
+              <p className="font-medium">5.0.0-stable</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Build</p>
@@ -405,7 +489,7 @@ export default function SettingsPage() {
           </div>
           <Separator className="my-4" />
           <p className="text-xs text-muted-foreground text-center">
-            PUSPA V4 — PERTUBUHAN URUS PEDULI ASNAF (PPM-024-10-05012022). © 2025 Hak cipta terpelihara.
+            PUSPA-Z — PERTUBUHAN URUS PEDULI ASNAF (PPM-024-10-05012022). © 2026 Hak cipta terpelihara.
           </p>
         </CardContent>
       </Card>

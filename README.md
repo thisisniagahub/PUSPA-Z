@@ -2,7 +2,7 @@
   <img src="public/puspa-logo-official.png" alt="PUSPA Logo" width="120" />
 </p>
 
-<h1 align="center">PUSPA V5</h1>
+<h1 align="center">PUSPA-Z</h1>
 
 <p align="center">
   <strong>Pertubuhan Urus Peduli Asnaf</strong><br/>
@@ -39,6 +39,7 @@ PUSPA V5 ialah platform pengurusan NGO sepenuhnya yang dibina untuk Pertubuhan U
 
 - **17 integrated modules** covering the full NGO operational workflow
 - **Maria Puspa AI** — an AI assistant with 18 tools, RAG-powered responses, and SSE streaming
+- **Live Maria Character Layer** — global floating widget, dynamic emotion state, TTS + lip-sync
 - **Telegram Bot** (@MariaPuspaBot) for mobile access to Maria Puspa
 - **Role-Based Access Control** (Staff, Admin, Developer) across all modules and AI tools
 - **eKYC Verification** pipeline with risk assessment
@@ -69,7 +70,7 @@ PUSPA V5 ialah platform pengurusan NGO sepenuhnya yang dibina untuk Pertubuhan U
 | Framework | [Next.js](https://nextjs.org/) (App Router + Turbopack) | 16 |
 | Language | [TypeScript](https://www.typescriptlang.org/) | 5 |
 | Styling | [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) (New York) | 4 |
-| Database | [Prisma ORM](https://www.prisma.io/) with SQLite | 6 |
+| Database | [Prisma ORM](https://www.prisma.io/) with managed Postgres (production) | 6 |
 | State | [Zustand](https://zustand.docs.pmnd.rs/) with persist middleware | 5 |
 | AI | [OpenRouter](https://openrouter.ai/) (OpenAI-compatible) | — |
 | Data Grid | [TanStack Table](https://tanstack.com/table) + [React Query](https://tanstack.com/query) | 8 / 5 |
@@ -98,8 +99,8 @@ cd PUSPA-Z
 bun install
 
 # Set up environment variables
-cp .env.example .env
-# Edit .env with your API keys (see Environment Variables below)
+cp .env.example .env.local
+# Edit .env.local with your API keys (see Environment Variables below)
 
 # Initialize the database
 bun run db:push
@@ -123,11 +124,11 @@ Send `/start` to **@MariaPuspaBot** on Telegram to begin.
 
 ## Environment Variables / Pembolehubah Persekitaran
 
-Create a `.env` file in the project root:
+Create a `.env.local` file in the project root (recommended for Next.js local development):
 
 ```env
 # ─── Database ───────────────────────────────────────
-DATABASE_URL="file:./db/custom.db"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DB_NAME?sslmode=require"
 
 # ─── OpenRouter AI ──────────────────────────────────
 # Supports up to 4 API keys for automatic rotation
@@ -143,9 +144,32 @@ OPENROUTER_APP_URL=https://puspa-v5.space-z.ai
 # ─── Telegram Bot ───────────────────────────────────
 TELEGRAM_BOT_TOKEN=xxx
 ALLOWED_CHAT_IDS=6798585537
+TELEGRAM_ADMIN_CHAT_IDS=6798585537
+PUSPA_INTERNAL_API_TOKEN=replace-with-strong-shared-secret
+
+# ─── Supabase (SSR + Browser Client) ────────────────
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxx
+
+# ─── Maria Character Flags (optional) ───────────────
+# Default behavior is enabled when unset.
+NEXT_PUBLIC_MARIA_WIDGET_ENABLED=true
+NEXT_PUBLIC_MARIA_TTS_ENABLED=true
+NEXT_PUBLIC_MARIA_LIPSYNC_ENABLED=true
+
+# ─── Hermes-Agent Runtime Mode (optional) ────────────
+# Set to "cli" to route API responses through Hermes CLI directly.
+HERMES_RUNTIME_MODE=cli
+HERMES_CLI_TIMEOUT_MS=45000
 ```
 
 > **Note:** At least one `OPENROUTER_API_KEY` is required for Maria Puspa AI. The Telegram bot requires a valid `TELEGRAM_BOT_TOKEN` from [@BotFather](https://t.me/BotFather).
+
+Run a quick Maria character smoke check:
+
+```bash
+npm run smoke:maria
+```
 
 ---
 
@@ -177,7 +201,37 @@ PUSPA V5 consists of **17 lazy-loaded modules**, each with its own view page and
 
 ## Maria Puspa AI
 
+### Hermes Native Feature Mode
+
+If you want full Hermes features without custom reimplementation, use the native Hermes commands directly from this repo:
+
+```bash
+npm run hermes:setup         # one-time setup wizard
+npm run hermes:chat          # Hermes interactive chat
+npm run hermes:gateway:setup # configure Telegram/Discord/etc
+npm run hermes:gateway       # run messaging gateway
+npm run hermes:dashboard     # web dashboard (TUI enabled)
+npm run hermes:cron:list     # list scheduled jobs
+npm run hermes:skills        # list installed skills
+npm run hermes:mcp           # list MCP servers
+```
+
+Set this in `.env.local` to make app API use Hermes CLI directly:
+
+```env
+HERMES_RUNTIME_MODE=cli
+HERMES_CLI_TIMEOUT_MS=45000
+```
+
 **Maria Puspa** is the built-in AI assistant powered by [OpenRouter](https://openrouter.ai/) with OpenAI-compatible tool calling. She speaks Bahasa Melayu (primary) and English, and is designed for direct, data-grounded responses.
+
+### Character Runtime (Level 3)
+
+- **Global Widget**: floating Maria assistant is available across the app shell
+- **Official Avatar**: Maria surfaces use `public/maria-puspa-reference.png`
+- **Voice**: browser TTS with female-voice prioritization (BM/EN fallback)
+- **Lip-sync**: amplitude-driven mouth animation connected to speech playback
+- **Feature Flags**: `NEXT_PUBLIC_MARIA_WIDGET_ENABLED`, `NEXT_PUBLIC_MARIA_TTS_ENABLED`, `NEXT_PUBLIC_MARIA_LIPSYNC_ENABLED`
 
 ### Personality / Personaliti
 
@@ -504,10 +558,13 @@ PUSPA-Z/
 
 | Command | Description |
 |---------|-------------|
-| `bun run dev` | Start Next.js dev server on port 3000 (with Turbopack) |
+| `bun run dev` | Start Next.js dev server on port 3000 |
 | `bun run build` | Production build with standalone output |
 | `bun run start` | Start production server |
 | `bun run lint` | Run ESLint |
+| `bun run typecheck` | Run TypeScript type checks |
+| `bun run verify:release` | Run release quality gate (lint + typecheck + build) |
+| `npm run smoke:maria` | Smoke-check Maria widget, TTS, and lip-sync wiring |
 | `bun run db:push` | Push Prisma schema to database |
 | `bun run db:generate` | Generate Prisma client |
 | `bun run db:migrate` | Run Prisma migrations |
@@ -526,13 +583,15 @@ The PUSPA Telegram bot (@MariaPuspaBot) provides mobile access to Maria Puspa AI
 | `/start` | Welcome message and capabilities overview |
 | `/help` | List of available commands |
 | `/reset` | Reset conversation history |
-| `/role [staff\|admin\|developer]` | Switch access role |
+| `/role [staff\|admin\|developer]` | Switch access role (admin list required for elevated roles) |
 | `/status` | Show session status and system info |
 
 ### Bot Architecture
 
 - **Long polling** (no webhook required)
 - **Allowlist-based** access control via `ALLOWED_CHAT_IDS`
+- **Admin role guard** via `TELEGRAM_ADMIN_CHAT_IDS` for `/role admin|developer`
+- **Internal API auth** via `x-puspa-internal-token` + `PUSPA_INTERNAL_API_TOKEN`
 - **Session tracking** per chat ID with role management
 - **SSE stream parsing** for real-time AI responses
 - **Auto-split** long messages for Telegram's 4096 char limit
@@ -543,26 +602,59 @@ The PUSPA Telegram bot (@MariaPuspaBot) provides mobile access to Maria Puspa AI
 
 ## Deployment / Penggunaan
 
-### Vercel (Recommended)
+### Zero-VPS Deployment (Recommended)
 
-PUSPA V5 is optimized for [Vercel serverless deployment](https://vercel.com/):
+PUSPA V5 is production-ready with a **no-VPS architecture**:
 
-1. Push to GitHub repository
-2. Import project in Vercel dashboard
-3. Set environment variables in Vercel project settings
-4. Deploy
+- **Web + API**: [Vercel](https://vercel.com/) (serverless)
+- **Database**: managed Postgres (Neon, Supabase, or equivalent)
+- **Telegram bot worker**: serverless/container worker (Render/Railway/Fly.io) with auto-restart
 
-The database gracefully falls back when unavailable in serverless environments — Maria Puspa tools return informative Malay-language fallback messages instead of crashing.
+You do **not** need to provision or maintain your own VPS.
 
-### Self-Hosted
+### Step-by-Step (No VPS)
 
-```bash
-# Build for production
-bun run build
+1. Push project to GitHub.
+2. Import repository into Vercel.
+3. Configure env vars in Vercel project settings.
+4. Point `DATABASE_URL` to managed Postgres (recommended for production).
+5. Deploy.
+6. Deploy `mini-services/telegram-bot` on a hosted worker platform.
+7. Set bot env vars:
+   - `TELEGRAM_BOT_TOKEN`
+   - `PUSPA_API_URL` (your Vercel URL)
+   - `ALLOWED_CHAT_IDS`
+   - `TELEGRAM_ADMIN_CHAT_IDS`
+   - `PUSPA_INTERNAL_API_TOKEN` (must match app env)
 
-# Start production server
-bun run start
-```
+### Notes
+
+- Vercel handles scaling and HTTPS automatically.
+- Telegram endpoint `/api/v1/ai/telegram` now requires `x-puspa-internal-token`.
+- For production reliability, avoid local SQLite and use managed Postgres.
+- DB fallback still protects user experience when transient DB outages happen.
+
+### Deployment Checklist (No VPS)
+
+- [ ] Vercel project connected to main branch and production domain verified.
+- [ ] Managed Postgres provisioned and `DATABASE_URL` set in Vercel.
+- [ ] `OPENROUTER_API_KEY_1` (and optional key rotation vars) set in Vercel.
+- [ ] `PUSPA_INTERNAL_API_TOKEN` set in Vercel with strong random value.
+- [ ] Telegram worker deployed on Render/Railway/Fly.io (no VPS).
+- [ ] Worker env configured: `TELEGRAM_BOT_TOKEN`, `PUSPA_API_URL`, `ALLOWED_CHAT_IDS`, `TELEGRAM_ADMIN_CHAT_IDS`, `PUSPA_INTERNAL_API_TOKEN`.
+- [ ] `PUSPA_INTERNAL_API_TOKEN` value matches exactly between Vercel and worker.
+- [ ] Smoke test passed:
+  - unauthorized call to `/api/v1/ai/telegram` returns `401`
+  - allowlisted non-admin cannot set `/role admin`
+  - admin chat ID can set `/role admin` or `/role developer`
+  - normal Telegram query receives AI response.
+
+### First-Run Onboarding (Operator Friendly)
+
+- [ ] Admin confirms role mapping (`staff`, `admin`, `developer`) before onboarding team.
+- [ ] Staff is given quick guide for 3 common actions: create case, check disbursement, check compliance due items.
+- [ ] Telegram users test `/start`, `/help`, `/status` and understand role restrictions for `/role`.
+- [ ] Team verifies fallback messages are understandable in Bahasa Melayu when AI or DB is unavailable.
 
 ---
 
@@ -595,6 +687,7 @@ This is a proprietary project for PUSPA organization. Contributions are by invit
 | Address | 2253, Jalan Permata 22, Taman Permata, 53300 Gombak, Selangor |
 | Email | salam.puspaKL@gmail.com |
 | Phone | +6012-3183369 |
+
 | Donation Account | Maybank 562209677503 |
 | Facebook | Pertubuhan Urus Peduli Asnaf KL & Selangor |
 
