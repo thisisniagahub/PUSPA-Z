@@ -1,4 +1,6 @@
 import { db } from '@/lib/db'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- force type resolution
+import type { Entrepreneur } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { canAccessView, Role } from '@/lib/access-control'
